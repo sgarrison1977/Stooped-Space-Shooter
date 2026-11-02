@@ -1,0 +1,45 @@
+{
+  "summary": "Backend: 13/13 pytest passed (score upsert keeps best per player, runs/total increment, name update, rank calc, leaderboard sort wave desc then kills desc, is_you flag, validation 422 for name 0/21 chars, wave 0, kills<0, short player_id, limit bounds). Frontend (390x844 web preview): name entry/save/edit/persist, ENTER THE DEEP disabled until named, /play HUD (wave/kills/coins rise, wave 2 at ~25s), drag moves ship, level-up overlay with 3 system-option-* cards freezes game and resumes on pick, pause/resume freezes and resumes, abandon -> game-over with wave/kills/coins/rank, Dive Again resets run, Return to Muster updates stat-runs/coins/kills/best-wave, Armoury buy deducts coins + raises Lv/damage/max health and persists, disabled when unaffordable, leaderboard rows with own row highlighted + back button all work. Bug found: if /play (or /leaderboard) is opened directly or reloaded, router.back() has no history, so 'Return to Muster' throws 'GO_BACK was not handled' and the user is stuck. Gameplay balance: a player who doesn't move never levels up because XP gems drop far away (pickup is only 70px), and HP barely drops in the first 40s. Deprecated packages detected: none (no expo-av/expo-barcode-scanner/expo-background-fetch). SafeAreaView issues detected: none (useSafeAreaInsets used).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/scores", "issue": "Two first-time submissions for the same player_id at the same moment can both hit insert_one, and the unique index then makes the second fail with an unhandled DuplicateKeyError (500). Use update_one(..., upsert=True) or catch the error and retry."},
+      {"endpoint": "POST /api/scores", "issue": "The backend accepts any wave/kills values the client sends (up to wave 10000), with no rate limit or sanity check. Anyone can put a fake score on the global leaderboard."},
+      {"endpoint": "server.py startup", "issue": "@app.on_event is deprecated in FastAPI. Use a lifespan handler instead."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "GameOverOverlay Return to Muster / Leaderboard back", "issue": "Uses router.back() unconditionally. When /play or /leaderboard is opened directly, refreshed, or opened from a link, there is no history: the console shows 'The action GO_BACK was not handled by any navigator', an error toast appears and the user stays on the game-over screen. Reference: /app/frontend/app/play.tsx:155, /app/frontend/app/leaderboard.tsx:36", "testID": "game-over-return-button, leaderboard-back-button", "priority": "HIGH"},
+      {"component": "Game arena (web)", "issue": "Dragging on web highlights overlay and HUD text in blue (visible in the level-up overlay screenshot). Add userSelect:'none' on the arena/root for web.", "testID": "game-arena", "priority": "LOW"},
+      {"component": "GameOverOverlay", "issue": "An abandoned run still shows the title 'Hull Breached' even though HP was 100/100.", "testID": "game-over-overlay", "priority": "LOW"},
+      {"component": "Leaderboard row", "issue": "The run count isn't pluralised correctly: it shows '1 runs'.", "testID": "leaderboard-row-*", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Gameplay balance", "issues": ["If the player doesn't move, no level-up happens in 40s (30 kills, Lv 1). Enemies die far from the ship, so the XP gems pile up outside the 70px pickup radius. The note 'first level-up after ~5 kills / 10-20s' only holds if the player moves to collect gems. Consider a larger base pickup radius, gems drifting toward the player, or a short hint.", "Early waves are very easy: HP stayed at 100/100 for 40s in the centre and only dropped 10 in 30s in a corner. The ship auto-fires across the whole arena, so enemies rarely reach it."]},
+      {"screen": "Home / Armoury", "issues": ["upgrade-buy-* buttons are 64x36, below the 44pt minimum touch target height.", "Hint and label text at 9px (tileLabel, hint) is very small for mobile."]}
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/test_scores_leaderboard.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "play.tsx onReturn and leaderboard.tsx back: use router.canGoBack() ? router.back() : router.replace('/')",
+    "Make XP collection work without moving (bigger base pickup radius or gems drift toward the player), or tune balance so the first level-up happens in about 10-20s as intended",
+    "Raise upgrade-buy-* button height to 44 or add hitSlop",
+    "Web only: add userSelect:'none' to the play screen root/arena so dragging doesn't select text",
+    "Optional: make /api/scores insert race-safe (upsert); show a different game-over title for abandoned runs; pluralise 'runs'"
+  ],
+  "critical_code_review_comments": [
+    "The game loop calls setFrame on every rAF tick, so the whole Play tree (Arena with one View per entity) re-renders 60 times a second. This may stutter on low-end native devices at higher waves. Consider memoising Hud/overlays or using reanimated/skia for the entities.",
+    "Frontend correctly uses process.env.EXPO_PUBLIC_BACKEND_URL. The storage util double-JSON-encodes values; that's harmless but worth knowing when seeding localStorage in tests.",
+    "Responses don't leak _id; Pydantic validation works as specified."
+  ],
+  "updated_files": ["/app/backend/tests/test_scores_leaderboard.py"],
+  "success_rate": {"backend": "100%", "frontend": "92% (all requested flows pass; Return/back fails only when /play or /leaderboard is opened directly or refreshed)"},
+  "seed_data_creation": "None kept. TEST_-prefixed scores were created and then deleted (scores collection is now empty).",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Profile is stored in localStorage key emberdeep_profile_v1 as a DOUBLE JSON-encoded string: localStorage.setItem(key, JSON.stringify(JSON.stringify(profile))). Seed coins this way to test the Armoury. To trigger level-up you must sweep-drag across the arena to collect cyan gems; standing still never levels up. Drag mapping: target = start + delta*1.15.",
+  "rca_of_issue": "GO_BACK error: expo-router router.back() with an empty stack when /play is the first route (deep link or refresh). Reproduce: open <url>/play, pause, Abandon, tap Return to Muster -> error toast, stays on /play. Fix: check canGoBack() and fall back to replace('/')."
+}

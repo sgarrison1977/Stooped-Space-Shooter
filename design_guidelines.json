@@ -1,0 +1,138 @@
+{
+  "app_name": "EMBERDEEP",
+  "personality": "7 Dark-First Utility (with 3 Editorial typography for elegant Cinzel serif headers)",
+  "personality_one_liner": "A dark, ember-glowing sci-fi survival experience with elegant serif typography and high-contrast tactical utility.",
+  "color": {
+    "surface": "#110A08",
+    "onSurface": "#FCEBE6",
+    "surfaceSecondary": "#1E130F",
+    "onSurfaceSecondary": "#E8D5CD",
+    "surfaceTertiary": "#2E1E17",
+    "onSurfaceTertiary": "#D9C3BA",
+    "surfaceInverse": "#EAEAEA",
+    "onSurfaceInverse": "#110A08",
+    "brand": "#FF5500",
+    "brandPrimary": "#FF5500",
+    "onBrandPrimary": "#FFFFFF",
+    "brandSecondary": "#FF7B33",
+    "onBrandSecondary": "#FFFFFF",
+    "brandTertiary": "#4A1E0A",
+    "onBrandTertiary": "#FFB380",
+    "success": "#00E5FF",
+    "onSuccess": "#003333",
+    "warning": "#FFB300",
+    "onWarning": "#332400",
+    "error": "#FF1744",
+    "onError": "#FFFFFF",
+    "info": "#2979FF",
+    "onInfo": "#FFFFFF",
+    "border": "#3A231A",
+    "borderStrong": "#FF5500",
+    "divider": "#2D1A13",
+    "muted": "#A08B81"
+  },
+  "typography": {
+    "displayFontFamily": "Cinzel",
+    "textFontFamily": "DM Sans",
+    "scale": {
+      "sm": 12,
+      "base": 14,
+      "lg": 16,
+      "xl": 20,
+      "2xl": 24
+    }
+  },
+  "spacing": {
+    "rule": "Use tight, utility-focused spacing for stats and upgrades, but allow the home card and arena to have breathing room. Avoid oversized padding in the Armoury list.",
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "2xl": 32,
+    "3xl": 48
+  },
+  "radius_tokens": {
+    "sm": 6,
+    "md": 12,
+    "lg": 20,
+    "pill": 999
+  },
+  "shadow_tier": "0",
+  "navigation": "stack_only",
+  "icon_set": "MaterialCommunityIcons",
+  "glassmorphism": {
+    "enabled": false,
+    "do's": [],
+    "dont's": ["Do not use blur or glassmorphism. Rely on solid dark surfaces, thin borders, and ember-glow textures for depth as per Dark-First Utility."]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "expo-glass-effect",
+      "android": "expo-blur",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "expo-blur",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    {
+      "name": "Home",
+      "purpose": "Player lobby providing a visual anchor (Muster card) and progression hub (Armoury).",
+      "states": {
+        "loading": "Centered orange spinner with 'IGNITING DEEP...'",
+        "empty": "N/A",
+        "error": "Failed to load player data. Retry button."
+      },
+      "layout": "Screen background must include the radial ember glow image. Top Right: Coin pill. Main content is a vertical scroll: 1. THE MUSTER card (tiny orange tracked label, large serif player name, 2x2 stat tiles with thin borders for Best Wave/Kills/Runs/Coins, stat rows for Damage/Resistance/Health, large solid orange 'ENTER THE DEEP' button, tiny 'DRAG TO MOVE' hint). 2. ARMOURY card (coin count header, vertical list of upgrade rows. Each row: Name & level in sans, muted description, and an outlined orange coin button on the right). Bottom: Outlined LEADERBOARD button."
+    },
+    {
+      "name": "Gameplay",
+      "purpose": "The core auto-shooter arena.",
+      "states": {
+        "loading": "Dark screen, 'GENERATING ARENA...'",
+        "empty": "N/A",
+        "error": "N/A"
+      },
+      "layout": "Full screen bordered dark arena. Top Left: Red health bar (100/100) with thin cyan XP bar underneath and 'Lv 1' text. Top Right: Dark pills for WAVE, KILLS, COINS. Center: Blue player ship. Enemies are red/orange, XP gems are cyan diamonds, white bullets. Footer: Persistent hint 'DRAG TO MOVE · YOU ATTACK ON YOUR OWN'. Implement a floating virtual joystick area overlay for 'drag to move'."
+    },
+    {
+      "name": "LevelUp",
+      "purpose": "System choice overlay when XP bar fills.",
+      "states": {
+        "loading": "N/A",
+        "empty": "N/A",
+        "error": "N/A"
+      },
+      "layout": "Arena dims heavily (dark overlay). Top centered: 'LEVEL 2' tiny orange label and 'CHOOSE A SYSTEM' in large Cinzel serif. Center: 3 stacked option cards. Each card has an orange-outlined square icon on the left, serif name and muted sans description. When pressed, the card gets a solid orange borderStrong. Needs a confirmation or auto-select upon tap."
+    },
+    {
+      "name": "GameOver",
+      "purpose": "Post-run summary and return to Muster.",
+      "states": {
+        "loading": "N/A",
+        "empty": "N/A",
+        "error": "N/A"
+      },
+      "layout": "Dark overlay. Large serif 'HULL BREACHED'. Stats list: Wave Reached, Kills, Coins Gathered. Large orange 'RETURN TO MUSTER' button."
+    }
+  ],
+  "images": {
+    "background_glow": {
+      "url": "https://images.unsplash.com/photo-1557951959-e3e30ee937e5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1OTN8MHwxfHNlYXJjaHwxfHxvcmFuZ2UlMjBnbG93aW5nJTIwZmlyZSUyMHNwYXJrcyUyMGRhcmt8ZW58MHx8fHwxNzkzNjM4ODM2fDA&ixlib=rb-4.1.0&q=85",
+      "dark": "https://images.unsplash.com/photo-1557951959-e3e30ee937e5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1OTN8MHwxfHNlYXJjaHwxfHxvcmFuZ2UlMjBnbG93aW5nJTIwZmlyZSUyMHNwYXJrcyUyMGRhcmt8ZW58MHx8fHwxNzkzNjM4ODM2fDA&ixlib=rb-4.1.0&q=85",
+      "alt": "Dark background with orange glowing fire sparks serving as an ember radial glow"
+    }
+  },
+  "instructions_to_main_agent": [
+    "Strictly follow the UI replication of 'EMBERDEEP' as requested by the user, incorporating the 'MUSTER' card and 'ARMOURY' card on the Home screen.",
+    "Use Google Font 'Cinzel' for all major headings, player names, and system titles to give it the requested elegant serif small caps look.",
+    "Use 'DM Sans' for body text, stats, and utility numbers.",
+    "The Home screen background must use the 'background_glow' image behind the UI with a top-to-bottom dark gradient scrim so text remains highly readable.",
+    "Gameplay screen needs an arena layout with thin `border` (#3A231A). Use the specified colors: Health=error (#FF1744), XP/Gems=success (#00E5FF), Player=info (#2979FF), Enemies=orange/red.",
+    "Buttons should follow Dark-First utility styling: sharp or sm radius, no heavy drop shadows, rely on solid orange for primary actions and orange borders for secondary actions."
+  ]
+}

@@ -7,17 +7,17 @@ import { fonts, makeStyles, radius, spacing, useTheme } from "@/src/theme";
 import { SystemDef } from "@/src/game/config";
 import { Label, OutlineButton, PrimaryButton } from "./ui";
 
-export function LevelUpOverlay({ level, options, onPick }: { level: number; options: SystemDef[]; onPick: (s: SystemDef) => void }) {
+export function LevelUpOverlay({ level, options, onPick, wide }: { level: number; options: SystemDef[]; onPick: (s: SystemDef) => void; wide: boolean }) {
   const s = useStyles();
   const { colors } = useTheme();
   const [chosen, setChosen] = useState<string | null>(null);
   return (
     <Animated.View entering={FadeIn.duration(200)} style={s.scrim} testID="level-up-overlay">
       <Label style={{ textAlign: "center" }} testID="level-up-level">Level {level}</Label>
-      <Text style={s.title}>Choose a System</Text>
-      <View style={s.list}>
+      <Text style={[s.title, wide && s.titleWide]}>Choose a System</Text>
+      <View style={[s.list, wide && s.listRow]}>
         {options.map((o, i) => (
-          <Animated.View key={o.id} entering={FadeInDown.delay(80 * i).duration(260)}>
+          <Animated.View key={o.id} entering={FadeInDown.delay(80 * i).duration(260)} style={wide ? { flex: 1 } : undefined}>
             <Pressable
               testID={`system-option-${o.id}`}
               onPress={() => {
@@ -26,7 +26,7 @@ export function LevelUpOverlay({ level, options, onPick }: { level: number; opti
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
                 setTimeout(() => onPick(o), 180);
               }}
-              style={({ pressed }) => [s.option, (pressed || chosen === o.id) && s.optionActive]}
+              style={({ pressed }) => [s.option, wide && s.optionWide, (pressed || chosen === o.id) && s.optionActive]}
             >
               <View style={s.iconBox}>
                 <Lucide name={o.icon} size={18} color={colors.brandSecondary} />
@@ -58,8 +58,8 @@ export function PauseOverlay({ onResume, onQuit }: { onResume: () => void; onQui
 }
 
 export function GameOverOverlay({
-  wave, kills, coins, rank, abandoned, onReturn, onAgain, onShare,
-}: { wave: number; kills: number; coins: number; rank: number | null; abandoned: boolean; onReturn: () => void; onAgain: () => void; onShare: () => void }) {
+  wave, kills, coins, rank, abandoned, wide, bosses, onReturn, onAgain, onShare,
+}: { wave: number; kills: number; coins: number; rank: number | null; abandoned: boolean; wide: boolean; bosses: number; onReturn: () => void; onAgain: () => void; onShare: () => void }) {
   const s = useStyles();
   const Stat = ({ label, value, testID }: { label: string; value: string | number; testID: string }) => (
     <View style={s.statRow}>
@@ -70,17 +70,20 @@ export function GameOverOverlay({
   return (
     <Animated.View entering={FadeIn.duration(300)} style={s.scrim} testID="game-over-overlay">
       <Label style={{ textAlign: "center" }}>Run Ended</Label>
-      <Text style={s.title}>{abandoned ? "Run Abandoned" : "Hull Breached"}</Text>
-      <View style={[s.list, s.statsCard]}>
-        <Stat label="Wave Reached" value={wave} testID="game-over-wave" />
-        <Stat label="Kills" value={kills} testID="game-over-kills" />
-        <Stat label="Coins Gathered" value={`+${coins}`} testID="game-over-coins" />
-        <Stat label="Global Rank" value={rank ? `#${rank}` : "—"} testID="game-over-rank" />
-      </View>
-      <View style={s.list}>
-        <PrimaryButton title="Dive Again" testID="game-over-again-button" onPress={onAgain} />
-        <OutlineButton title="Challenge a Friend" icon="share-2" testID="game-over-share-button" onPress={onShare} />
-        <OutlineButton title="Return to Muster" testID="game-over-return-button" onPress={onReturn} />
+      <Text style={[s.title, wide && s.titleWide]}>{abandoned ? "Run Abandoned" : "Hull Breached"}</Text>
+      <View style={[s.list, wide && s.listRow]}>
+        <View style={[s.list, s.statsCard, wide && { flex: 1, marginBottom: 0 }]}>
+          <Stat label="Wave Reached" value={wave} testID="game-over-wave" />
+          <Stat label="Kills" value={kills} testID="game-over-kills" />
+          <Stat label="Bosses Down" value={bosses} testID="game-over-bosses" />
+          <Stat label="Coins Gathered" value={`+${coins}`} testID="game-over-coins" />
+          <Stat label="Global Rank" value={rank ? `#${rank}` : "—"} testID="game-over-rank" />
+        </View>
+        <View style={[s.list, wide && { flex: 1, justifyContent: "center" }]}>
+          <PrimaryButton title="Dive Again" testID="game-over-again-button" onPress={onAgain} />
+          <OutlineButton title="Challenge a Friend" icon="share-2" testID="game-over-share-button" onPress={onShare} />
+          <OutlineButton title="Return to Muster" testID="game-over-return-button" onPress={onReturn} />
+        </View>
       </View>
     </Animated.View>
   );
@@ -92,7 +95,10 @@ const useStyles = makeStyles((c) => ({
     justifyContent: "center", paddingHorizontal: spacing.xl, gap: spacing.sm,
   },
   title: { fontFamily: fonts.display, fontSize: 28, color: c.onSurface, textAlign: "center", letterSpacing: 1, marginBottom: spacing.lg },
-  list: { gap: spacing.md },
+  titleWide: { fontSize: 22, marginBottom: spacing.sm },
+  list: { gap: spacing.md, width: "100%", maxWidth: 760, alignSelf: "center" },
+  listRow: { flexDirection: "row" },
+  optionWide: { minHeight: 110, flexDirection: "column", alignItems: "flex-start" },
   option: {
     flexDirection: "row", alignItems: "center", gap: spacing.md, padding: spacing.lg, borderRadius: radius.md,
     borderWidth: 1, borderColor: c.border, backgroundColor: c.surfaceSecondary, minHeight: 76,

@@ -18,6 +18,15 @@ User built "Hypershift" (in-game title EMBERDEEP) on Base44 and wants it rebuilt
 - Pause (also on background / Android back), game over with rank, Dive Again, share challenge
 - Global leaderboard
 
+## Iteration 2
+- Boss every wave (6s in): ring + aimed shots, health bar, warning banner, big coin reward
+- Ice-glide movement with virtual thumbstick (tuned twice for less glide)
+- Ship turns toward nearest enemy (7 rad/s) and only fires from its nose when lined up
+- Landscape support for home, game, overlays, leaderboard
+- New SVG ships (player, raider, elite, boss), nebula + parallax starfield, explosions, exhaust, screen shake
+- Difficulty rebalanced (slower/fewer enemies, weaker bosses, regen + wave heal, longer i-frames)
+- Pending: full testing-agent pass (user asked to wait)
+
 ## Backlog
 - P1: Sound effects & music; more enemy types / bosses
 - P1: Server-side score sanity checks

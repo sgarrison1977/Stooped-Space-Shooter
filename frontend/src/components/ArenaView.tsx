@@ -1,0 +1,115 @@
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { fonts, makeStyles, radius, useTheme } from "@/src/theme";
+import { Enemy, GameState } from "@/src/game/sim";
+import { BossSprite, EliteSprite, PlayerSprite, RaiderSprite } from "./Sprites";
+import { Starfield } from "./Starfield";
+
+const deg = (a: number) => `${(a * 180) / Math.PI + 90}deg`;
+
+function EnemyView({ e }: { e: Enemy }) {
+  const size = e.r * (e.kind === "boss" ? 2.6 : 2.5);
+  const Sprite = e.kind === "boss" ? BossSprite : e.kind === "elite" ? EliteSprite : RaiderSprite;
+  return (
+    <View
+      testID={`enemy-${e.kind}`}
+      style={{
+        position: "absolute", left: e.x - size / 2, top: e.y - size / 2, width: size, height: size,
+        opacity: e.flash > 0 ? 0.55 : 1, transform: [{ rotate: deg(e.angle) }, { scale: e.flash > 0 ? 1.08 : 1 }],
+      }}
+    >
+      <Sprite size={size} />
+    </View>
+  );
+}
+
+export function ArenaView({ g }: { g: GameState }) {
+  const s = useStyles();
+  const { colors } = useTheme();
+  const p = g.player;
+  const shakeX = g.shake ? (Math.random() - 0.5) * g.shake : 0;
+  const shakeY = g.shake ? (Math.random() - 0.5) * g.shake : 0;
+  const tone = { ember: colors.engineGlow, spark: colors.bullet, exhaust: colors.xp };
+  const blink = p.invuln > 0 && Math.floor(p.invuln * 20) % 2 === 0;
+  const boss = g.boss;
+  return (
+    <View style={s.fill} pointerEvents="none">
+      <Starfield w={g.w} h={g.h} px={p.x} py={p.y} />
+      <View style={[s.fill, { transform: [{ translateX: shakeX }, { translateY: shakeY }] }]}>
+        {g.gems.map((gm) => {
+          const z = gm.value > 1 ? 11 : 7;
+          return <View key={gm.id} style={[s.gem, { width: z, height: z, left: gm.x - z / 2, top: gm.y - z / 2 }]} />;
+        })}
+        {g.particles.map((q) => (
+          <View
+            key={q.id}
+            style={{
+              position: "absolute", left: q.x - q.size / 2, top: q.y - q.size / 2, width: q.size, height: q.size,
+              borderRadius: q.size, backgroundColor: tone[q.tone], opacity: q.life / q.max,
+            }}
+          />
+        ))}
+        {g.enemies.map((e) => <EnemyView key={e.id} e={e} />)}
+        {g.bullets.map((b) => (
+          <View
+            key={b.id}
+            style={[s.bullet, b.crit && s.bulletCrit, { left: b.x - 7, top: b.y - 1.5, transform: [{ rotate: `${Math.atan2(b.vy, b.vx)}rad` }] }]}
+          />
+        ))}
+        {g.eBullets.map((b) => (
+          <View key={b.id} style={[s.eBullet, { left: b.x - 5, top: b.y - 5 }]}>
+            <View style={s.eCore} />
+          </View>
+        ))}
+        {!g.dead ? (
+          <View testID="player-ship" style={{ position: "absolute", left: p.x - 18, top: p.y - 18, width: 36, height: 36, opacity: blink ? 0.35 : 1, transform: [{ rotate: deg(p.angle) }] }}>
+            <LinearGradient
+              colors={[colors.engineGlow, colors.transparent]}
+              style={[s.flame, { transform: [{ scaleY: 0.3 + p.thrust * 1.1 }], opacity: 0.4 + p.thrust * 0.6 }]}
+            />
+            <PlayerSprite size={36} />
+          </View>
+        ) : null}
+        {g.floaters.map((f) => (
+          <Text key={f.id} style={[s.floater, f.crit && s.floaterCrit, { left: f.x - 20, top: f.y - 10, opacity: Math.min(1, f.life * 2.5) }]}>
+            {f.text}
+          </Text>
+        ))}
+      </View>
+      {boss ? (
+        <View style={s.bossBar} testID="boss-health-bar">
+          <Text style={s.bossName} numberOfLines={1}>{g.bossName}</Text>
+          <View style={s.bossTrack}>
+            <View style={[s.bossFill, { width: `${Math.max(0, (boss.hp / boss.maxHp) * 100)}%` }]} />
+          </View>
+        </View>
+      ) : null}
+      {g.bossBanner > 0 ? (
+        <View style={s.banner} testID="boss-banner">
+          <Text style={[s.bannerLabel, { opacity: Math.min(1, g.bossBanner) }]}>Boss Incoming</Text>
+          <Text style={[s.bannerName, { opacity: Math.min(1, g.bossBanner) }]}>{g.bossName}</Text>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+const useStyles = makeStyles((c) => ({
+  fill: { position: "absolute", left: 0, top: 0, right: 0, bottom: 0, overflow: "hidden" },
+  gem: { position: "absolute", backgroundColor: c.xp, borderWidth: 1, borderColor: c.shipLight, transform: [{ rotate: "45deg" }] },
+  bullet: { position: "absolute", width: 14, height: 3, borderRadius: 2, backgroundColor: c.bullet },
+  bulletCrit: { backgroundColor: c.warning, height: 4 },
+  eBullet: { position: "absolute", width: 10, height: 10, borderRadius: 5, backgroundColor: c.enemy, alignItems: "center", justifyContent: "center" },
+  eCore: { width: 4, height: 4, borderRadius: 2, backgroundColor: c.bossCore },
+  flame: { position: "absolute", left: 12, top: 30, width: 12, height: 16, borderRadius: 6 },
+  floater: { position: "absolute", width: 40, textAlign: "center", fontFamily: fonts.display, fontSize: 12, color: c.muted },
+  floaterCrit: { color: c.warning, fontSize: 15 },
+  bossBar: { position: "absolute", top: 10, left: "15%", right: "15%", alignItems: "center", gap: 4 },
+  bossName: { fontFamily: fonts.display, fontSize: 12, letterSpacing: 2, color: c.bossLight },
+  bossTrack: { width: "100%", height: 6, borderRadius: radius.pill, backgroundColor: c.hpTrack, overflow: "hidden", borderWidth: 1, borderColor: c.border },
+  bossFill: { height: "100%", backgroundColor: c.brandPrimary },
+  banner: { position: "absolute", top: "38%", left: 0, right: 0, alignItems: "center" },
+  bannerLabel: { fontFamily: fonts.text, fontSize: 11, letterSpacing: 4, color: c.brandSecondary, textTransform: "uppercase" },
+  bannerName: { fontFamily: fonts.display, fontSize: 26, color: c.onSurface, letterSpacing: 1.5, marginTop: 4 },
+}));

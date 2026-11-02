@@ -32,7 +32,7 @@ export default function Leaderboard() {
   return (
     <View style={s.root} testID="leaderboard-screen">
       <EmberBackground />
-      <View style={[s.header, { paddingTop: insets.top + spacing.md }]}>
+      <View style={[s.header, { paddingTop: insets.top + spacing.md, paddingLeft: insets.left + spacing.lg, paddingRight: insets.right + spacing.lg }]}>
         <Pressable testID="leaderboard-back-button" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} style={s.back} hitSlop={8}>
           <Lucide name="arrow-left" size={18} color={colors.onSurface} />
         </Pressable>
@@ -52,7 +52,7 @@ export default function Leaderboard() {
         <FlatList
           data={rows ?? []}
           keyExtractor={(r) => `${r.rank}-${r.name}`}
-          contentContainerStyle={[s.list, { paddingBottom: insets.bottom + spacing.xl }]}
+          contentContainerStyle={[s.list, { paddingBottom: insets.bottom + spacing.xl, paddingLeft: insets.left + spacing.lg, paddingRight: insets.right + spacing.lg }]}
           refreshControl={<RefreshControl tintColor={colors.brandPrimary} refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}
           ListEmptyComponent={<Text style={[s.muted, { textAlign: "center" }]} testID="leaderboard-empty">No dives yet. Be the first to climb.</Text>}
           renderItem={({ item }) => (
@@ -76,11 +76,11 @@ export default function Leaderboard() {
 
 const useStyles = makeStyles((c) => ({
   root: { flex: 1, backgroundColor: c.surface },
-  header: { flexDirection: "row", alignItems: "center", gap: spacing.md, paddingHorizontal: spacing.lg, paddingBottom: spacing.lg },
+  header: { flexDirection: "row", alignItems: "center", gap: spacing.md, paddingBottom: spacing.lg, width: "100%", maxWidth: 720, alignSelf: "center" },
   back: { width: 44, height: 44, borderRadius: radius.sm, borderWidth: 1, borderColor: c.border, alignItems: "center", justifyContent: "center", backgroundColor: c.surfaceSecondary },
   title: { fontFamily: fonts.display, fontSize: 24, color: c.onSurface, letterSpacing: 1 },
   center: { flex: 1, alignItems: "center", justifyContent: "center", gap: spacing.lg, padding: spacing.xl },
-  list: { paddingHorizontal: spacing.lg, gap: spacing.sm },
+  list: { gap: spacing.sm, width: "100%", maxWidth: 720, alignSelf: "center" },
   row: {
     flexDirection: "row", alignItems: "center", gap: spacing.md, padding: spacing.md, borderRadius: radius.sm,
     borderWidth: 1, borderColor: c.border, backgroundColor: c.surfaceSecondary,

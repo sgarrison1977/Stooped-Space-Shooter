@@ -83,7 +83,7 @@ export function MusterCard({ profile, onRename, onEnter }: { profile: Profile; o
       <Row label="Max Health" value={String(st.maxHp)} testID="stat-max-health" />
       <View style={{ height: spacing.lg }} />
       <PrimaryButton title="Enter the Deep" testID="enter-the-deep-button" onPress={onEnter} disabled={!profile.name} />
-      <Text style={s.hint}>{profile.name ? "Drag to move · You attack on your own" : "Name your pilot to dive"}</Text>
+      <Text style={s.hint}>{profile.name ? "Drag to thrust · You glide on ice" : "Name your pilot to dive"}</Text>
     </Animated.View>
   );
 }
@@ -140,7 +140,7 @@ const useStyles = makeStyles((c) => ({
   name: { fontFamily: fonts.display, fontSize: 30, color: c.onSurface, flexShrink: 1 },
   nameEdit: { flexDirection: "row", gap: spacing.sm, alignItems: "center" },
   input: {
-    flex: 1, height: 48, borderWidth: 1, borderColor: c.borderStrong, borderRadius: radius.sm, paddingHorizontal: spacing.md,
+    flex: 1, minWidth: 0, height: 48, borderWidth: 1, borderColor: c.borderStrong, borderRadius: radius.sm, paddingHorizontal: spacing.md,
     color: c.onSurface, fontFamily: fonts.display, fontSize: 18, backgroundColor: c.surface,
   },
   saveBtn: { width: 48, height: 48, borderRadius: radius.sm, backgroundColor: c.brandPrimary, alignItems: "center", justifyContent: "center" },

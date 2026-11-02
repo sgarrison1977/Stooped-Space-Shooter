@@ -2,7 +2,7 @@ import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import { fonts, makeStyles, radius, spacing, useTheme } from "@/src/theme";
-import { GameState } from "@/src/game/engine";
+import { GameState } from "@/src/game/sim";
 
 function Pill({ icon, label, value, testID }: { icon: any; label: string; value: number; testID: string }) {
   const s = useStyles();
@@ -16,35 +16,54 @@ function Pill({ icon, label, value, testID }: { icon: any; label: string; value:
   );
 }
 
-export function Hud({ g, onPause }: { g: GameState; onPause: () => void }) {
+export function Hud({ g, onPause, wide }: { g: GameState; onPause: () => void; wide: boolean }) {
   const s = useStyles();
   const { colors } = useTheme();
   const hpPct = Math.max(0, g.player.hp / g.stats.maxHp);
   const xpPct = Math.min(1, g.xp / g.xpNext);
+  const bars = (
+    <View style={wide ? s.barsWide : s.bars}>
+      <View style={s.hpTrack}>
+        <View style={[s.hpFill, { width: `${hpPct * 100}%` }]} />
+      </View>
+      <View style={s.xpTrack}>
+        <View style={[s.xpFill, { width: `${xpPct * 100}%` }]} />
+      </View>
+      <View style={s.barText}>
+        <Text testID="hud-hp" style={s.small}>{Math.ceil(g.player.hp)}/{g.stats.maxHp}</Text>
+        <Text testID="hud-level" style={s.small}>Lv {g.level}</Text>
+      </View>
+    </View>
+  );
+  const pills = (
+    <View style={s.pills}>
+      <Pill icon="waves" label="Wave" value={g.wave} testID="hud-wave" />
+      <Pill icon="skull" label="Kills" value={g.kills} testID="hud-kills" />
+      <Pill icon="coins" label="Coins" value={g.coins} testID="hud-coins" />
+    </View>
+  );
+  const pause = (
+    <Pressable testID="pause-button" onPress={onPause} hitSlop={8} style={s.pause}>
+      <Lucide name="pause" size={16} color={colors.onSurfaceSecondary} />
+    </Pressable>
+  );
+  if (wide) {
+    return (
+      <View style={[s.wrap, s.topRow]} testID="game-hud">
+        {bars}
+        <View style={{ flex: 1 }} />
+        {pills}
+        {pause}
+      </View>
+    );
+  }
   return (
     <View style={s.wrap} testID="game-hud">
       <View style={s.topRow}>
-        <View style={s.bars}>
-          <View style={s.hpTrack}>
-            <View style={[s.hpFill, { width: `${hpPct * 100}%` }]} />
-          </View>
-          <View style={s.xpTrack}>
-            <View style={[s.xpFill, { width: `${xpPct * 100}%` }]} />
-          </View>
-          <View style={s.barText}>
-            <Text testID="hud-hp" style={s.small}>{Math.ceil(g.player.hp)}/{g.stats.maxHp}</Text>
-            <Text testID="hud-level" style={s.small}>Lv {g.level}</Text>
-          </View>
-        </View>
-        <Pressable testID="pause-button" onPress={onPause} hitSlop={8} style={s.pause}>
-          <Lucide name="pause" size={16} color={colors.onSurfaceSecondary} />
-        </Pressable>
+        {bars}
+        {pause}
       </View>
-      <View style={s.pills}>
-        <Pill icon="waves" label="Wave" value={g.wave} testID="hud-wave" />
-        <Pill icon="skull" label="Kills" value={g.kills} testID="hud-kills" />
-        <Pill icon="coins" label="Coins" value={g.coins} testID="hud-coins" />
-      </View>
+      {pills}
     </View>
   );
 }
@@ -53,6 +72,7 @@ const useStyles = makeStyles((c) => ({
   wrap: { paddingHorizontal: spacing.lg, paddingBottom: spacing.sm, gap: spacing.sm },
   topRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
   bars: { flex: 1, gap: 4 },
+  barsWide: { width: 240, gap: 4 },
   hpTrack: { height: 7, borderRadius: radius.pill, backgroundColor: c.hpTrack, overflow: "hidden" },
   hpFill: { height: 7, backgroundColor: c.error, borderRadius: radius.pill },
   xpTrack: { height: 3, borderRadius: radius.pill, backgroundColor: c.surfaceTertiary, overflow: "hidden" },

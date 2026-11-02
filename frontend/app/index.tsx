@@ -1,5 +1,5 @@
 import React from "react";
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, Text, useWindowDimensions, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
@@ -16,12 +16,15 @@ export default function Home() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { profile, update } = useProfile();
+  const { width, height } = useWindowDimensions();
+  const wide = width > height;
+  const padH = { paddingLeft: insets.left + spacing.xl, paddingRight: insets.right + spacing.xl };
 
   return (
     <View style={s.root} testID="home-screen">
       <StatusBar style="light" />
       <EmberBackground />
-      <View style={[s.header, { paddingTop: insets.top + spacing.lg }]}>
+      <View style={[s.header, padH, { paddingTop: insets.top + (wide ? spacing.md : spacing.lg) }]}>
         <View style={{ flex: 1 }}>
           <Text style={s.title}>EMBERDEEP</Text>
           <Text testID="home-subtitle" style={s.subtitle} numberOfLines={1}>
@@ -38,15 +41,22 @@ export default function Home() {
       ) : (
         <KeyboardAwareScrollView
           bottomOffset={24}
-          contentContainerStyle={[s.content, { paddingBottom: insets.bottom + spacing.xl }]}
+          contentContainerStyle={[
+            s.content,
+            wide && s.contentWide,
+            { paddingBottom: insets.bottom + spacing.xl, paddingLeft: insets.left + spacing.lg, paddingRight: insets.right + spacing.lg },
+          ]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          <View style={wide ? s.col : undefined}>
           <MusterCard
             profile={profile}
             onRename={(name) => update((p) => ({ ...p, name }))}
             onEnter={() => router.push("/play")}
           />
+          </View>
+          <View style={wide ? s.col : undefined}>
           <ArmouryCard
             profile={profile}
             onBuy={(key, cost) =>
@@ -54,6 +64,7 @@ export default function Home() {
             }
             onLeaderboard={() => router.push("/leaderboard")}
           />
+          </View>
         </KeyboardAwareScrollView>
       )}
     </View>
@@ -62,9 +73,11 @@ export default function Home() {
 
 const useStyles = makeStyles((c) => ({
   root: { flex: 1, backgroundColor: c.surface },
-  header: { flexDirection: "row", alignItems: "center", paddingHorizontal: spacing.xl, paddingBottom: spacing.lg },
+  header: { flexDirection: "row", alignItems: "center", paddingBottom: spacing.lg },
   title: { fontFamily: fonts.display, fontSize: 26, letterSpacing: 9, color: c.onSurface },
   subtitle: { fontFamily: fonts.text, fontSize: 10, letterSpacing: 2.4, color: c.muted, marginTop: spacing.xs },
   loading: { flex: 1, alignItems: "center", justifyContent: "center", gap: spacing.md },
-  content: { paddingHorizontal: spacing.lg, gap: spacing.lg },
+  content: { gap: spacing.lg },
+  contentWide: { flexDirection: "row", alignItems: "flex-start", maxWidth: 1000, width: "100%", alignSelf: "center" },
+  col: { flex: 1 },
 }));

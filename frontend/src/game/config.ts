@@ -31,7 +31,7 @@ export function baseStats(u: Record<UpgradeKey, number>): RunStats {
     damage: 5 + 4 * u.cannon,
     resist: Math.min(0.6, 0.04 * (u.deflector - 1)),
     maxHp: 100 + 12 * (u.hull - 1),
-    fireRate: 2.4,
+    fireRate: 2.8,
     projectiles: 1,
     crit: 0.05,
     pickup: 120,

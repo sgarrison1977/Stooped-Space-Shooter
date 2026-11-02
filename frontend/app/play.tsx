@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { AppState, BackHandler, GestureResponderEvent, LayoutChangeEvent, Share, Text, View } from "react-native";
+import { AppState, BackHandler, GestureResponderEvent, LayoutChangeEvent, Share, Text, useWindowDimensions, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { StatusBar } from "expo-status-bar";
 import { fonts, makeStyles, radius, spacing } from "@/src/theme";
-import { applySystem, createGame, GameState, step, Vec } from "@/src/game/engine";
+import { applySystem, createGame, GameState, step, Vec } from "@/src/game/sim";
 import { baseStats, pickSystems, SystemDef } from "@/src/game/config";
 import { loadProfile, saveProfile, submitScore } from "@/src/game/profile";
-import { Arena } from "@/src/components/Arena";
+import { ArenaView } from "@/src/components/ArenaView";
 import { Hud } from "@/src/components/Hud";
 import { GameOverOverlay, LevelUpOverlay, PauseOverlay } from "@/src/components/Overlays";
 
@@ -19,8 +19,10 @@ export default function Play() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const game = useRef<GameState | null>(null);
-  const target = useRef<Vec | null>(null);
-  const drag = useRef<{ tx: number; ty: number; px: number; py: number } | null>(null);
+  const joy = useRef<Vec | null>(null);
+  const drag = useRef<{ lx: number; ly: number; tx: number; ty: number } | null>(null);
+  const { width: winW, height: winH } = useWindowDimensions();
+  const wide = winW > winH;
   const size = useRef<{ w: number; h: number } | null>(null);
   const modeRef = useRef<Mode>("play");
   const [mode, setModeState] = useState<Mode>("play");
@@ -43,7 +45,8 @@ export default function Play() {
     if (!size.current) return;
     const p = await loadProfile();
     game.current = createGame(baseStats(p.upgrades), size.current.w, size.current.h);
-    target.current = null;
+    joy.current = null;
+    drag.current = null;
     setRank(null);
     setMode("play");
     setFrame((f) => f + 1);
@@ -62,8 +65,10 @@ export default function Play() {
       const dt = Math.min(0.05, (t - last) / 1000);
       last = t;
       if (!g || modeRef.current !== "play") return;
-      const ev = step(g, dt, target.current);
+      const ev = step(g, dt, joy.current);
       if (ev.hurt) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+      if (ev.bossSpawn) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+      if (ev.bossDown) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
       if (ev.dead) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
         setMode("over");
@@ -94,22 +99,30 @@ export default function Play() {
     const { width, height } = e.nativeEvent.layout;
     const first = !size.current;
     size.current = { w: width, h: height };
-    if (game.current) { game.current.w = width; game.current.h = height; }
+    if (game.current) {
+      const g = game.current;
+      g.w = width; g.h = height;
+      g.player.x = Math.min(g.player.x, width - 14);
+      g.player.y = Math.min(g.player.y, height - 14);
+    }
     if (first) startRun();
   };
 
+  // Virtual thumbstick: wherever you touch becomes the stick centre; push to thrust.
+  const STICK = 50;
   const onGrant = (e: GestureResponderEvent) => {
-    const g = game.current;
-    if (!g) return;
-    drag.current = { tx: e.nativeEvent.pageX, ty: e.nativeEvent.pageY, px: g.player.x, py: g.player.y };
-    target.current = { x: g.player.x, y: g.player.y };
+    drag.current = { lx: e.nativeEvent.locationX, ly: e.nativeEvent.locationY, tx: e.nativeEvent.pageX, ty: e.nativeEvent.pageY };
+    joy.current = { x: 0, y: 0 };
   };
   const onMove = (e: GestureResponderEvent) => {
     const d = drag.current;
     if (!d) return;
-    target.current = { x: d.px + (e.nativeEvent.pageX - d.tx) * 1.15, y: d.py + (e.nativeEvent.pageY - d.ty) * 1.15 };
+    let x = (e.nativeEvent.pageX - d.tx) / STICK, y = (e.nativeEvent.pageY - d.ty) / STICK;
+    const m = Math.hypot(x, y);
+    if (m > 1) { x /= m; y /= m; }
+    joy.current = { x, y };
   };
-  const onRelease = () => { drag.current = null; target.current = null; };
+  const onRelease = () => { drag.current = null; joy.current = null; };
 
   const pick = (sys: SystemDef) => {
     const g = game.current;
@@ -121,15 +134,17 @@ export default function Play() {
   };
 
   const g = game.current;
+  const d = drag.current;
+  const j = joy.current;
 
   return (
     <View style={s.root} testID="play-screen">
-      <StatusBar style="light" />
-      <View style={{ paddingTop: insets.top + spacing.sm }}>
-        {g ? <Hud g={g} onPause={() => mode === "play" && setMode("paused")} /> : <View style={{ height: 72 }} />}
+      <StatusBar style="light" hidden={wide} />
+      <View style={{ paddingTop: wide ? Math.max(insets.top, spacing.sm) : insets.top + spacing.sm, paddingLeft: insets.left, paddingRight: insets.right }}>
+        {g ? <Hud g={g} wide={wide} onPause={() => mode === "play" && setMode("paused")} /> : <View style={{ height: wide ? 40 : 72 }} />}
       </View>
       <View
-        style={[s.arena, { marginBottom: insets.bottom + spacing.sm }]}
+        style={[s.arena, { marginBottom: insets.bottom + spacing.sm, marginLeft: insets.left + spacing.md, marginRight: insets.right + spacing.md }]}
         testID="game-arena"
         onLayout={onLayout}
         onStartShouldSetResponder={() => true}
@@ -139,14 +154,21 @@ export default function Play() {
         onResponderRelease={onRelease}
         onResponderTerminate={onRelease}
       >
-        {g ? <Arena g={g} /> : null}
-        <Text style={s.hint} pointerEvents="none">Drag to move · You attack on your own</Text>
+        {g ? <ArenaView g={g} /> : null}
+        {d && j ? (
+          <View pointerEvents="none" style={[s.stick, { left: d.lx - STICK, top: d.ly - STICK }]} testID="thumbstick">
+            <View style={[s.knob, { transform: [{ translateX: j.x * STICK }, { translateY: j.y * STICK }] }]} />
+          </View>
+        ) : null}
+        <Text style={s.hint} pointerEvents="none">Drag to thrust · You glide on ice</Text>
       </View>
 
-      {g && mode === "levelup" ? <LevelUpOverlay key={`${g.level}-${g.pendingLevelUps}`} level={g.level - g.pendingLevelUps + 1} options={choices} onPick={pick} /> : null}
+      {g && mode === "levelup" ? <LevelUpOverlay key={`${g.level}-${g.pendingLevelUps}`} wide={wide} level={g.level - g.pendingLevelUps + 1} options={choices} onPick={pick} /> : null}
       {mode === "paused" ? <PauseOverlay onResume={() => setMode("play")} onQuit={() => { if (g) { g.dead = true; setMode("over"); finishRun(g); } }} /> : null}
       {g && mode === "over" ? (
         <GameOverOverlay
+          wide={wide}
+          bosses={g.bossesDown}
           wave={g.wave}
           kills={g.kills}
           coins={g.coins}
@@ -154,7 +176,7 @@ export default function Play() {
           onAgain={() => setRunId((r) => r + 1)}
           abandoned={g.player.hp > 0}
           onReturn={() => (router.canGoBack() ? router.back() : router.replace("/"))}
-          onShare={() => Share.share({ message: `I reached wave ${g.wave} with ${g.kills} kills in EMBERDEEP. Think you can dive deeper?` }).catch(() => {})}
+          onShare={() => Share.share({ message: `I reached wave ${g.wave} with ${g.kills} kills and ${g.bossesDown} bosses down in EMBERDEEP. Think you can dive deeper?` }).catch(() => {})}
         />
       ) : null}
     </View>
@@ -171,4 +193,9 @@ const useStyles = makeStyles((c) => ({
     position: "absolute", bottom: spacing.sm, left: 0, right: 0, textAlign: "center",
     fontFamily: fonts.text, fontSize: 9, letterSpacing: 1.8, color: c.muted, opacity: 0.6, textTransform: "uppercase",
   },
+  stick: {
+    position: "absolute", width: 100, height: 100, borderRadius: 50, borderWidth: 1, borderColor: c.border,
+    backgroundColor: c.scrimLight, alignItems: "center", justifyContent: "center",
+  },
+  knob: { width: 40, height: 40, borderRadius: 20, backgroundColor: c.brandTertiary, borderWidth: 1.5, borderColor: c.brandSecondary },
 }));

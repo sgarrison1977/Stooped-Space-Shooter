@@ -19,6 +19,28 @@ export const difficulty = (id: string) => DIFFICULTIES.find((d) => d.id === id) 
 
 export type BossPattern = "ring" | "spiral" | "fan" | "rotor" | "charge" | "summon" | "mines" | "storm";
 
+export type MobKind = "grunt" | "dart" | "brute" | "splitter" | "shard" | "gunner" | "phantom" | "elite" | "juggernaut";
+
+export interface MobDef {
+  name: string; desc: string;
+  hp: number; speed: number; dmg: number; r: number; coins: number; xp: number;
+  minWave: number; weight: number;
+  dark: string; mid: string; light: string; core: string;
+}
+
+// Multipliers are applied on top of the per-wave base stats.
+export const MOBS: Record<MobKind, MobDef> = {
+  grunt: { name: "Raider", desc: "Swarming scout", hp: 1, speed: 1, dmg: 1, r: 11, coins: 1, xp: 1, minWave: 1, weight: 10, dark: "#5A1208", mid: "#E5533A", light: "#FFB199", core: "#FFE45C" },
+  dart: { name: "Needle Dart", desc: "Fast, weaving and fragile", hp: 0.5, speed: 1.75, dmg: 0.7, r: 9, coins: 1, xp: 1, minWave: 2, weight: 3.5, dark: "#5C4300", mid: "#FFC400", light: "#FFF1A8", core: "#FFFFFF" },
+  brute: { name: "Slag Brute", desc: "Armoured, slow, shrugs off knockback", hp: 3.2, speed: 0.55, dmg: 1.6, r: 16, coins: 3, xp: 2, minWave: 4, weight: 2.5, dark: "#1E1A1A", mid: "#6B5E5A", light: "#C9B8B0", core: "#FF5500" },
+  splitter: { name: "Shardling", desc: "Splits into shards when destroyed", hp: 1.6, speed: 0.85, dmg: 1, r: 13, coins: 2, xp: 2, minWave: 5, weight: 2.5, dark: "#0B3D2A", mid: "#2BC48A", light: "#B8FFE2", core: "#E8FFF6" },
+  shard: { name: "Shard", desc: "Splinter of a Shardling", hp: 0.35, speed: 1.5, dmg: 0.6, r: 7, coins: 0, xp: 1, minWave: 999, weight: 0, dark: "#0B3D2A", mid: "#2BC48A", light: "#B8FFE2", core: "#E8FFF6" },
+  gunner: { name: "Ember Gunner", desc: "Keeps its distance and shoots", hp: 1.5, speed: 0.8, dmg: 0.8, r: 12, coins: 2, xp: 2, minWave: 7, weight: 1.8, dark: "#2A0F5A", mid: "#8A4DFF", light: "#D9C2FF", core: "#FF7BF2" },
+  phantom: { name: "Phantom", desc: "Blinks right next to you", hp: 1.3, speed: 0.9, dmg: 1.1, r: 12, coins: 2, xp: 2, minWave: 6, weight: 2, dark: "#06323A", mid: "#1FB8D1", light: "#B5F6FF", core: "#FFFFFF" },
+  elite: { name: "Marauder", desc: "Heavily armed elite", hp: 4, speed: 0.8, dmg: 1.8, r: 18, coins: 5, xp: 5, minWave: 4, weight: 1, dark: "#5A1208", mid: "#FF9A3C", light: "#FFC27A", core: "#FFE45C" },
+  juggernaut: { name: "Juggernaut", desc: "A walking fortress", hp: 9, speed: 0.45, dmg: 2.5, r: 22, coins: 10, xp: 8, minWave: 8, weight: 0.6, dark: "#140600", mid: "#4A2A1A", light: "#FF7B33", core: "#FFE45C" },
+};
+
 export interface BossDef {
   name: string; pattern: BossPattern; tagline: string;
   dark: string; mid: string; light: string; core: string;

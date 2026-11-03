@@ -1,28 +1,41 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { fonts, makeStyles, radius, useTheme } from "@/src/theme";
+import { fonts, makeStyles, radius, spacing, useTheme } from "@/src/theme";
 import { Enemy, GameState } from "@/src/game/sim";
-import { BOSSES, Skin, Trail } from "@/src/game/content";
+import { BOSSES, MOBS, Skin, Trail } from "@/src/game/content";
 import { EliteSprite, RaiderSprite } from "./Sprites";
+import { MobSprite } from "./MobArt";
 import { BossSprite, PlayerSprite } from "./ShipArt";
 import { Starfield } from "./Starfield";
 
 const deg = (a: number) => `${(a * 180) / Math.PI + 90}deg`;
 
 function EnemyView({ e }: { e: Enemy }) {
+  const s = useStyles();
   const size = e.r * (e.kind === "boss" ? 2.6 : 2.5);
   const warnPulse = e.warn > 0 ? 1.08 + Math.sin(e.warn * 40) * 0.06 : 1;
+  const tanky = e.kind !== "boss" && MOBS[e.kind].hp >= 3 && e.hp < e.maxHp;
   return (
-    <View
-      testID={`enemy-${e.kind}`}
-      style={{
-        position: "absolute", left: e.x - size / 2, top: e.y - size / 2, width: size, height: size,
-        opacity: e.flash > 0 ? 0.55 : 1, transform: [{ rotate: deg(e.angle) }, { scale: e.flash > 0 ? 1.08 : warnPulse }],
-      }}
-    >
-      {e.kind === "boss" ? <BossSprite size={size} variant={e.variant} /> : e.kind === "elite" ? <EliteSprite size={size} /> : <RaiderSprite size={size} />}
-    </View>
+    <>
+      <View
+        testID={`enemy-${e.kind}`}
+        style={{
+          position: "absolute", left: e.x - size / 2, top: e.y - size / 2, width: size, height: size,
+          opacity: e.flash > 0 ? 0.55 : 1, transform: [{ rotate: deg(e.angle) }, { scale: e.flash > 0 ? 1.08 : warnPulse }],
+        }}
+      >
+        {e.kind === "boss" ? <BossSprite size={size} variant={e.variant} />
+          : e.kind === "elite" ? <EliteSprite size={size} />
+            : e.kind === "grunt" ? <RaiderSprite size={size} />
+              : <MobSprite kind={e.kind} size={size} />}
+      </View>
+      {tanky ? (
+        <View style={[s.mobBar, { left: e.x - e.r, top: e.y - e.r - 9, width: e.r * 2 }]}>
+          <View style={[s.mobFill, { width: `${Math.max(0, (e.hp / e.maxHp) * 100)}%` }]} />
+        </View>
+      ) : null}
+    </>
   );
 }
 
@@ -85,6 +98,13 @@ export function ArenaView({ g, skin, trail }: { g: GameState; skin: Skin; trail:
           </Text>
         ))}
       </View>
+      {g.intro && !g.bossBanner ? (
+        <View style={[s.intro, { top: boss ? 44 : 10, opacity: Math.min(1, g.intro.t * 2) }]} testID="enemy-intro">
+          <Text style={s.introLabel}>New threat</Text>
+          <Text style={s.introName}>{g.intro.name}</Text>
+          <Text style={s.introDesc}>{g.intro.desc}</Text>
+        </View>
+      ) : null}
       {boss ? (
         <View style={s.bossBar} testID="boss-health-bar">
           <Text style={s.bossName} numberOfLines={1}>{g.bossName}</Text>
@@ -118,6 +138,15 @@ const useStyles = makeStyles((c) => ({
   },
   mineCore: { width: 6, height: 6, borderRadius: 3, backgroundColor: c.warning },
   bannerTag: { fontFamily: fonts.text, fontSize: 12, color: c.muted, marginTop: 4 },
+  mobBar: { position: "absolute", height: 3, borderRadius: 2, backgroundColor: c.hpTrack, overflow: "hidden" },
+  mobFill: { height: 3, backgroundColor: c.enemyElite },
+  intro: {
+    position: "absolute", alignSelf: "center", alignItems: "center", paddingHorizontal: spacing.md, paddingVertical: spacing.xs + 2,
+    borderRadius: radius.sm, borderWidth: 1, borderColor: c.border, backgroundColor: c.scrimLight,
+  },
+  introLabel: { fontFamily: fonts.text, fontSize: 9, letterSpacing: 2, color: c.brandSecondary, textTransform: "uppercase" },
+  introName: { fontFamily: fonts.display, fontSize: 15, color: c.onSurface },
+  introDesc: { fontFamily: fonts.text, fontSize: 11, color: c.muted },
   flame: { position: "absolute", left: 12, top: 30, width: 12, height: 16, borderRadius: 6 },
   floater: { position: "absolute", width: 40, textAlign: "center", fontFamily: fonts.display, fontSize: 12, color: c.muted },
   floaterCrit: { color: c.warning, fontSize: 15 },

@@ -40,6 +40,12 @@ User built "Hypershift" (in-game title EMBERDEEP) on Base44 and wants it rebuilt
 - Boss kill timing tracked in sim; merged into profile.bossRecords at run end; game-over shows "First kill / New fastest" line
 - Pending: testing-agent pass (user asked to wait until told)
 
+## Iteration 5
+- 8 regular enemy types with unique SVG art + behaviour, unlocked by wave: Raider (w1), Needle Dart (w2, fast weaving), Slag Brute (w4, armoured, no knockback), Marauder elite (w4), Shardling (w5, splits into 2 Shards), Phantom (w6, blinks next to you), Ember Gunner (w7, keeps distance, shoots), Juggernaut (w8, fortress)
+- Health bars on tanky enemies; "New threat" intro card the first time each type appears in a run
+- Tougher spawns arrive less often (spawn interval scaled by sqrt(hp multiplier)); bot sim Normal reaches waves 6-9
+- Pending: testing-agent pass (user asked to wait until told)
+
 ## Backlog
 - P1: Sound effects & music; more enemy types / bosses
 - P1: Server-side score sanity checks

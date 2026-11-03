@@ -1,8 +1,8 @@
 import { RunStats } from "./config";
-import { BOSSES, DifficultyDef } from "./content";
+import { BOSSES, DifficultyDef, MobKind, MOBS } from "./content";
 
 export type Vec = { x: number; y: number };
-export type EnemyKind = "grunt" | "elite" | "boss";
+export type EnemyKind = MobKind | "boss";
 
 export interface Enemy {
   id: number; x: number; y: number; hp: number; maxHp: number; speed: number; r: number; dmg: number;
@@ -26,6 +26,7 @@ export interface GameState {
   pendingLevelUps: number; nextId: number; dead: boolean;
   bossSpawned: boolean; boss: Enemy | null; bossName: string; bossBanner: number; bossesDown: number; bossCount: number;
   bossKills: { variant: number; secs: number }[];
+  seen: string[]; intro: { name: string; desc: string; t: number } | null;
   shake: number; time: number; mods: DifficultyDef;
 }
 
@@ -52,7 +53,7 @@ export function createGame(stats: RunStats, w: number, h: number, mods: Difficul
     wave: 1, waveTime: 0, spawnTimer: 0.8, fireTimer: 0,
     kills: 0, coins: 0, xp: 0, xpNext: 5, level: 1,
     pendingLevelUps: 0, nextId: 1, dead: false,
-    bossSpawned: false, boss: null, bossName: "", bossBanner: 0, bossesDown: 0, bossCount: 0, bossKills: [],
+    bossSpawned: false, boss: null, bossName: "", bossBanner: 0, bossesDown: 0, bossCount: 0, bossKills: [], seen: [], intro: null,
     shake: 0, time: 0, mods,
   };
 }
@@ -69,11 +70,10 @@ function spawnEnemy(s: GameState, kind: EnemyKind, at?: Vec) {
   const w = s.wave;
   const m = s.mods;
   const cycle = Math.floor(s.bossCount / BOSSES.length);
-  const cfg = kind === "boss"
+  const mob = kind === "boss" ? null : MOBS[kind];
+  const cfg = !mob
     ? { hp: (120 + w * 70) * (1 + cycle * 0.5), speed: 22 + w, r: 36, dmg: 12 + w * 2 }
-    : kind === "elite"
-      ? { hp: (8 + w * 4) * 4, speed: 30 + w * 2, r: 18, dmg: 9 + w * 2 }
-      : { hp: 8 + w * 4, speed: Math.min(90, 38 + w * 2.5) + Math.random() * 14, r: 11, dmg: 5 + w * 1.2 };
+    : { hp: (8 + w * 4) * mob.hp, speed: (Math.min(90, 38 + w * 2.5) + Math.random() * 14) * mob.speed, r: mob.r, dmg: (5 + w * 1.2) * mob.dmg };
   const pt = at ?? edgePoint(s, cfg.r + 10);
   const hp = cfg.hp * m.hp;
   const e: Enemy = {
@@ -82,6 +82,10 @@ function spawnEnemy(s: GameState, kind: EnemyKind, at?: Vec) {
     variant: 0, spin: 0, warn: 0, dash: 0, dvx: 0, dvy: 0, patT: 0, spawnedAt: s.time,
   };
   s.enemies.push(e);
+  if (mob && kind !== "grunt" && kind !== "shard" && !s.seen.includes(kind)) {
+    s.seen.push(kind);
+    s.intro = { name: mob.name, desc: mob.desc, t: 2.4 };
+  }
   if (kind === "boss") {
     e.variant = s.bossCount % BOSSES.length;
     s.bossCount += 1;
@@ -89,6 +93,14 @@ function spawnEnemy(s: GameState, kind: EnemyKind, at?: Vec) {
     s.bossName = BOSSES[e.variant].name;
     s.bossBanner = 2.6;
   }
+}
+
+// Weighted pick among enemy types unlocked by the current wave.
+function pickMob(s: GameState): MobKind {
+  const pool = (Object.keys(MOBS) as MobKind[]).filter((k) => MOBS[k].weight > 0 && MOBS[k].minWave <= s.wave);
+  let r = Math.random() * pool.reduce((a, k) => a + MOBS[k].weight, 0);
+  for (const k of pool) { r -= MOBS[k].weight; if (r <= 0) return k; }
+  return "grunt";
 }
 
 // Each named boss has its own attack pattern.
@@ -194,6 +206,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
   s.time += dt;
   s.shake = Math.max(0, s.shake - 40 * dt);
   s.bossBanner = Math.max(0, s.bossBanner - dt);
+  if (s.intro) { s.intro.t -= dt; if (s.intro.t <= 0) s.intro = null; }
 
   // Waves + one boss per wave
   s.waveTime += dt;
@@ -257,8 +270,10 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
   s.spawnTimer -= dt;
   if (s.spawnTimer <= 0 && s.enemies.length < MAX_ENEMIES) {
     const n = 1 + Math.floor(s.wave / 6);
-    for (let i = 0; i < n; i++) spawnEnemy(s, s.wave >= 4 && Math.random() < 0.08 ? "elite" : "grunt");
-    s.spawnTimer = (Math.max(0.5, 1.8 - s.wave * 0.07) * (s.boss ? 1.8 : 1)) / s.mods.spawn;
+    let heft = 1;
+    for (let i = 0; i < n; i++) { const k = pickMob(s); heft = Math.max(heft, MOBS[k].hp); spawnEnemy(s, k); }
+    // tougher enemies arrive less often so total pressure stays fair
+    s.spawnTimer = (Math.max(0.5, 1.8 - s.wave * 0.07) * (s.boss ? 1.8 : 1) * Math.sqrt(heft)) / s.mods.spawn;
   }
 
   // Fire only from the nose, once the ship is lined up with its target
@@ -301,10 +316,32 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
     const d = Math.hypot(dx, dy) || 1;
     e.angle = Math.atan2(dy, dx);
     const keepAway = e.kind === "boss" && d < 140 ? -0.4 : 1;
+    let mx = dx / d, my = dy / d, sp = e.speed * keepAway;
+    if (e.kind === "dart") { const wob = Math.sin(s.time * 8 + e.id) * 0.7; mx += (-dy / d) * wob; my += (dx / d) * wob; }
+    if (e.kind === "gunner") {
+      sp = d < 150 ? -e.speed * 0.6 : d < 200 ? 0 : e.speed;
+      e.fireTimer -= dt;
+      if (e.fireTimer <= 0 && d < 340) {
+        e.fireTimer = 3.2;
+        s.eBullets.push({ id: s.nextId++, x: e.x, y: e.y, vx: (dx / d) * 130, vy: (dy / d) * 130, dmg: (3 + s.wave * 0.6) * s.mods.dmg, life: 4 });
+      }
+    }
+    if (e.kind === "phantom") {
+      e.ringTimer -= dt;
+      if (e.ringTimer <= 0) {
+        e.ringTimer = 3.5 + Math.random() * 1.5;
+        burst(s, e.x, e.y, 10, "spark", 120, 3);
+        const a = Math.random() * Math.PI * 2, r = 110 + Math.random() * 40;
+        e.x = Math.max(e.r, Math.min(s.w - e.r, p.x + Math.cos(a) * r));
+        e.y = Math.max(e.r, Math.min(s.h - e.r, p.y + Math.sin(a) * r));
+        e.flash = 0.15;
+        burst(s, e.x, e.y, 10, "spark", 120, 3);
+      }
+    }
     if (e.kind === "boss" && e.dash > 0) { e.x += e.dvx * dt; e.y += e.dvy * dt; }
     else if (!(e.kind === "boss" && e.warn > 0)) {
-      e.x += (dx / d) * e.speed * dt * keepAway;
-      e.y += (dy / d) * e.speed * dt * keepAway;
+      e.x += mx * sp * dt;
+      e.y += my * sp * dt;
     }
     if (e.kind === "boss") { e.x = Math.max(e.r, Math.min(s.w - e.r, e.x)); e.y = Math.max(e.r, Math.min(s.h - e.r, e.y)); }
     e.flash = Math.max(0, e.flash - dt);
@@ -312,7 +349,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
       hurtPlayer(s, e.dmg, ev);
       // ship gets knocked away on the ice, enemy recoils
       p.vx -= (dx / d) * -140; p.vy -= (dy / d) * -140;
-      if (e.kind !== "boss") { e.x -= (dx / d) * 30; e.y -= (dy / d) * 30; }
+      if (e.kind !== "boss" && e.kind !== "brute" && e.kind !== "juggernaut") { e.x -= (dx / d) * 30; e.y -= (dy / d) * 30; }
     }
     if (e.kind === "boss") bossAttack(s, e, dt);
   }
@@ -377,9 +414,13 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
       s.eBullets = [];
       ev.bossDown = true;
     } else {
-      s.coins += (e.kind === "elite" ? 5 : 1) * s.mods.coins;
-      s.gems.push({ id: s.nextId++, x: e.x, y: e.y, value: e.kind === "elite" ? 5 : 1, pulled: false });
-      burst(s, e.x, e.y, e.kind === "elite" ? 16 : 9, "ember", 160, 4);
+      const mob = MOBS[e.kind];
+      s.coins += mob.coins * s.mods.coins;
+      s.gems.push({ id: s.nextId++, x: e.x, y: e.y, value: mob.xp, pulled: false });
+      burst(s, e.x, e.y, Math.min(24, Math.round(e.r * 0.8)), "ember", 160, e.r > 15 ? 5 : 4);
+      if (e.kind === "splitter") {
+        for (const off of [-1, 1]) spawnEnemy(s, "shard", { x: e.x + off * 12, y: e.y - off * 6 });
+      }
     }
     if (st.repairPerKill) p.hp = Math.min(st.maxHp, p.hp + st.repairPerKill);
   }

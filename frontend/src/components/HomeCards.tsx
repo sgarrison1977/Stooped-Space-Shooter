@@ -93,7 +93,7 @@ export function MusterCard({ profile, onRename, onEnter, onDifficulty }: { profi
   );
 }
 
-export function ArmouryCard({ profile, onBuy, onLeaderboard, onHangar }: { profile: Profile; onBuy: (k: UpgradeKey, cost: number) => void; onLeaderboard: () => void; onHangar: () => void }) {
+export function ArmouryCard({ profile, onBuy, onLeaderboard, onHangar, onBosses }: { profile: Profile; onBuy: (k: UpgradeKey, cost: number) => void; onLeaderboard: () => void; onHangar: () => void; onBosses: () => void }) {
   const s = useStyles();
   const { colors } = useTheme();
   return (
@@ -132,8 +132,9 @@ export function ArmouryCard({ profile, onBuy, onLeaderboard, onHangar }: { profi
       })}
       <View style={s.btnRow}>
         <OutlineButton title="Hangar" icon="rocket" testID="hangar-button" onPress={onHangar} style={{ flex: 1 }} />
-        <OutlineButton title="Leaderboard" icon="trophy" testID="leaderboard-button" onPress={onLeaderboard} style={{ flex: 1 }} />
+        <OutlineButton title="Bosses" icon="skull" testID="boss-gallery-button" onPress={onBosses} style={{ flex: 1 }} />
       </View>
+      <OutlineButton title="Leaderboard" icon="trophy" testID="leaderboard-button" onPress={onLeaderboard} />
     </Animated.View>
   );
 }

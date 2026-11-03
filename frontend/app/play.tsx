@@ -7,8 +7,8 @@ import { StatusBar } from "expo-status-bar";
 import { fonts, makeStyles, radius, spacing } from "@/src/theme";
 import { applySystem, createGame, GameState, step, Vec } from "@/src/game/sim";
 import { baseStats, pickSystems, SystemDef } from "@/src/game/config";
-import { loadProfile, saveProfile, submitScore } from "@/src/game/profile";
-import { difficulty, SKINS, skinById, TRAILS, trailById } from "@/src/game/content";
+import { loadProfile, mergeBossKills, saveProfile, submitScore } from "@/src/game/profile";
+import { BOSSES, difficulty, SKINS, skinById, TRAILS, trailById } from "@/src/game/content";
 import { playSfx, startMusic } from "@/src/game/audio";
 import { ArenaView } from "@/src/components/ArenaView";
 import { Hud } from "@/src/components/Hud";
@@ -33,6 +33,7 @@ export default function Play() {
   const [rank, setRank] = useState<number | null>(null);
   const [runId, setRunId] = useState(0);
   const [look, setLook] = useState({ skin: SKINS[0], trail: TRAILS[0] });
+  const [highlight, setHighlight] = useState<string | null>(null);
 
   const setMode = (m: Mode) => { modeRef.current = m; setModeState(m); };
 
@@ -41,7 +42,9 @@ export default function Play() {
   const finishRun = useCallback(async (g: GameState) => {
     const p = await loadProfile();
     const earned = Math.floor(g.coins);
-    const next = { ...p, coins: p.coins + earned, kills: p.kills + g.kills, runs: p.runs + 1, bestWave: Math.max(p.bestWave, g.wave) };
+    const { records, highlight: hl } = mergeBossKills(p, g.bossKills, BOSSES.map((b) => b.name));
+    setHighlight(hl);
+    const next = { ...p, coins: p.coins + earned, kills: p.kills + g.kills, runs: p.runs + 1, bestWave: Math.max(p.bestWave, g.wave), bossRecords: records };
     await saveProfile(next);
     try { setRank((await submitScore(next, g.wave, g.kills)).rank); } catch { setRank(null); }
   }, []);
@@ -55,6 +58,7 @@ export default function Play() {
     joy.current = null;
     drag.current = null;
     setRank(null);
+    setHighlight(null);
     setMode("play");
     setFrame((f) => f + 1);
   }, []);
@@ -181,6 +185,7 @@ export default function Play() {
         <GameOverOverlay
           wide={wide}
           bosses={g.bossesDown}
+          highlight={highlight}
           wave={g.wave}
           kills={g.kills}
           coins={Math.floor(g.coins)}

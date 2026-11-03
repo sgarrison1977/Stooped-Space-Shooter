@@ -7,7 +7,7 @@ export type EnemyKind = "grunt" | "elite" | "boss";
 export interface Enemy {
   id: number; x: number; y: number; hp: number; maxHp: number; speed: number; r: number; dmg: number;
   kind: EnemyKind; angle: number; flash: number; fireTimer: number; ringTimer: number;
-  variant: number; spin: number; warn: number; dash: number; dvx: number; dvy: number; patT: number;
+  variant: number; spin: number; warn: number; dash: number; dvx: number; dvy: number; patT: number; spawnedAt: number;
 }
 export interface Bullet { id: number; x: number; y: number; vx: number; vy: number; dmg: number; crit: boolean; life: number }
 export interface EBullet { id: number; x: number; y: number; vx: number; vy: number; dmg: number; life: number; homing?: boolean; fuse?: number }
@@ -25,6 +25,7 @@ export interface GameState {
   kills: number; coins: number; xp: number; xpNext: number; level: number;
   pendingLevelUps: number; nextId: number; dead: boolean;
   bossSpawned: boolean; boss: Enemy | null; bossName: string; bossBanner: number; bossesDown: number; bossCount: number;
+  bossKills: { variant: number; secs: number }[];
   shake: number; time: number; mods: DifficultyDef;
 }
 
@@ -51,7 +52,7 @@ export function createGame(stats: RunStats, w: number, h: number, mods: Difficul
     wave: 1, waveTime: 0, spawnTimer: 0.8, fireTimer: 0,
     kills: 0, coins: 0, xp: 0, xpNext: 5, level: 1,
     pendingLevelUps: 0, nextId: 1, dead: false,
-    bossSpawned: false, boss: null, bossName: "", bossBanner: 0, bossesDown: 0, bossCount: 0,
+    bossSpawned: false, boss: null, bossName: "", bossBanner: 0, bossesDown: 0, bossCount: 0, bossKills: [],
     shake: 0, time: 0, mods,
   };
 }
@@ -78,7 +79,7 @@ function spawnEnemy(s: GameState, kind: EnemyKind, at?: Vec) {
   const e: Enemy = {
     id: s.nextId++, x: pt.x, y: pt.y, hp, maxHp: hp, speed: cfg.speed * m.speed, r: cfg.r, dmg: cfg.dmg * m.dmg,
     kind, angle: 0, flash: 0, fireTimer: 2, ringTimer: 2.5,
-    variant: 0, spin: 0, warn: 0, dash: 0, dvx: 0, dvy: 0, patT: 0,
+    variant: 0, spin: 0, warn: 0, dash: 0, dvx: 0, dvy: 0, patT: 0, spawnedAt: s.time,
   };
   s.enemies.push(e);
   if (kind === "boss") {
@@ -372,6 +373,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
       s.shake = 16;
       s.boss = null;
       s.bossesDown += 1;
+      s.bossKills.push({ variant: e.variant, secs: Math.round((s.time - e.spawnedAt) * 10) / 10 });
       s.eBullets = [];
       ev.bossDown = true;
     } else {

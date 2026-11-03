@@ -62,8 +62,8 @@ export function PauseOverlay({ onResume, onQuit }: { onResume: () => void; onQui
 }
 
 export function GameOverOverlay({
-  wave, kills, coins, rank, abandoned, wide, bosses, difficultyName, onReturn, onAgain, onShare,
-}: { wave: number; kills: number; coins: number; rank: number | null; abandoned: boolean; wide: boolean; bosses: number; difficultyName: string; onReturn: () => void; onAgain: () => void; onShare: () => void }) {
+  wave, kills, coins, rank, abandoned, wide, bosses, difficultyName, highlight, onReturn, onAgain, onShare,
+}: { wave: number; kills: number; coins: number; rank: number | null; abandoned: boolean; wide: boolean; bosses: number; difficultyName: string; highlight: string | null; onReturn: () => void; onAgain: () => void; onShare: () => void }) {
   const s = useStyles();
   const Stat = ({ label, value, testID }: { label: string; value: string | number; testID: string }) => (
     <View style={s.statRow}>
@@ -80,6 +80,7 @@ export function GameOverOverlay({
           <Stat label="Wave Reached" value={wave} testID="game-over-wave" />
           <Stat label="Kills" value={kills} testID="game-over-kills" />
           <Stat label="Bosses Down" value={bosses} testID="game-over-bosses" />
+          {highlight ? <Text style={s.highlight} testID="game-over-boss-record">{highlight}</Text> : null}
           <Stat label="Coins Gathered" value={`+${coins}`} testID="game-over-coins" />
           <Stat label="Global Rank" value={rank ? `#${rank}` : "—"} testID="game-over-rank" />
         </View>
@@ -120,6 +121,7 @@ const useStyles = makeStyles((c) => ({
   },
   statRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   muteRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: spacing.sm },
+  highlight: { fontFamily: fonts.display, fontSize: 13, color: c.brandSecondary, textAlign: "center" },
   statLabel: { fontFamily: fonts.text, fontSize: 11, letterSpacing: 2, color: c.muted, textTransform: "uppercase" },
   statValue: { fontFamily: fonts.display, fontSize: 18, color: c.onSurface },
 }));

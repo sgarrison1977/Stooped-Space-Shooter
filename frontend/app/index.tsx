@@ -69,6 +69,7 @@ export default function Home() {
             }
             onLeaderboard={() => router.push("/leaderboard")}
             onHangar={() => router.push("/hangar")}
+            onBosses={() => router.push("/bosses")}
           />
           </View>
         </KeyboardAwareScrollView>

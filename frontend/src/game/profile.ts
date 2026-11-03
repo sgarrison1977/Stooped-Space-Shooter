@@ -17,6 +17,31 @@ export interface Profile {
   ownedSkins: string[];
   ownedTrails: string[];
   muted: boolean;
+  // Boss gallery: keyed by boss index
+  bossRecords: Record<string, BossRecord>;
+}
+
+export interface BossRecord { kills: number; fastest: number; fastestDifficulty: DifficultyId }
+
+export const formatSecs = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}.${Math.floor((s * 10) % 10)}`;
+
+// Merge this run's boss kills into the gallery; returns a highlight line for new records.
+export function mergeBossKills(p: Profile, kills: { variant: number; secs: number }[], names: string[]): { records: Record<string, BossRecord>; highlight: string | null } {
+  const records = { ...p.bossRecords };
+  let highlight: string | null = null;
+  for (const k of kills) {
+    const key = String(k.variant);
+    const prev = records[key];
+    if (!prev) {
+      records[key] = { kills: 1, fastest: k.secs, fastestDifficulty: p.difficulty };
+      highlight = `First kill: ${names[k.variant]} in ${formatSecs(k.secs)}`;
+    } else {
+      const faster = k.secs < prev.fastest;
+      records[key] = { kills: prev.kills + 1, fastest: faster ? k.secs : prev.fastest, fastestDifficulty: faster ? p.difficulty : prev.fastestDifficulty };
+      if (faster) highlight = `New fastest: ${names[k.variant]} in ${formatSecs(k.secs)}`;
+    }
+  }
+  return { records, highlight };
 }
 
 const KEY = "emberdeep_profile_v1";
@@ -29,7 +54,7 @@ function newId() {
 function fresh(): Profile {
   return {
     id: newId(), name: "", coins: 0, bestWave: 0, kills: 0, runs: 0, upgrades: { cannon: 1, deflector: 1, hull: 1 },
-    difficulty: "normal", skin: "vanguard", trail: "ion", ownedSkins: ["vanguard"], ownedTrails: ["ion"], muted: false,
+    difficulty: "normal", skin: "vanguard", trail: "ion", ownedSkins: ["vanguard"], ownedTrails: ["ion"], muted: false, bossRecords: {},
   };
 }
 

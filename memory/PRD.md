@@ -35,6 +35,11 @@ User built "Hypershift" (in-game title EMBERDEEP) on Base44 and wants it rebuilt
 - Difficulty: Casual / Normal / Hard / Extreme (hp/dmg/speed/spawn/regen modifiers, 0.75x–2.2x coins), separate leaderboards per difficulty
 - Pending: testing-agent pass (user asked to wait until told)
 
+## Iteration 4
+- Boss Gallery (/bosses): 8 cards, locked silhouettes until beaten; beaten shows art, attack pattern, fastest kill (m:ss.d), kill count, difficulty of record
+- Boss kill timing tracked in sim; merged into profile.bossRecords at run end; game-over shows "First kill / New fastest" line
+- Pending: testing-agent pass (user asked to wait until told)
+
 ## Backlog
 - P1: Sound effects & music; more enemy types / bosses
 - P1: Server-side score sanity checks

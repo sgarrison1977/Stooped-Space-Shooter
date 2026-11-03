@@ -5,6 +5,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import { fonts, makeStyles, radius, spacing, useTheme } from "@/src/theme";
 import { fetchLeaderboard, LeaderRow, loadProfile } from "@/src/game/profile";
+import { DifficultyId } from "@/src/game/content";
+import { DifficultyChips } from "@/src/components/DifficultyChips";
 import { EmberBackground } from "@/src/components/Ember";
 import { Label, OutlineButton } from "@/src/components/ui";
 
@@ -16,18 +18,23 @@ export default function Leaderboard() {
   const [rows, setRows] = useState<LeaderRow[] | null>(null);
   const [error, setError] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [diff, setDiff] = useState<DifficultyId | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (d?: DifficultyId) => {
     try {
       const p = await loadProfile();
-      setRows(await fetchLeaderboard(p.id));
+      const use = d ?? diff ?? p.difficulty;
+      if (!diff) setDiff(use);
+      setRows(await fetchLeaderboard(use, p.id));
       setError(false);
     } catch {
       setError(true);
     }
-  }, []);
+  }, [diff]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const choose = (d: DifficultyId) => { setDiff(d); setRows(null); load(d); };
 
   return (
     <View style={s.root} testID="leaderboard-screen">
@@ -41,12 +48,15 @@ export default function Leaderboard() {
           <Text style={s.title}>Leaderboard</Text>
         </View>
       </View>
+      <View style={[s.chips, { paddingLeft: insets.left, paddingRight: insets.right }]}>
+        {diff ? <DifficultyChips value={diff} onChange={choose} testPrefix="leaderboard-diff" padded /> : null}
+      </View>
       {!rows && !error ? (
         <View style={s.center}><ActivityIndicator color={colors.brandPrimary} /></View>
       ) : error && !rows ? (
         <View style={s.center}>
           <Text style={s.muted} testID="leaderboard-error">Could not reach the deep. Check your connection.</Text>
-          <OutlineButton title="Retry" testID="leaderboard-retry-button" onPress={load} style={{ paddingHorizontal: spacing.xl }} />
+          <OutlineButton title="Retry" testID="leaderboard-retry-button" onPress={() => load()} style={{ paddingHorizontal: spacing.xl }} />
         </View>
       ) : (
         <FlatList
@@ -76,6 +86,7 @@ export default function Leaderboard() {
 
 const useStyles = makeStyles((c) => ({
   root: { flex: 1, backgroundColor: c.surface },
+  chips: { height: 56, justifyContent: "center", width: "100%", maxWidth: 720, alignSelf: "center" },
   header: { flexDirection: "row", alignItems: "center", gap: spacing.md, paddingBottom: spacing.lg, width: "100%", maxWidth: 720, alignSelf: "center" },
   back: { width: 44, height: 44, borderRadius: radius.sm, borderWidth: 1, borderColor: c.border, alignItems: "center", justifyContent: "center", backgroundColor: c.surfaceSecondary },
   title: { fontFamily: fonts.display, fontSize: 24, color: c.onSurface, letterSpacing: 1 },

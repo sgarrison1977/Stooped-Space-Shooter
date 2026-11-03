@@ -7,6 +7,8 @@ import { fonts, makeStyles, radius, spacing, useTheme } from "@/src/theme";
 import { Label, PrimaryButton, OutlineButton } from "./ui";
 import { Profile } from "@/src/game/profile";
 import { baseStats, MAX_UPGRADE_LEVEL, roman, UPGRADES, upgradeCost, UpgradeKey } from "@/src/game/config";
+import { difficulty, DifficultyId } from "@/src/game/content";
+import { DifficultyChips } from "./DifficultyChips";
 
 function StatTile({ icon, label, value, testID }: { icon: any; label: string; value: number; testID: string }) {
   const s = useStyles();
@@ -32,7 +34,7 @@ function Row({ label, value, testID }: { label: string; value: string; testID: s
   );
 }
 
-export function MusterCard({ profile, onRename, onEnter }: { profile: Profile; onRename: (n: string) => void; onEnter: () => void }) {
+export function MusterCard({ profile, onRename, onEnter, onDifficulty }: { profile: Profile; onRename: (n: string) => void; onEnter: () => void; onDifficulty: (d: DifficultyId) => void }) {
   const s = useStyles();
   const { colors } = useTheme();
   const [editing, setEditing] = useState(!profile.name);
@@ -81,14 +83,17 @@ export function MusterCard({ profile, onRename, onEnter }: { profile: Profile; o
       <Row label="Damage" value={String(st.damage)} testID="stat-damage" />
       <Row label="Resistance" value={`${Math.round(st.resist * 100)}%`} testID="stat-resistance" />
       <Row label="Max Health" value={String(st.maxHp)} testID="stat-max-health" />
-      <View style={{ height: spacing.lg }} />
+      <View style={{ height: spacing.sm }} />
+      <Label>Difficulty</Label>
+      <DifficultyChips value={profile.difficulty} onChange={onDifficulty} testPrefix="difficulty-chip" />
+      <Text style={s.diffDesc} testID="difficulty-desc">{difficulty(profile.difficulty).desc}</Text>
       <PrimaryButton title="Enter the Deep" testID="enter-the-deep-button" onPress={onEnter} disabled={!profile.name} />
       <Text style={s.hint}>{profile.name ? "Drag to thrust · You glide on ice" : "Name your pilot to dive"}</Text>
     </Animated.View>
   );
 }
 
-export function ArmouryCard({ profile, onBuy, onLeaderboard }: { profile: Profile; onBuy: (k: UpgradeKey, cost: number) => void; onLeaderboard: () => void }) {
+export function ArmouryCard({ profile, onBuy, onLeaderboard, onHangar }: { profile: Profile; onBuy: (k: UpgradeKey, cost: number) => void; onLeaderboard: () => void; onHangar: () => void }) {
   const s = useStyles();
   const { colors } = useTheme();
   return (
@@ -125,7 +130,10 @@ export function ArmouryCard({ profile, onBuy, onLeaderboard }: { profile: Profil
           </View>
         );
       })}
-      <OutlineButton title="Leaderboard" icon="trophy" testID="leaderboard-button" onPress={onLeaderboard} style={{ marginTop: spacing.xs }} />
+      <View style={s.btnRow}>
+        <OutlineButton title="Hangar" icon="rocket" testID="hangar-button" onPress={onHangar} style={{ flex: 1 }} />
+        <OutlineButton title="Leaderboard" icon="trophy" testID="leaderboard-button" onPress={onLeaderboard} style={{ flex: 1 }} />
+      </View>
     </Animated.View>
   );
 }
@@ -173,4 +181,6 @@ const useStyles = makeStyles((c) => ({
   },
   buyDisabled: { opacity: 0.4 },
   buyText: { fontFamily: fonts.display, fontSize: 13, color: c.brandSecondary },
+  btnRow: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.xs },
+  diffDesc: { fontFamily: fonts.text, fontSize: 11, color: c.muted, marginTop: -spacing.xs, marginBottom: spacing.xs },
 }));

@@ -27,6 +27,14 @@ User built "Hypershift" (in-game title EMBERDEEP) on Base44 and wants it rebuilt
 - Difficulty rebalanced (slower/fewer enemies, weaker bosses, regen + wave heal, longer i-frames)
 - Pending: full testing-agent pass (user asked to wait)
 
+## Iteration 3
+- Business model: premium paid app on Google Play ($1.99), no ads, no IAP; all cosmetics bought with in-game coins
+- Procedural SFX (laser, explosion, boss explosion, hit, boss warning, level-up, pickup) + 30s ember soundtrack loop (expo-audio); mute toggle on home + pause; mic permission disabled in app.json
+- 8 named bosses with unique SVG art + attack patterns (ring, spiral, fan+escorts, 3-stream rotor, telegraphed charge, summoner+homing orbs, slag mines, twin-spiral storm); boss every 3rd wave
+- Hangar shop: 7 hull skins + 6 engine trails (preview, buy, equip)
+- Difficulty: Casual / Normal / Hard / Extreme (hp/dmg/speed/spawn/regen modifiers, 0.75x–2.2x coins), separate leaderboards per difficulty
+- Pending: testing-agent pass (user asked to wait until told)
+
 ## Backlog
 - P1: Sound effects & music; more enemy types / bosses
 - P1: Server-side score sanity checks

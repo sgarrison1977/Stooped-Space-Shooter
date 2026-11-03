@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { storage } from "@/src/utils/storage";
 import { UpgradeKey } from "./config";
+import { DifficultyId } from "./content";
 
 export interface Profile {
   id: string;
@@ -10,6 +11,12 @@ export interface Profile {
   kills: number;
   runs: number;
   upgrades: Record<UpgradeKey, number>;
+  difficulty: DifficultyId;
+  skin: string;
+  trail: string;
+  ownedSkins: string[];
+  ownedTrails: string[];
+  muted: boolean;
 }
 
 const KEY = "emberdeep_profile_v1";
@@ -20,7 +27,10 @@ function newId() {
 }
 
 function fresh(): Profile {
-  return { id: newId(), name: "", coins: 0, bestWave: 0, kills: 0, runs: 0, upgrades: { cannon: 1, deflector: 1, hull: 1 } };
+  return {
+    id: newId(), name: "", coins: 0, bestWave: 0, kills: 0, runs: 0, upgrades: { cannon: 1, deflector: 1, hull: 1 },
+    difficulty: "normal", skin: "vanguard", trail: "ion", ownedSkins: ["vanguard"], ownedTrails: ["ion"], muted: false,
+  };
 }
 
 let cache: Profile | null = null;
@@ -62,7 +72,7 @@ export async function submitScore(p: Profile, wave: number, kills: number) {
   const res = await fetch(`${API}/api/scores`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ player_id: p.id, name: p.name || "Pilot", wave, kills }),
+    body: JSON.stringify({ player_id: p.id, name: p.name || "Pilot", wave, kills, difficulty: p.difficulty }),
   });
   if (!res.ok) throw new Error("submit failed");
   return (await res.json()) as { rank: number };
@@ -70,8 +80,8 @@ export async function submitScore(p: Profile, wave: number, kills: number) {
 
 export interface LeaderRow { rank: number; name: string; best_wave: number; best_kills: number; runs: number; is_you: boolean }
 
-export async function fetchLeaderboard(playerId?: string): Promise<LeaderRow[]> {
-  const q = playerId ? `?player_id=${encodeURIComponent(playerId)}` : "";
+export async function fetchLeaderboard(difficulty: DifficultyId, playerId?: string): Promise<LeaderRow[]> {
+  const q = `?difficulty=${difficulty}` + (playerId ? `&player_id=${encodeURIComponent(playerId)}` : "");
   const res = await fetch(`${API}/api/leaderboard${q}`);
   if (!res.ok) throw new Error("leaderboard failed");
   return res.json();

@@ -8,6 +8,8 @@ import { fonts, makeStyles, radius, spacing } from "@/src/theme";
 import { applySystem, createGame, GameState, step, Vec } from "@/src/game/sim";
 import { baseStats, pickSystems, SystemDef } from "@/src/game/config";
 import { loadProfile, saveProfile, submitScore } from "@/src/game/profile";
+import { difficulty, SKINS, skinById, TRAILS, trailById } from "@/src/game/content";
+import { playSfx, startMusic } from "@/src/game/audio";
 import { ArenaView } from "@/src/components/ArenaView";
 import { Hud } from "@/src/components/Hud";
 import { GameOverOverlay, LevelUpOverlay, PauseOverlay } from "@/src/components/Overlays";
@@ -30,12 +32,16 @@ export default function Play() {
   const [choices, setChoices] = useState<SystemDef[]>([]);
   const [rank, setRank] = useState<number | null>(null);
   const [runId, setRunId] = useState(0);
+  const [look, setLook] = useState({ skin: SKINS[0], trail: TRAILS[0] });
 
   const setMode = (m: Mode) => { modeRef.current = m; setModeState(m); };
 
+  useEffect(() => { startMusic(); }, []);
+
   const finishRun = useCallback(async (g: GameState) => {
     const p = await loadProfile();
-    const next = { ...p, coins: p.coins + g.coins, kills: p.kills + g.kills, runs: p.runs + 1, bestWave: Math.max(p.bestWave, g.wave) };
+    const earned = Math.floor(g.coins);
+    const next = { ...p, coins: p.coins + earned, kills: p.kills + g.kills, runs: p.runs + 1, bestWave: Math.max(p.bestWave, g.wave) };
     await saveProfile(next);
     try { setRank((await submitScore(next, g.wave, g.kills)).rank); } catch { setRank(null); }
   }, []);
@@ -44,7 +50,8 @@ export default function Play() {
   const startRun = useCallback(async () => {
     if (!size.current) return;
     const p = await loadProfile();
-    game.current = createGame(baseStats(p.upgrades), size.current.w, size.current.h);
+    setLook({ skin: skinById(p.skin), trail: trailById(p.trail) });
+    game.current = createGame(baseStats(p.upgrades), size.current.w, size.current.h, difficulty(p.difficulty));
     joy.current = null;
     drag.current = null;
     setRank(null);
@@ -66,10 +73,15 @@ export default function Play() {
       last = t;
       if (!g || modeRef.current !== "play") return;
       const ev = step(g, dt, joy.current);
-      if (ev.hurt) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-      if (ev.bossSpawn) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
-      if (ev.bossDown) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
+      if (ev.shot) playSfx("laser");
+      if (ev.kill && !ev.bossDown) playSfx("explosion");
+      if (ev.pickup) playSfx("pickup");
+      if (ev.hurt) { playSfx("hit"); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); }
+      if (ev.bossSpawn) { playSfx("boss_warning"); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {}); }
+      if (ev.bossDown) { playSfx("boss_explosion"); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {}); }
+      if (ev.levelUp) playSfx("levelup");
       if (ev.dead) {
+        playSfx("boss_explosion");
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
         setMode("over");
         finishRun(g);
@@ -154,7 +166,7 @@ export default function Play() {
         onResponderRelease={onRelease}
         onResponderTerminate={onRelease}
       >
-        {g ? <ArenaView g={g} /> : null}
+        {g ? <ArenaView g={g} skin={look.skin} trail={look.trail} /> : null}
         {d && j ? (
           <View pointerEvents="none" style={[s.stick, { left: d.lx - STICK, top: d.ly - STICK }]} testID="thumbstick">
             <View style={[s.knob, { transform: [{ translateX: j.x * STICK }, { translateY: j.y * STICK }] }]} />
@@ -171,12 +183,13 @@ export default function Play() {
           bosses={g.bossesDown}
           wave={g.wave}
           kills={g.kills}
-          coins={g.coins}
+          coins={Math.floor(g.coins)}
+          difficultyName={g.mods.name}
           rank={rank}
           onAgain={() => setRunId((r) => r + 1)}
           abandoned={g.player.hp > 0}
           onReturn={() => (router.canGoBack() ? router.back() : router.replace("/"))}
-          onShare={() => Share.share({ message: `I reached wave ${g.wave} with ${g.kills} kills and ${g.bossesDown} bosses down in EMBERDEEP. Think you can dive deeper?` }).catch(() => {})}
+          onShare={() => Share.share({ message: `I reached wave ${g.wave} on ${g.mods.name} with ${g.kills} kills and ${g.bossesDown} bosses down in EMBERDEEP. Think you can dive deeper?` }).catch(() => {})}
         />
       ) : null}
     </View>

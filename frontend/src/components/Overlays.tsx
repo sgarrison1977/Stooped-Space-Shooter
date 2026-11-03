@@ -5,7 +5,7 @@ import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { fonts, makeStyles, radius, spacing, useTheme } from "@/src/theme";
 import { SystemDef } from "@/src/game/config";
-import { Label, OutlineButton, PrimaryButton } from "./ui";
+import { Label, MuteButton, OutlineButton, PrimaryButton } from "./ui";
 
 export function LevelUpOverlay({ level, options, onPick, wide }: { level: number; options: SystemDef[]; onPick: (s: SystemDef) => void; wide: boolean }) {
   const s = useStyles();
@@ -52,14 +52,18 @@ export function PauseOverlay({ onResume, onQuit }: { onResume: () => void; onQui
       <View style={s.list}>
         <PrimaryButton title="Resume" testID="pause-resume-button" onPress={onResume} />
         <OutlineButton title="Abandon Run" testID="pause-abandon-button" onPress={onQuit} />
+        <View style={s.muteRow}>
+          <Text style={s.statLabel}>Sound & Music</Text>
+          <MuteButton testID="pause-mute-button" />
+        </View>
       </View>
     </Animated.View>
   );
 }
 
 export function GameOverOverlay({
-  wave, kills, coins, rank, abandoned, wide, bosses, onReturn, onAgain, onShare,
-}: { wave: number; kills: number; coins: number; rank: number | null; abandoned: boolean; wide: boolean; bosses: number; onReturn: () => void; onAgain: () => void; onShare: () => void }) {
+  wave, kills, coins, rank, abandoned, wide, bosses, difficultyName, onReturn, onAgain, onShare,
+}: { wave: number; kills: number; coins: number; rank: number | null; abandoned: boolean; wide: boolean; bosses: number; difficultyName: string; onReturn: () => void; onAgain: () => void; onShare: () => void }) {
   const s = useStyles();
   const Stat = ({ label, value, testID }: { label: string; value: string | number; testID: string }) => (
     <View style={s.statRow}>
@@ -69,7 +73,7 @@ export function GameOverOverlay({
   );
   return (
     <Animated.View entering={FadeIn.duration(300)} style={s.scrim} testID="game-over-overlay">
-      <Label style={{ textAlign: "center" }}>Run Ended</Label>
+      <Label style={{ textAlign: "center" }}>Run Ended · {difficultyName}</Label>
       <Text style={[s.title, wide && s.titleWide]}>{abandoned ? "Run Abandoned" : "Hull Breached"}</Text>
       <View style={[s.list, wide && s.listRow]}>
         <View style={[s.list, s.statsCard, wide && { flex: 1, marginBottom: 0 }]}>
@@ -115,6 +119,7 @@ const useStyles = makeStyles((c) => ({
     marginBottom: spacing.lg,
   },
   statRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  muteRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: spacing.sm },
   statLabel: { fontFamily: fonts.text, fontSize: 11, letterSpacing: 2, color: c.muted, textTransform: "uppercase" },
   statValue: { fontFamily: fonts.display, fontSize: 18, color: c.onSurface },
 }));

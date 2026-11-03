@@ -8,7 +8,7 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict, BeforeValidator
-from typing import List, Optional, Annotated
+from typing import List, Optional, Annotated, Literal
 from datetime import datetime, timezone
 
 
@@ -50,6 +50,7 @@ class BaseDocument(BaseModel):
 
 class Score(BaseDocument):
     player_id: str
+    difficulty: str = "normal"
     name: str
     best_wave: int = 0
     best_kills: int = 0
@@ -63,6 +64,7 @@ class ScoreSubmit(BaseModel):
     name: str = Field(min_length=1, max_length=20)
     wave: int = Field(ge=1, le=10000)
     kills: int = Field(ge=0, le=1000000)
+    difficulty: Literal["casual", "normal", "hard", "extreme"] = "normal"
 
 
 class LeaderboardEntry(BaseModel):
@@ -83,9 +85,10 @@ async def root():
 async def submit_score(body: ScoreSubmit):
     now = datetime.now(timezone.utc).isoformat()
     name = body.name.strip()[:20] or "Pilot"
-    doc = await db.scores.find_one({"player_id": body.player_id})
+    key = {"player_id": body.player_id, "difficulty": body.difficulty}
+    doc = await db.scores.find_one(key)
     if doc is None:
-        score = Score(player_id=body.player_id, name=name, best_wave=body.wave,
+        score = Score(player_id=body.player_id, difficulty=body.difficulty, name=name, best_wave=body.wave,
                       best_kills=body.kills, total_kills=body.kills, runs=1, updated_at=now)
         try:
             await db.scores.insert_one(score.to_mongo())
@@ -103,8 +106,8 @@ async def submit_score(body: ScoreSubmit):
             score.best_kills = body.kills
         data = score.to_mongo()
         data.pop("_id", None)
-        await db.scores.update_one({"player_id": body.player_id}, {"$set": data})
-    ahead = await db.scores.count_documents({"$or": [
+        await db.scores.update_one(key, {"$set": data})
+    ahead = await db.scores.count_documents({"difficulty": body.difficulty, "$or": [
         {"best_wave": {"$gt": score.best_wave}},
         {"best_wave": score.best_wave, "best_kills": {"$gt": score.best_kills}},
     ]})
@@ -113,8 +116,10 @@ async def submit_score(body: ScoreSubmit):
 
 
 @api_router.get("/leaderboard", response_model=List[LeaderboardEntry])
-async def leaderboard(player_id: Optional[str] = None, limit: int = Query(50, ge=1, le=100)):
-    docs = await db.scores.find({}).sort([("best_wave", -1), ("best_kills", -1)]).to_list(limit)
+async def leaderboard(player_id: Optional[str] = None,
+                      difficulty: Literal["casual", "normal", "hard", "extreme"] = "normal",
+                      limit: int = Query(50, ge=1, le=100)):
+    docs = await db.scores.find({"difficulty": difficulty}).sort([("best_wave", -1), ("best_kills", -1)]).to_list(limit)
     out = []
     for i, d in enumerate(docs):
         s = Score.from_mongo(d)
@@ -139,8 +144,12 @@ logger = logging.getLogger(__name__)
 
 @app.on_event("startup")
 async def startup():
-    await db.scores.create_index("player_id", unique=True)
-    await db.scores.create_index([("best_wave", -1), ("best_kills", -1)])
+    await db.scores.update_many({"difficulty": {"$exists": False}}, {"$set": {"difficulty": "normal"}})
+    existing = await db.scores.index_information()
+    if "player_id_1" in existing:
+        await db.scores.drop_index("player_id_1")
+    await db.scores.create_index([("player_id", 1), ("difficulty", 1)], unique=True)
+    await db.scores.create_index([("difficulty", 1), ("best_wave", -1), ("best_kills", -1)])
 
 
 @app.on_event("shutdown")

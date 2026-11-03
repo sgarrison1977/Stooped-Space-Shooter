@@ -3,6 +3,31 @@ import { Pressable, StyleProp, Text, TextStyle, View, ViewStyle } from "react-na
 import { Lucide } from "@react-native-vector-icons/lucide";
 import * as Haptics from "expo-haptics";
 import { fonts, makeStyles, radius, spacing, useTheme } from "@/src/theme";
+import { useProfile } from "@/src/game/profile";
+import { setMuted, startMusic } from "@/src/game/audio";
+
+export function MuteButton({ testID }: { testID: string }) {
+  const s = useStyles();
+  const { colors } = useTheme();
+  const { profile, update } = useProfile();
+  const muted = !!profile?.muted;
+  return (
+    <Pressable
+      testID={testID}
+      hitSlop={6}
+      accessibilityLabel={muted ? "Unmute sound" : "Mute sound"}
+      onPress={() => {
+        const m = !muted;
+        setMuted(m);
+        if (!m) startMusic();
+        update((p) => ({ ...p, muted: m }));
+      }}
+      style={({ pressed }) => [s.iconBtn, pressed && s.pressed]}
+    >
+      <Lucide name={muted ? "volume-x" : "volume-2"} size={16} color={muted ? colors.muted : colors.onSurfaceSecondary} />
+    </Pressable>
+  );
+}
 
 export function Label({ children, style, testID }: { children: React.ReactNode; style?: StyleProp<TextStyle>; testID?: string }) {
   const s = useStyles();
@@ -62,5 +87,9 @@ const useStyles = makeStyles((c) => ({
   },
   outlineText: { fontFamily: fonts.text, fontSize: 11, letterSpacing: 2.6, color: c.onSurfaceSecondary, textTransform: "uppercase" },
   pressed: { opacity: 0.8, transform: [{ scale: 0.98 }] },
+  iconBtn: {
+    width: 40, height: 40, borderRadius: radius.sm, borderWidth: 1, borderColor: c.border,
+    alignItems: "center", justifyContent: "center", backgroundColor: c.surfaceSecondary,
+  },
   disabled: { opacity: 0.4 },
 }));

@@ -7,8 +7,9 @@ import { StatusBar } from "expo-status-bar";
 import { fonts, makeStyles, spacing, useTheme } from "@/src/theme";
 import { useProfile } from "@/src/game/profile";
 import { EmberBackground } from "@/src/components/Ember";
-import { CoinPill } from "@/src/components/ui";
+import { CoinPill, MuteButton } from "@/src/components/ui";
 import { ArmouryCard, MusterCard } from "@/src/components/HomeCards";
+import { startMusic } from "@/src/game/audio";
 
 export default function Home() {
   const s = useStyles();
@@ -31,7 +32,10 @@ export default function Home() {
             {(profile?.name || "New pilot").toUpperCase()} · BEST WAVE {profile?.bestWave ?? 0}
           </Text>
         </View>
-        <CoinPill value={profile?.coins ?? 0} testID="header-coins" />
+        <View style={s.headRight}>
+          <MuteButton testID="home-mute-button" />
+          <CoinPill value={profile?.coins ?? 0} testID="header-coins" />
+        </View>
       </View>
       {!profile ? (
         <View style={s.loading}>
@@ -53,7 +57,8 @@ export default function Home() {
           <MusterCard
             profile={profile}
             onRename={(name) => update((p) => ({ ...p, name }))}
-            onEnter={() => router.push("/play")}
+            onEnter={() => { startMusic(); router.push("/play"); }}
+            onDifficulty={(difficulty) => update((p) => ({ ...p, difficulty }))}
           />
           </View>
           <View style={wide ? s.col : undefined}>
@@ -63,6 +68,7 @@ export default function Home() {
               update((p) => p.coins < cost ? p : ({ ...p, coins: p.coins - cost, upgrades: { ...p.upgrades, [key]: p.upgrades[key] + 1 } }))
             }
             onLeaderboard={() => router.push("/leaderboard")}
+            onHangar={() => router.push("/hangar")}
           />
           </View>
         </KeyboardAwareScrollView>
@@ -80,4 +86,5 @@ const useStyles = makeStyles((c) => ({
   content: { gap: spacing.lg },
   contentWide: { flexDirection: "row", alignItems: "flex-start", maxWidth: 1000, width: "100%", alignSelf: "center" },
   col: { flex: 1 },
+  headRight: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
 }));

@@ -1,4 +1,5 @@
 import { RunStats } from "./config";
+import { BOSSES, DifficultyDef } from "./content";
 
 export type Vec = { x: number; y: number };
 export type EnemyKind = "grunt" | "elite" | "boss";
@@ -6,9 +7,10 @@ export type EnemyKind = "grunt" | "elite" | "boss";
 export interface Enemy {
   id: number; x: number; y: number; hp: number; maxHp: number; speed: number; r: number; dmg: number;
   kind: EnemyKind; angle: number; flash: number; fireTimer: number; ringTimer: number;
+  variant: number; spin: number; warn: number; dash: number; dvx: number; dvy: number; patT: number;
 }
 export interface Bullet { id: number; x: number; y: number; vx: number; vy: number; dmg: number; crit: boolean; life: number }
-export interface EBullet { id: number; x: number; y: number; vx: number; vy: number; dmg: number; life: number }
+export interface EBullet { id: number; x: number; y: number; vx: number; vy: number; dmg: number; life: number; homing?: boolean; fuse?: number }
 export interface Gem { id: number; x: number; y: number; value: number; pulled: boolean }
 export interface Floater { id: number; x: number; y: number; text: string; life: number; crit: boolean }
 export type ParticleTone = "ember" | "spark" | "exhaust";
@@ -22,8 +24,8 @@ export interface GameState {
   wave: number; waveTime: number; spawnTimer: number; fireTimer: number;
   kills: number; coins: number; xp: number; xpNext: number; level: number;
   pendingLevelUps: number; nextId: number; dead: boolean;
-  bossSpawned: boolean; boss: Enemy | null; bossName: string; bossBanner: number; bossesDown: number;
-  shake: number; time: number;
+  bossSpawned: boolean; boss: Enemy | null; bossName: string; bossBanner: number; bossesDown: number; bossCount: number;
+  shake: number; time: number; mods: DifficultyDef;
 }
 
 export const WAVE_SECONDS = 30;
@@ -40,9 +42,7 @@ const TURN_RATE = 7; // radians per second
 const INVULN = 0.75;
 const REGEN_PER_SEC = 0.6;
 
-const BOSS_NAMES = ["The Cinder Maw", "Ashen Leviathan", "Pyre Warden", "Molten Hydra", "Obsidian Herald", "Ember Tyrant", "The Slag King", "Furnace Queen"];
-
-export function createGame(stats: RunStats, w: number, h: number): GameState {
+export function createGame(stats: RunStats, w: number, h: number, mods: DifficultyDef): GameState {
   return {
     w, h,
     player: { x: w / 2, y: h / 2, vx: 0, vy: 0, hp: stats.maxHp, angle: -Math.PI / 2, invuln: 0, thrust: 0 },
@@ -51,8 +51,8 @@ export function createGame(stats: RunStats, w: number, h: number): GameState {
     wave: 1, waveTime: 0, spawnTimer: 0.8, fireTimer: 0,
     kills: 0, coins: 0, xp: 0, xpNext: 5, level: 1,
     pendingLevelUps: 0, nextId: 1, dead: false,
-    bossSpawned: false, boss: null, bossName: "", bossBanner: 0, bossesDown: 0,
-    shake: 0, time: 0,
+    bossSpawned: false, boss: null, bossName: "", bossBanner: 0, bossesDown: 0, bossCount: 0,
+    shake: 0, time: 0, mods,
   };
 }
 
@@ -64,23 +64,89 @@ function edgePoint(s: GameState, m: number): Vec {
   return { x: -m, y: Math.random() * s.h };
 }
 
-function spawnEnemy(s: GameState, kind: EnemyKind) {
+function spawnEnemy(s: GameState, kind: EnemyKind, at?: Vec) {
   const w = s.wave;
+  const m = s.mods;
+  const cycle = Math.floor(s.bossCount / BOSSES.length);
   const cfg = kind === "boss"
-    ? { hp: 120 + w * 70, speed: 22 + w, r: 36, dmg: 12 + w * 2 }
+    ? { hp: (120 + w * 70) * (1 + cycle * 0.5), speed: 22 + w, r: 36, dmg: 12 + w * 2 }
     : kind === "elite"
       ? { hp: (8 + w * 4) * 4, speed: 30 + w * 2, r: 18, dmg: 9 + w * 2 }
       : { hp: 8 + w * 4, speed: Math.min(90, 38 + w * 2.5) + Math.random() * 14, r: 11, dmg: 5 + w * 1.2 };
-  const pt = edgePoint(s, cfg.r + 10);
+  const pt = at ?? edgePoint(s, cfg.r + 10);
+  const hp = cfg.hp * m.hp;
   const e: Enemy = {
-    id: s.nextId++, x: pt.x, y: pt.y, hp: cfg.hp, maxHp: cfg.hp, speed: cfg.speed, r: cfg.r, dmg: cfg.dmg,
+    id: s.nextId++, x: pt.x, y: pt.y, hp, maxHp: hp, speed: cfg.speed * m.speed, r: cfg.r, dmg: cfg.dmg * m.dmg,
     kind, angle: 0, flash: 0, fireTimer: 2, ringTimer: 2.5,
+    variant: 0, spin: 0, warn: 0, dash: 0, dvx: 0, dvy: 0, patT: 0,
   };
   s.enemies.push(e);
   if (kind === "boss") {
+    e.variant = s.bossCount % BOSSES.length;
+    s.bossCount += 1;
     s.boss = e;
-    s.bossName = BOSS_NAMES[(Math.floor(w / BOSS_EVERY) - 1 + BOSS_NAMES.length) % BOSS_NAMES.length];
-    s.bossBanner = 2.4;
+    s.bossName = BOSSES[e.variant].name;
+    s.bossBanner = 2.6;
+  }
+}
+
+// Each named boss has its own attack pattern.
+function bossAttack(s: GameState, e: Enemy, dt: number) {
+  const p = s.player;
+  const bs = Math.min(200, 100 + s.wave * 4) * (0.85 + s.mods.speed * 0.15);
+  const bd = (5 + s.wave) * s.mods.dmg;
+  const shoot = (a: number, sp = bs, extra: Partial<EBullet> = {}) =>
+    s.eBullets.push({ id: s.nextId++, x: e.x, y: e.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, dmg: bd, life: 5, ...extra });
+  const ring = (n: number, off: number, sp = bs) => { for (let i = 0; i < n; i++) shoot(off + (i / n) * Math.PI * 2, sp); };
+  const minion = () => {
+    const a = Math.random() * Math.PI * 2;
+    spawnEnemy(s, "grunt", { x: e.x + Math.cos(a) * (e.r + 14), y: e.y + Math.sin(a) * (e.r + 14) });
+  };
+  const aim = e.angle;
+  e.patT += dt; e.ringTimer -= dt; e.fireTimer -= dt;
+  switch (BOSSES[e.variant].pattern) {
+    case "ring":
+      if (e.ringTimer <= 0) { e.ringTimer = Math.max(2.2, 3.4 - s.wave * 0.06); ring(Math.min(16, 8 + Math.floor(s.wave / 3)), s.time); }
+      if (s.wave >= 6 && e.fireTimer <= 0) { e.fireTimer = 2; shoot(aim, bs * 1.2); }
+      break;
+    case "spiral":
+      e.spin += 2.6 * dt;
+      if (e.patT % 4.5 < 3 && e.fireTimer <= 0) { e.fireTimer = 0.14; shoot(e.spin, bs * 0.85); }
+      break;
+    case "fan":
+      if (e.fireTimer <= 0) { e.fireTimer = 1.9; for (let k = -2; k <= 2; k++) shoot(aim + k * 0.22, bs * 1.1); }
+      if (e.ringTimer <= 0) { e.ringTimer = 6; minion(); minion(); }
+      break;
+    case "rotor":
+      e.spin += 1.1 * dt;
+      if (e.fireTimer <= 0) { e.fireTimer = 0.24; for (let k = 0; k < 3; k++) shoot(e.spin + (k * 2 * Math.PI) / 3, bs * 0.8); }
+      break;
+    case "charge":
+      if (e.dash > 0) { e.dash -= dt; if (e.dash <= 0) ring(10, s.time, bs * 0.9); }
+      else if (e.warn > 0) {
+        e.warn -= dt;
+        if (e.warn <= 0) { e.dash = 0.6; e.dvx = Math.cos(aim) * 400; e.dvy = Math.sin(aim) * 400; }
+      } else if (e.ringTimer <= 0) { e.ringTimer = 3.6; e.warn = 0.85; }
+      break;
+    case "summon":
+      if (e.ringTimer <= 0) { e.ringTimer = 5; minion(); minion(); minion(); }
+      if (e.fireTimer <= 0) { e.fireTimer = 2.6; shoot(aim + 0.5, bs * 0.7, { homing: true, life: 4 }); shoot(aim - 0.5, bs * 0.7, { homing: true, life: 4 }); }
+      break;
+    case "mines":
+      if (e.fireTimer <= 0) {
+        e.fireTimer = 2.2;
+        const a = Math.random() * Math.PI * 2, r = 40 + Math.random() * 90;
+        const mx = Math.max(10, Math.min(s.w - 10, p.x + Math.cos(a) * r));
+        const my = Math.max(10, Math.min(s.h - 10, p.y + Math.sin(a) * r));
+        s.eBullets.push({ id: s.nextId++, x: mx, y: my, vx: 0, vy: 0, dmg: bd, life: 6, fuse: 1.5 });
+      }
+      if (e.ringTimer <= 0) { e.ringTimer = 4; ring(8, s.time, bs * 0.8); }
+      break;
+    case "storm":
+      e.spin -= 2.2 * dt;
+      if (e.patT % 5 < 2.5 && e.fireTimer <= 0) { e.fireTimer = 0.18; shoot(e.spin, bs * 0.8); shoot(e.spin + Math.PI, bs * 0.8); }
+      if (e.ringTimer <= 0) { e.ringTimer = 2.4; for (let k = -1; k <= 1; k++) shoot(aim + k * 0.2, bs * 1.15); }
+      break;
   }
 }
 
@@ -107,7 +173,7 @@ export function applySystem(s: GameState, id: string) {
   }
 }
 
-export interface StepEvents { hurt: boolean; levelUp: boolean; dead: boolean; waveUp: boolean; bossSpawn: boolean; bossDown: boolean }
+export interface StepEvents { hurt: boolean; levelUp: boolean; dead: boolean; waveUp: boolean; bossSpawn: boolean; bossDown: boolean; shot: boolean; kill: boolean; pickup: boolean }
 
 function hurtPlayer(s: GameState, dmg: number, ev: StepEvents) {
   const p = s.player;
@@ -121,7 +187,7 @@ function hurtPlayer(s: GameState, dmg: number, ev: StepEvents) {
 
 // joy: thumbstick vector, magnitude 0..1 (null = no input, ship keeps gliding)
 export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
-  const ev: StepEvents = { hurt: false, levelUp: false, dead: false, waveUp: false, bossSpawn: false, bossDown: false };
+  const ev: StepEvents = { hurt: false, levelUp: false, dead: false, waveUp: false, bossSpawn: false, bossDown: false, shot: false, kill: false, pickup: false };
   const p = s.player;
   const st = s.stats;
   s.time += dt;
@@ -137,7 +203,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
     p.hp = Math.min(st.maxHp, p.hp + st.maxHp * 0.25); // breather heal between waves
     ev.waveUp = true;
   }
-  p.hp = Math.min(st.maxHp, p.hp + REGEN_PER_SEC * dt);
+  p.hp = Math.min(st.maxHp, p.hp + REGEN_PER_SEC * s.mods.regen * dt);
   if (!s.bossSpawned && s.wave % BOSS_EVERY === 0 && s.waveTime >= BOSS_AT && !s.boss) {
     s.bossSpawned = true;
     spawnEnemy(s, "boss");
@@ -191,7 +257,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
   if (s.spawnTimer <= 0 && s.enemies.length < MAX_ENEMIES) {
     const n = 1 + Math.floor(s.wave / 6);
     for (let i = 0; i < n; i++) spawnEnemy(s, s.wave >= 4 && Math.random() < 0.08 ? "elite" : "grunt");
-    s.spawnTimer = Math.max(0.5, 1.8 - s.wave * 0.07) * (s.boss ? 1.8 : 1);
+    s.spawnTimer = (Math.max(0.5, 1.8 - s.wave * 0.07) * (s.boss ? 1.8 : 1)) / s.mods.spawn;
   }
 
   // Fire only from the nose, once the ship is lined up with its target
@@ -200,6 +266,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
     const a = p.angle;
     const nx = p.x + Math.cos(a) * 16, ny = p.y + Math.sin(a) * 16;
     s.fireTimer = 1 / st.fireRate;
+    ev.shot = true;
     const n = st.projectiles;
     for (let i = 0; i < n; i++) {
       const off = (i - (n - 1) / 2) * 0.16;
@@ -233,8 +300,11 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
     const d = Math.hypot(dx, dy) || 1;
     e.angle = Math.atan2(dy, dx);
     const keepAway = e.kind === "boss" && d < 140 ? -0.4 : 1;
-    e.x += (dx / d) * e.speed * dt * keepAway;
-    e.y += (dy / d) * e.speed * dt * keepAway;
+    if (e.kind === "boss" && e.dash > 0) { e.x += e.dvx * dt; e.y += e.dvy * dt; }
+    else if (!(e.kind === "boss" && e.warn > 0)) {
+      e.x += (dx / d) * e.speed * dt * keepAway;
+      e.y += (dy / d) * e.speed * dt * keepAway;
+    }
     if (e.kind === "boss") { e.x = Math.max(e.r, Math.min(s.w - e.r, e.x)); e.y = Math.max(e.r, Math.min(s.h - e.r, e.y)); }
     e.flash = Math.max(0, e.flash - dt);
     if (d < e.r + PLAYER_R) {
@@ -243,31 +313,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
       p.vx -= (dx / d) * -140; p.vy -= (dy / d) * -140;
       if (e.kind !== "boss") { e.x -= (dx / d) * 30; e.y -= (dy / d) * 30; }
     }
-    if (e.kind === "boss") {
-      const bs = Math.min(200, 100 + s.wave * 4);
-      const bd = 5 + s.wave;
-      e.ringTimer -= dt;
-      if (e.ringTimer <= 0) {
-        e.ringTimer = Math.max(2.2, 3.6 - s.wave * 0.08);
-        const n = Math.min(16, 6 + Math.floor(s.wave / 2));
-        const rot = s.time;
-        for (let i = 0; i < n; i++) {
-          const a = rot + (i / n) * Math.PI * 2;
-          s.eBullets.push({ id: s.nextId++, x: e.x, y: e.y, vx: Math.cos(a) * bs, vy: Math.sin(a) * bs, dmg: bd, life: 5 });
-        }
-      }
-      if (s.wave >= 3) {
-        e.fireTimer -= dt;
-        if (e.fireTimer <= 0) {
-          e.fireTimer = 2.0;
-          const spread = s.wave >= 6 ? 1 : 0;
-          for (let k = -spread; k <= spread; k++) {
-            const a = e.angle + k * 0.18;
-            s.eBullets.push({ id: s.nextId++, x: e.x, y: e.y, vx: Math.cos(a) * bs * 1.2, vy: Math.sin(a) * bs * 1.2, dmg: bd, life: 5 });
-          }
-        }
-      }
-    }
+    if (e.kind === "boss") bossAttack(s, e, dt);
   }
   // Separation
   const es = s.enemies;
@@ -286,8 +332,29 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
       }
     }
   }
-  // Enemy bullets
+  // Enemy bullets (incl. homing orbs and slag mines)
   for (const b of s.eBullets) {
+    if (b.fuse !== undefined) {
+      b.fuse -= dt;
+      if (b.fuse <= 0) {
+        b.life = 0;
+        for (let i = 0; i < 8; i++) {
+          const a = (i / 8) * Math.PI * 2;
+          s.eBullets.push({ id: s.nextId++, x: b.x, y: b.y, vx: Math.cos(a) * 150, vy: Math.sin(a) * 150, dmg: b.dmg, life: 3 });
+        }
+        burst(s, b.x, b.y, 8, "ember", 120, 3);
+        continue;
+      }
+    } else if (b.homing) {
+      const want = Math.atan2(p.y - b.y, p.x - b.x);
+      const cur = Math.atan2(b.vy, b.vx);
+      let da = want - cur;
+      while (da > Math.PI) da -= Math.PI * 2;
+      while (da < -Math.PI) da += Math.PI * 2;
+      const na = cur + Math.max(-1.6 * dt, Math.min(1.6 * dt, da));
+      const sp = Math.hypot(b.vx, b.vy);
+      b.vx = Math.cos(na) * sp; b.vy = Math.sin(na) * sp;
+    }
     b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
     if ((b.x - p.x) ** 2 + (b.y - p.y) ** 2 < (PLAYER_R + 4) ** 2) { b.life = 0; hurtPlayer(s, b.dmg, ev); }
   }
@@ -297,8 +364,9 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
   for (const e of s.enemies) {
     if (e.hp > 0) continue;
     s.kills += 1;
+    ev.kill = true;
     if (e.kind === "boss") {
-      s.coins += 10 + s.wave * 3;
+      s.coins += (10 + s.wave * 3) * s.mods.coins;
       s.gems.push({ id: s.nextId++, x: e.x, y: e.y, value: 5 + s.wave, pulled: true });
       burst(s, e.x, e.y, 46, "ember", 260, 6);
       s.shake = 16;
@@ -307,7 +375,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
       s.eBullets = [];
       ev.bossDown = true;
     } else {
-      s.coins += e.kind === "elite" ? 5 : 1;
+      s.coins += (e.kind === "elite" ? 5 : 1) * s.mods.coins;
       s.gems.push({ id: s.nextId++, x: e.x, y: e.y, value: e.kind === "elite" ? 5 : 1, pulled: false });
       burst(s, e.x, e.y, e.kind === "elite" ? 16 : 9, "ember", 160, 4);
     }
@@ -324,7 +392,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
       const sp = Math.min(d, 480 * dt);
       g.x += (dx / d) * sp; g.y += (dy / d) * sp;
     } else { g.x += (dx / d) * 14 * dt; g.y += (dy / d) * 14 * dt; }
-    if (d < PLAYER_R + 5) { s.xp += g.value; g.value = 0; }
+    if (d < PLAYER_R + 5) { s.xp += g.value; g.value = 0; ev.pickup = true; }
   }
   s.gems = s.gems.filter((g) => g.value > 0);
   while (s.xp >= s.xpNext) {

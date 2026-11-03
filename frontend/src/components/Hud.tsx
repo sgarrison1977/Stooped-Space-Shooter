@@ -39,7 +39,7 @@ export function Hud({ g, onPause, wide }: { g: GameState; onPause: () => void; w
     <View style={s.pills}>
       <Pill icon="waves" label="Wave" value={g.wave} testID="hud-wave" />
       <Pill icon="skull" label="Kills" value={g.kills} testID="hud-kills" />
-      <Pill icon="coins" label="Coins" value={g.coins} testID="hud-coins" />
+      <Pill icon="coins" label="Coins" value={Math.floor(g.coins)} testID="hud-coins" />
     </View>
   );
   const pause = (

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { useFonts } from "expo-font";
@@ -8,6 +9,8 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { ErrorBoundary } from "@/src/components/error-boundary";
 import { queryClient } from "@/src/query-client";
 import { colors } from "@/src/theme";
+import { initAudio, setMuted, startMusic } from "@/src/game/audio";
+import { loadProfile } from "@/src/game/profile";
 
 // Disable logbox errors etc so that users can see the app
 // and agent works as expected.
@@ -18,6 +21,10 @@ export default function RootLayout() {
     Cinzel: require("../assets/fonts/Cinzel.ttf"),
     DMSans: require("../assets/fonts/DMSans.ttf"),
   });
+  useEffect(() => {
+    initAudio();
+    loadProfile().then((p) => { setMuted(p.muted); startMusic(); });
+  }, []);
   // One app level ErrorBoundary; a render crash shows a reload screen
   // instead of a blank app. GestureHandlerRootView must wrap the whole tree
   // or any gesture/swipe/drawer screen crashes in Expo Go.

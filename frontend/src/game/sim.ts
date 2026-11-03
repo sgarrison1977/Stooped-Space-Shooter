@@ -28,7 +28,8 @@ export interface GameState {
 
 export const WAVE_SECONDS = 30;
 export const PLAYER_R = 13;
-const BOSS_AT = 6; // seconds into each wave
+const BOSS_AT = 10; // seconds into a boss wave
+const BOSS_EVERY = 3; // boss on waves 3, 6, 9...
 const MAX_ENEMIES = 70;
 const MAX_PARTICLES = 220;
 // "On ice" handling: thrust accelerates, very little friction, walls bounce.
@@ -78,7 +79,7 @@ function spawnEnemy(s: GameState, kind: EnemyKind) {
   s.enemies.push(e);
   if (kind === "boss") {
     s.boss = e;
-    s.bossName = BOSS_NAMES[(w - 1) % BOSS_NAMES.length];
+    s.bossName = BOSS_NAMES[(Math.floor(w / BOSS_EVERY) - 1 + BOSS_NAMES.length) % BOSS_NAMES.length];
     s.bossBanner = 2.4;
   }
 }
@@ -137,7 +138,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
     ev.waveUp = true;
   }
   p.hp = Math.min(st.maxHp, p.hp + REGEN_PER_SEC * dt);
-  if (!s.bossSpawned && s.waveTime >= BOSS_AT && !s.boss) {
+  if (!s.bossSpawned && s.wave % BOSS_EVERY === 0 && s.waveTime >= BOSS_AT && !s.boss) {
     s.bossSpawned = true;
     spawnEnemy(s, "boss");
     ev.bossSpawn = true;

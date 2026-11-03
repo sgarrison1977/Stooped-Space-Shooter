@@ -19,7 +19,7 @@ User built "Hypershift" (in-game title EMBERDEEP) on Base44 and wants it rebuilt
 - Global leaderboard
 
 ## Iteration 2
-- Boss every wave (6s in): ring + aimed shots, health bar, warning banner, big coin reward
+- Boss every 3rd wave (10s in): ring + aimed shots, health bar, warning banner, big coin reward
 - Ice-glide movement with virtual thumbstick (tuned twice for less glide)
 - Ship turns toward nearest enemy (7 rad/s) and only fires from its nose when lined up
 - Landscape support for home, game, overlays, leaderboard

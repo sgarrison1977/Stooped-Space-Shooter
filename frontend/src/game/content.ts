@@ -6,13 +6,14 @@ export type DifficultyId = "casual" | "normal" | "hard" | "extreme";
 export interface DifficultyDef {
   id: DifficultyId; name: string; desc: string;
   hp: number; dmg: number; speed: number; spawn: number; coins: number; regen: number;
+  cap: number; // max enemies alive at once
 }
 
 export const DIFFICULTIES: DifficultyDef[] = [
-  { id: "casual", name: "Casual", desc: "Gentle dive · 0.75x coins", hp: 0.7, dmg: 0.6, speed: 0.85, spawn: 0.75, coins: 0.75, regen: 1.6 },
-  { id: "normal", name: "Normal", desc: "The intended dive · 1x coins", hp: 1, dmg: 1, speed: 1, spawn: 1, coins: 1, regen: 1 },
-  { id: "hard", name: "Hard", desc: "Tougher swarm · 1.5x coins", hp: 1.35, dmg: 1.4, speed: 1.12, spawn: 1.25, coins: 1.5, regen: 0.5 },
-  { id: "extreme", name: "Extreme", desc: "No regen, no mercy · 2.2x coins", hp: 1.8, dmg: 1.9, speed: 1.25, spawn: 1.5, coins: 2.2, regen: 0 },
+  { id: "casual", name: "Casual", desc: "Gentle dive · 0.75x coins", hp: 0.7, dmg: 0.6, speed: 0.85, spawn: 0.6, coins: 0.75, regen: 1.6, cap: 18 },
+  { id: "normal", name: "Normal", desc: "The intended dive · 1x coins", hp: 1, dmg: 1, speed: 1, spawn: 1, coins: 1, regen: 1, cap: 26 },
+  { id: "hard", name: "Hard", desc: "Tougher swarm · 1.5x coins", hp: 1.35, dmg: 1.4, speed: 1.12, spawn: 1.25, coins: 1.5, regen: 0.5, cap: 34 },
+  { id: "extreme", name: "Extreme", desc: "No regen, no mercy · 2.2x coins", hp: 1.8, dmg: 1.9, speed: 1.25, spawn: 1.5, coins: 2.2, regen: 0, cap: 42 },
 ];
 
 export const difficulty = (id: string) => DIFFICULTIES.find((d) => d.id === id) ?? DIFFICULTIES[1];

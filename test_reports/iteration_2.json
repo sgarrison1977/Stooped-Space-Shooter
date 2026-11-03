@@ -1,0 +1,30 @@
+{
+  "summary": "Enemy-flood bug fix VERIFIED headlessly and frontend smoke/regression passed at 390x844. /tmp/sim_test3.ts: max enemies alive never exceeded caps (casual 19 incl. boss, normal 21, hard 22, extreme 16). Custom forced-late-wave sim (wave 14-21, invulnerable player, 3 runs x 2 damage scenarios x 4 difficulties): non-shard/non-boss enemies NEVER exceeded cap (casual 18/18, normal 26/26, hard 34/34, extreme 42/42). Total alive peaks at cap+1 (the boss itself, which is spawned outside the cap) or cap+1..2 transient splitter shards (hard 36, extreme 43). UI: home, pilot naming, Casual chip, Enter the Deep, HUD, drag thrust on arena, level-up overlay pick, pause/resume/abandon, game-over (rank #1 shown), return home, Hangar (7 hulls, 6 trails), Boss Gallery (8 cards, 0/8), Leaderboard with 4 difficulty chips (casual 1 row, normal 4 rows, hard/extreme empty state) and all back buttons work. No page errors. No deprecated Expo packages found (no expo-av/expo-barcode-scanner/expo-background-fetch).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Home / Muster", "issues": ["Difficulty chip row overflows at 390px: 'EXTREME' chip is clipped ('EXT') and requires horizontal scroll; no visual hint. Consider wrapping or shrinking chips.", "Difficulty chips are 36px tall (< 44px min touch target)."]},
+      {"screen": "Play", "issues": ["pause-button is 40x40 (< 44px min touch target)."]}
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": ["/app/frontend/tests_sim/sim_cap_test.ts", "/tmp/sim_test3.ts"],
+  "action_items": [
+    "Optional: boss minion() check uses s.mods.cap instead of the wave-ramped cap min(cap, 10+wave*2) used by normal spawning (sim.ts:115 vs sim.ts:273) - minor inconsistency, minions can push count to full cap on early boss waves.",
+    "Optional balance note (not changed): in /tmp/sim_test3.ts circling bot dies on Normal around wave 7-8 and Extreme at wave 2-4, and one Casual run died at wave 13 with only 9 enemies max - deaths are from damage scaling, not flooding.",
+    "Minor design: make 'EXTREME' chip visible at 390px width; raise chip and pause button touch targets to 44px."
+  ],
+  "critical_code_review_comments": [
+    "Cap logic at sim.ts:273-279 is correct: spawn only when enemies.length < min(cap, 10+wave*2, 70), burst n is clamped to remaining headroom.",
+    "Splitter shards (sim.ts:425) and the boss (sim.ts:224) bypass the cap by design; observed overshoot is at most +2."
+  ],
+  "updated_files": ["/app/frontend/tests_sim/sim_cap_test.ts (new test file, run: cd /app/frontend && npx -y tsx tests_sim/sim_cap_test.ts)"],
+  "success_rate": {"backend": "N/A (not requested)", "frontend": "100%"},
+  "seed_data_creation": "Leaderboard scores created by UI runs under pilot names TEST_Pilot and TEST_Pilot2 (Casual, wave 1).",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Each new Playwright browser session has a fresh profile, so Enter the Deep is disabled until pilot-name-input + pilot-name-save-button are used. Leaderboard chips use testID prefix 'leaderboard-diff-{id}' (home uses 'difficulty-chip-{id}'). Overlays/boss cards fade in, so wait ~1.5s before screenshots. Headless cap test: npx -y tsx tests_sim/sim_cap_test.ts (prints RESULT: PASS/FAIL).",
+  "rca_of_issue": "Original flood: spawning had no per-difficulty alive cap and spawned bursts that grew with wave. Fix verified: with an invulnerable player and 1 damage (worst case where enemies pile up) at waves 14-21, Casual stays at 18 enemies (+1 boss)."
+}

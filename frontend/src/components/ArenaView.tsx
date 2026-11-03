@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { fonts, makeStyles, radius, spacing, useTheme } from "@/src/theme";
 import { Enemy, GameState } from "@/src/game/sim";
@@ -43,8 +43,8 @@ export function ArenaView({ g, skin, trail }: { g: GameState; skin: Skin; trail:
   const s = useStyles();
   const { colors } = useTheme();
   const p = g.player;
-  const shakeX = g.shake ? (Math.random() - 0.5) * g.shake : 0;
-  const shakeY = g.shake ? (Math.random() - 0.5) * g.shake : 0;
+  const shakeX = g.shake ? Math.sin(g.time * 97) * 0.5 * g.shake : 0;
+  const shakeY = g.shake ? Math.cos(g.time * 83) * 0.5 * g.shake : 0;
   const tone = { ember: colors.engineGlow, spark: colors.bullet, exhaust: trail.color };
   const blink = p.invuln > 0 && Math.floor(p.invuln * 20) % 2 === 0;
   const boss = g.boss;

@@ -61,16 +61,20 @@ export function PauseOverlay({ onResume, onQuit }: { onResume: () => void; onQui
   );
 }
 
-export function GameOverOverlay({
-  wave, kills, coins, rank, abandoned, wide, bosses, difficultyName, highlight, onReturn, onAgain, onShare,
-}: { wave: number; kills: number; coins: number; rank: number | null; abandoned: boolean; wide: boolean; bosses: number; difficultyName: string; highlight: string | null; onReturn: () => void; onAgain: () => void; onShare: () => void }) {
+function Stat({ label, value, testID }: { label: string; value: string | number; testID: string }) {
   const s = useStyles();
-  const Stat = ({ label, value, testID }: { label: string; value: string | number; testID: string }) => (
+  return (
     <View style={s.statRow}>
       <Text style={s.statLabel}>{label}</Text>
       <Text testID={testID} style={s.statValue}>{value}</Text>
     </View>
   );
+}
+
+export function GameOverOverlay({
+  wave, kills, coins, rank, abandoned, wide, bosses, difficultyName, highlight, onReturn, onAgain, onShare,
+}: { wave: number; kills: number; coins: number; rank: number | null; abandoned: boolean; wide: boolean; bosses: number; difficultyName: string; highlight: string | null; onReturn: () => void; onAgain: () => void; onShare: () => void }) {
+  const s = useStyles();
   return (
     <Animated.View entering={FadeIn.duration(300)} style={s.scrim} testID="game-over-overlay">
       <Label style={{ textAlign: "center" }}>Run Ended · {difficultyName}</Label>

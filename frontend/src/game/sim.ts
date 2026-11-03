@@ -112,6 +112,7 @@ function bossAttack(s: GameState, e: Enemy, dt: number) {
     s.eBullets.push({ id: s.nextId++, x: e.x, y: e.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, dmg: bd, life: 5, ...extra });
   const ring = (n: number, off: number, sp = bs) => { for (let i = 0; i < n; i++) shoot(off + (i / n) * Math.PI * 2, sp); };
   const minion = () => {
+    if (s.enemies.length >= Math.min(s.mods.cap, 10 + s.wave * 2)) return;
     const a = Math.random() * Math.PI * 2;
     spawnEnemy(s, "grunt", { x: e.x + Math.cos(a) * (e.r + 14), y: e.y + Math.sin(a) * (e.r + 14) });
   };
@@ -268,12 +269,14 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
 
   // Spawning (slower while a boss is out)
   s.spawnTimer -= dt;
-  if (s.spawnTimer <= 0 && s.enemies.length < MAX_ENEMIES) {
-    const n = 1 + Math.floor(s.wave / 6);
+  // Hard cap on enemies alive (per difficulty, ramping with wave) so the arena never floods
+  const alive = Math.min(s.mods.cap, 10 + s.wave * 2, MAX_ENEMIES);
+  if (s.spawnTimer <= 0 && s.enemies.length < alive) {
+    const n = Math.min(1 + Math.floor(s.wave / 8), alive - s.enemies.length);
     let heft = 1;
     for (let i = 0; i < n; i++) { const k = pickMob(s); heft = Math.max(heft, MOBS[k].hp); spawnEnemy(s, k); }
     // tougher enemies arrive less often so total pressure stays fair
-    s.spawnTimer = (Math.max(0.5, 1.8 - s.wave * 0.07) * (s.boss ? 1.8 : 1) * Math.sqrt(heft)) / s.mods.spawn;
+    s.spawnTimer = (Math.max(0.7, 1.8 - s.wave * 0.05) * (s.boss ? 1.8 : 1) * Math.sqrt(heft)) / s.mods.spawn;
   }
 
   // Fire only from the nose, once the ship is lined up with its target

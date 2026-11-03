@@ -80,7 +80,7 @@ const useStyles = makeStyles((c) => ({
   barText: { flexDirection: "row", justifyContent: "space-between" },
   small: { fontFamily: fonts.text, fontSize: 10, color: c.muted, letterSpacing: 1 },
   pause: {
-    width: 40, height: 40, borderRadius: radius.sm, borderWidth: 1, borderColor: c.border,
+    width: 44, height: 44, borderRadius: radius.sm, borderWidth: 1, borderColor: c.border,
     alignItems: "center", justifyContent: "center", backgroundColor: c.surfaceSecondary,
   },
   pills: { flexDirection: "row", gap: spacing.sm },

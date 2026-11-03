@@ -46,6 +46,11 @@ User built "Hypershift" (in-game title EMBERDEEP) on Base44 and wants it rebuilt
 - Tougher spawns arrive less often (spawn interval scaled by sqrt(hp multiplier)); bot sim Normal reaches waves 6-9
 - Pending: testing-agent pass (user asked to wait until told)
 
+## Iteration 6 (bug fix)
+- Enemy flood fix: per-difficulty cap on enemies alive (Casual 18 / Normal 26 / Hard 34 / Extreme 42, ramp min(cap, 10+2*wave)); boss minions respect ramped cap; slower spawn burst + 0.7s interval floor; Casual spawn 0.6x
+- Verified by testing agent (iteration_2) incl. headless sim tests_sim/sim_cap_test.ts
+- Minor: difficulty chips fit at 390px, pause button 44px, lint purity fixes
+
 ## Backlog
 - P1: Sound effects & music; more enemy types / bosses
 - P1: Server-side score sanity checks

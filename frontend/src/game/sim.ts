@@ -27,19 +27,20 @@ export interface GameState {
   bossSpawned: boolean; boss: Enemy | null; bossName: string; bossBanner: number; bossesDown: number; bossCount: number;
   bossKills: { variant: number; secs: number }[];
   seen: string[]; intro: { name: string; desc: string; t: number } | null;
-  shake: number; time: number; mods: DifficultyDef;
+  shake: number; time: number; mods: DifficultyDef; breakT: number;
 }
 
 export const WAVE_SECONDS = 30;
+export const WAVE_BREAK = 4; // seconds of calm between waves
 export const PLAYER_R = 13;
 const BOSS_AT = 10; // seconds into a boss wave
 const BOSS_EVERY = 3; // boss on waves 3, 6, 9...
 const MAX_ENEMIES = 70;
 const MAX_PARTICLES = 220;
 // "On ice" handling: thrust accelerates, very little friction, walls bounce.
-const ACCEL = 950;
+const ACCEL = 1050;
 const MAX_SPEED = 330;
-const FRICTION = 1.7;
+const FRICTION = 2.3;
 const TURN_RATE = 7; // radians per second
 const INVULN = 0.75;
 const REGEN_PER_SEC = 0.6;
@@ -54,7 +55,7 @@ export function createGame(stats: RunStats, w: number, h: number, mods: Difficul
     kills: 0, coins: 0, xp: 0, xpNext: 5, level: 1,
     pendingLevelUps: 0, nextId: 1, dead: false,
     bossSpawned: false, boss: null, bossName: "", bossBanner: 0, bossesDown: 0, bossCount: 0, bossKills: [], seen: [], intro: null,
-    shake: 0, time: 0, mods,
+    shake: 0, time: 0, mods, breakT: 0,
   };
 }
 
@@ -187,7 +188,7 @@ export function applySystem(s: GameState, id: string) {
   }
 }
 
-export interface StepEvents { hurt: boolean; levelUp: boolean; dead: boolean; waveUp: boolean; bossSpawn: boolean; bossDown: boolean; shot: boolean; kill: boolean; pickup: boolean }
+export interface StepEvents { hurt: boolean; levelUp: boolean; dead: boolean; waveUp: boolean; waveClear: boolean; bossSpawn: boolean; bossDown: boolean; shot: boolean; kill: boolean; pickup: boolean }
 
 function hurtPlayer(s: GameState, dmg: number, ev: StepEvents) {
   const p = s.player;
@@ -201,7 +202,7 @@ function hurtPlayer(s: GameState, dmg: number, ev: StepEvents) {
 
 // joy: thumbstick vector, magnitude 0..1 (null = no input, ship keeps gliding)
 export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
-  const ev: StepEvents = { hurt: false, levelUp: false, dead: false, waveUp: false, bossSpawn: false, bossDown: false, shot: false, kill: false, pickup: false };
+  const ev: StepEvents = { hurt: false, levelUp: false, dead: false, waveUp: false, waveClear: false, bossSpawn: false, bossDown: false, shot: false, kill: false, pickup: false };
   const p = s.player;
   const st = s.stats;
   s.time += dt;
@@ -209,17 +210,31 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
   s.bossBanner = Math.max(0, s.bossBanner - dt);
   if (s.intro) { s.intro.t -= dt; if (s.intro.t <= 0) s.intro = null; }
 
-  // Waves + one boss per wave
-  s.waveTime += dt;
-  if (s.waveTime >= WAVE_SECONDS) {
-    s.waveTime -= WAVE_SECONDS;
-    s.wave += 1;
-    s.bossSpawned = false;
-    p.hp = Math.min(st.maxHp, p.hp + st.maxHp * 0.25); // breather heal between waves
-    ev.waveUp = true;
+  // Waves + one boss per wave; a short breather between waves
+  if (s.breakT > 0) {
+    s.breakT -= dt;
+    if (s.breakT <= 0) {
+      s.breakT = 0;
+      s.wave += 1;
+      s.waveTime = 0;
+      s.bossSpawned = false;
+      ev.waveUp = true;
+    }
+  } else {
+    s.waveTime += dt;
+    // a living boss must be beaten before the wave can end
+    if (s.waveTime >= WAVE_SECONDS && !s.boss) {
+      s.breakT = WAVE_BREAK;
+      p.hp = Math.min(st.maxHp, p.hp + st.maxHp * 0.25); // breather heal between waves
+      for (const e of s.enemies) burst(s, e.x, e.y, 6, "ember", 120, 3);
+      s.enemies = [];
+      s.eBullets = [];
+      for (const g of s.gems) g.pulled = true;
+      ev.waveClear = true;
+    }
   }
   p.hp = Math.min(st.maxHp, p.hp + REGEN_PER_SEC * s.mods.regen * dt);
-  if (!s.bossSpawned && s.wave % BOSS_EVERY === 0 && s.waveTime >= BOSS_AT && !s.boss) {
+  if (!s.breakT && !s.bossSpawned && s.wave % BOSS_EVERY === 0 && s.waveTime >= BOSS_AT && !s.boss) {
     s.bossSpawned = true;
     spawnEnemy(s, "boss");
     ev.bossSpawn = true;
@@ -271,7 +286,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
   s.spawnTimer -= dt;
   // Hard cap on enemies alive (per difficulty, ramping with wave) so the arena never floods
   const alive = Math.min(s.mods.cap, 10 + s.wave * 2, MAX_ENEMIES);
-  if (s.spawnTimer <= 0 && s.enemies.length < alive) {
+  if (!s.breakT && s.spawnTimer <= 0 && s.enemies.length < alive) {
     const n = Math.min(1 + Math.floor(s.wave / 8), alive - s.enemies.length);
     let heft = 1;
     for (let i = 0; i < n; i++) { const k = pickMob(s); heft = Math.max(heft, MOBS[k].hp); spawnEnemy(s, k); }

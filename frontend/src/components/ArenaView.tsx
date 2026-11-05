@@ -113,6 +113,13 @@ export function ArenaView({ g, skin, trail }: { g: GameState; skin: Skin; trail:
           </View>
         </View>
       ) : null}
+      {g.breakT > 0 ? (
+        <View style={s.banner} testID="wave-break-banner">
+          <Text style={s.bannerLabel}>Wave {g.wave} cleared</Text>
+          <Text style={s.bannerName}>Wave {g.wave + 1} in {Math.ceil(g.breakT)}</Text>
+          <Text style={s.bannerTag}>Hull repaired · catch your breath</Text>
+        </View>
+      ) : null}
       {g.bossBanner > 0 && boss ? (
         <View style={s.banner} testID="boss-banner">
           <Text style={[s.bannerLabel, { opacity: Math.min(1, g.bossBanner) }]}>Boss Incoming</Text>

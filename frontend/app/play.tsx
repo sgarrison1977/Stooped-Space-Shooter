@@ -84,6 +84,7 @@ export default function Play() {
       if (ev.bossSpawn) { playSfx("boss_warning"); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {}); }
       if (ev.bossDown) { playSfx("boss_explosion"); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {}); }
       if (ev.levelUp) playSfx("levelup");
+      if (ev.waveClear) { playSfx("levelup"); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {}); }
       if (ev.dead) {
         playSfx("boss_explosion");
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});

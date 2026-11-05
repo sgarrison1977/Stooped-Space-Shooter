@@ -51,6 +51,10 @@ User built "Hypershift" (in-game title EMBERDEEP) on Base44 and wants it rebuilt
 - Verified by testing agent (iteration_2) incl. headless sim tests_sim/sim_cap_test.ts
 - Minor: difficulty chips fit at 390px, pause button 44px, lint purity fixes
 
+## Iteration 7
+- 4s breather between waves: remaining enemies dissolve, enemy shots cleared, gems auto-collected, +25% hull, countdown banner; no spawns during break; a living boss must be beaten before the wave can end
+- Glide reduced (friction 1.7 -> 2.3, thrust 950 -> 1050)
+
 ## Backlog
 - P1: Sound effects & music; more enemy types / bosses
 - P1: Server-side score sanity checks

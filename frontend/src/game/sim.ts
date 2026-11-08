@@ -475,7 +475,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
   while (s.xp >= s.xpNext) {
     s.xp -= s.xpNext;
     s.level += 1;
-    s.xpNext = Math.round(s.xpNext * 1.28 + 2);
+    s.xpNext = s.level < 10 ? Math.round(s.xpNext * 1.28 + 2) : s.xpNext + 15; // steady growth after level 10
     s.pendingLevelUps += 1;
     ev.levelUp = true;
   }

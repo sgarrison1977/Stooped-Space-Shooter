@@ -302,11 +302,13 @@ export function levelChoices(s: GameState): SystemDef[] {
   if (out.length < 3 && wpool.length) out.push(wpool.splice(Math.floor(rnd() * wpool.length), 1)[0]);
   pool.push(...wpool);
   while (out.length < 3 && pool.length) out.push(pool.splice(Math.floor(rnd() * pool.length), 1)[0]);
+  if (!out.length) out.push({ id: "field_repair", name: "Field Repair", desc: "Repair 40 hull, +5% damage", icon: "wrench" });
   return out;
 }
 
 export function applyChoice(s: GameState, id: string) {
   const st = s.stats;
+  if (id === "field_repair") { s.player.hp = Math.min(st.maxHp, s.player.hp + 40); st.damage *= 1.05; return; }
   if (Object.values(WEAPON_EVOS).some((e) => e.id === id)) { s.evolved.push(id); return; }
   if (EVOLUTIONS.some((e) => e.id === id)) {
     s.evolved.push(id);

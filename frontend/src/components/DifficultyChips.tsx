@@ -2,10 +2,11 @@ import React from "react";
 import { Pressable, ScrollView, Text } from "react-native";
 import * as Haptics from "expo-haptics";
 import { fonts, makeStyles, radius, spacing } from "@/src/theme";
-import { DIFFICULTIES, DifficultyId } from "@/src/game/content";
+import { DIFFICULTIES } from "@/src/game/content";
 
 // One horizontal chip row; selected chip changes colour/border only.
-export function DifficultyChips({ value, onChange, testPrefix, padded }: { value: DifficultyId; onChange: (d: DifficultyId) => void; testPrefix: string; padded?: boolean }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function DifficultyChips({ value, onChange, testPrefix, padded, options = DIFFICULTIES }: { value: string; onChange: (d: any) => void; testPrefix: string; padded?: boolean; options?: { id: string; name: string }[] }) {
   const s = useStyles();
   return (
     <ScrollView
@@ -14,7 +15,7 @@ export function DifficultyChips({ value, onChange, testPrefix, padded }: { value
       style={s.row}
       contentContainerStyle={[s.content, padded && { paddingHorizontal: spacing.lg }]}
     >
-      {DIFFICULTIES.map((d) => {
+      {options.map((d) => {
         const on = d.id === value;
         return (
           <Pressable

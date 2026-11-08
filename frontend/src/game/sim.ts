@@ -1,5 +1,11 @@
 import { RunStats } from "./config";
 import { BOSSES, DifficultyDef, MobKind, MOBS } from "./content";
+import { WAVE_MODS } from "./arsenal";
+import { activeWeapon, ArsenalState, arsenalDefaults, bulletHit, onEnemyDeath, reflect, updateArsenal, waveDone } from "./arsenal-sim";
+
+// Swappable RNG so the Daily Run is the same for everyone
+export let rnd: () => number = Math.random;
+export function setRng(f: () => number) { rnd = f; }
 
 export type Vec = { x: number; y: number };
 export type EnemyKind = MobKind | "boss";
@@ -9,14 +15,14 @@ export interface Enemy {
   kind: EnemyKind; angle: number; flash: number; fireTimer: number; ringTimer: number;
   variant: number; spin: number; warn: number; dash: number; dvx: number; dvy: number; patT: number; spawnedAt: number;
 }
-export interface Bullet { id: number; x: number; y: number; vx: number; vy: number; dmg: number; crit: boolean; life: number }
+export interface Bullet { id: number; x: number; y: number; vx: number; vy: number; dmg: number; crit: boolean; life: number; kind?: "flame" | "missile"; hits?: number[] }
 export interface EBullet { id: number; x: number; y: number; vx: number; vy: number; dmg: number; life: number; homing?: boolean; fuse?: number }
 export interface Gem { id: number; x: number; y: number; value: number; pulled: boolean }
 export interface Floater { id: number; x: number; y: number; text: string; life: number; crit: boolean }
 export type ParticleTone = "ember" | "spark" | "exhaust";
 export interface Particle { id: number; x: number; y: number; vx: number; vy: number; life: number; max: number; size: number; tone: ParticleTone }
 
-export interface GameState {
+export interface GameState extends ArsenalState {
   w: number; h: number;
   player: { x: number; y: number; vx: number; vy: number; hp: number; angle: number; invuln: number; thrust: number };
   stats: RunStats;
@@ -40,7 +46,7 @@ const MAX_PARTICLES = 220;
 // "On ice" handling: thrust accelerates, very little friction, walls bounce.
 const ACCEL = 1050;
 const MAX_SPEED = 330;
-const FRICTION = 2.3;
+const FRICTION = 3.0;
 const TURN_RATE = 7; // radians per second
 const INVULN = 0.75;
 const REGEN_PER_SEC = 0.6;
@@ -55,16 +61,16 @@ export function createGame(stats: RunStats, w: number, h: number, mods: Difficul
     kills: 0, coins: 0, xp: 0, xpNext: 5, level: 1,
     pendingLevelUps: 0, nextId: 1, dead: false,
     bossSpawned: false, boss: null, bossName: "", bossBanner: 0, bossesDown: 0, bossCount: 0, bossKills: [], seen: [], intro: null,
-    shake: 0, time: 0, mods, breakT: 0,
+    shake: 0, time: 0, mods, breakT: 0, ...arsenalDefaults(),
   };
 }
 
 function edgePoint(s: GameState, m: number): Vec {
-  const side = Math.floor(Math.random() * 4);
-  if (side === 0) return { x: Math.random() * s.w, y: -m };
-  if (side === 1) return { x: s.w + m, y: Math.random() * s.h };
-  if (side === 2) return { x: Math.random() * s.w, y: s.h + m };
-  return { x: -m, y: Math.random() * s.h };
+  const side = Math.floor(rnd() * 4);
+  if (side === 0) return { x: rnd() * s.w, y: -m };
+  if (side === 1) return { x: s.w + m, y: rnd() * s.h };
+  if (side === 2) return { x: rnd() * s.w, y: s.h + m };
+  return { x: -m, y: rnd() * s.h };
 }
 
 function spawnEnemy(s: GameState, kind: EnemyKind, at?: Vec) {
@@ -74,11 +80,12 @@ function spawnEnemy(s: GameState, kind: EnemyKind, at?: Vec) {
   const mob = kind === "boss" ? null : MOBS[kind];
   const cfg = !mob
     ? { hp: (120 + w * 70) * (1 + cycle * 0.5), speed: 22 + w, r: 36, dmg: 12 + w * 2 }
-    : { hp: (8 + w * 4) * mob.hp, speed: (Math.min(90, 38 + w * 2.5) + Math.random() * 14) * mob.speed, r: mob.r, dmg: (5 + w * 1.2) * mob.dmg };
+    : { hp: (8 + w * 4) * mob.hp, speed: (Math.min(90, 38 + w * 2.5) + rnd() * 14) * mob.speed, r: mob.r, dmg: (5 + w * 1.2) * mob.dmg };
   const pt = at ?? edgePoint(s, cfg.r + 10);
-  const hp = cfg.hp * m.hp;
+  const wm = WAVE_MODS[s.waveMod];
+  const hp = cfg.hp * m.hp * (kind === "boss" ? 1 : wm.hp);
   const e: Enemy = {
-    id: s.nextId++, x: pt.x, y: pt.y, hp, maxHp: hp, speed: cfg.speed * m.speed, r: cfg.r, dmg: cfg.dmg * m.dmg,
+    id: s.nextId++, x: pt.x, y: pt.y, hp, maxHp: hp, speed: cfg.speed * m.speed * (kind === "boss" ? 1 : wm.speed), r: cfg.r, dmg: cfg.dmg * m.dmg,
     kind, angle: 0, flash: 0, fireTimer: 2, ringTimer: 2.5,
     variant: 0, spin: 0, warn: 0, dash: 0, dvx: 0, dvy: 0, patT: 0, spawnedAt: s.time,
   };
@@ -98,8 +105,8 @@ function spawnEnemy(s: GameState, kind: EnemyKind, at?: Vec) {
 
 // Weighted pick among enemy types unlocked by the current wave.
 function pickMob(s: GameState): MobKind {
-  const pool = (Object.keys(MOBS) as MobKind[]).filter((k) => MOBS[k].weight > 0 && MOBS[k].minWave <= s.wave);
-  let r = Math.random() * pool.reduce((a, k) => a + MOBS[k].weight, 0);
+  const pool = (Object.keys(MOBS) as MobKind[]).filter((k) => MOBS[k].weight > 0 && (s.waveMod === "heavies" ? ["brute", "elite", "juggernaut", "splitter"].includes(k) : MOBS[k].minWave <= s.wave));
+  let r = rnd() * pool.reduce((a, k) => a + MOBS[k].weight, 0);
   for (const k of pool) { r -= MOBS[k].weight; if (r <= 0) return k; }
   return "grunt";
 }
@@ -114,7 +121,7 @@ function bossAttack(s: GameState, e: Enemy, dt: number) {
   const ring = (n: number, off: number, sp = bs) => { for (let i = 0; i < n; i++) shoot(off + (i / n) * Math.PI * 2, sp); };
   const minion = () => {
     if (s.enemies.length >= Math.min(s.mods.cap, 10 + s.wave * 2)) return;
-    const a = Math.random() * Math.PI * 2;
+    const a = rnd() * Math.PI * 2;
     spawnEnemy(s, "grunt", { x: e.x + Math.cos(a) * (e.r + 14), y: e.y + Math.sin(a) * (e.r + 14) });
   };
   const aim = e.angle;
@@ -150,7 +157,7 @@ function bossAttack(s: GameState, e: Enemy, dt: number) {
     case "mines":
       if (e.fireTimer <= 0) {
         e.fireTimer = 2.2;
-        const a = Math.random() * Math.PI * 2, r = 40 + Math.random() * 90;
+        const a = rnd() * Math.PI * 2, r = 40 + rnd() * 90;
         const mx = Math.max(10, Math.min(s.w - 10, p.x + Math.cos(a) * r));
         const my = Math.max(10, Math.min(s.h - 10, p.y + Math.sin(a) * r));
         s.eBullets.push({ id: s.nextId++, x: mx, y: my, vx: 0, vy: 0, dmg: bd, life: 6, fuse: 1.5 });
@@ -165,12 +172,12 @@ function bossAttack(s: GameState, e: Enemy, dt: number) {
   }
 }
 
-function burst(s: GameState, x: number, y: number, n: number, tone: ParticleTone, speed: number, size: number) {
+export function burst(s: GameState, x: number, y: number, n: number, tone: ParticleTone, speed: number, size: number) {
   for (let i = 0; i < n && s.particles.length < MAX_PARTICLES; i++) {
-    const a = Math.random() * Math.PI * 2;
-    const sp = speed * (0.4 + Math.random() * 0.8);
-    const life = 0.35 + Math.random() * 0.45;
-    s.particles.push({ id: s.nextId++, x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life, max: life, size: size * (0.6 + Math.random() * 0.8), tone });
+    const a = rnd() * Math.PI * 2;
+    const sp = speed * (0.4 + rnd() * 0.8);
+    const life = 0.35 + rnd() * 0.45;
+    s.particles.push({ id: s.nextId++, x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life, max: life, size: size * (0.6 + rnd() * 0.8), tone });
   }
 }
 
@@ -193,7 +200,8 @@ export interface StepEvents { hurt: boolean; levelUp: boolean; dead: boolean; wa
 function hurtPlayer(s: GameState, dmg: number, ev: StepEvents) {
   const p = s.player;
   if (p.invuln > 0) return;
-  p.hp -= dmg * (1 - s.stats.resist);
+  if (s.shieldT > 0 || s.buffShieldT > 0) return;
+  p.hp -= s.mode === "hardcore" ? p.hp : dmg * (1 - s.stats.resist);
   p.invuln = INVULN;
   s.shake = Math.max(s.shake, 7);
   ev.hurt = true;
@@ -218,13 +226,16 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
       s.wave += 1;
       s.waveTime = 0;
       s.bossSpawned = false;
+      s.waveMod = s.nextMod;
+      s.nextMod = "none";
       ev.waveUp = true;
     }
   } else {
     s.waveTime += dt;
     // a living boss must be beaten before the wave can end
-    if (s.waveTime >= WAVE_SECONDS && !s.boss) {
+    if (waveDone(s)) {
       s.breakT = WAVE_BREAK;
+      s.pathPending = true;
       p.hp = Math.min(st.maxHp, p.hp + st.maxHp * 0.25); // breather heal between waves
       for (const e of s.enemies) burst(s, e.x, e.y, 6, "ember", 120, 3);
       s.enemies = [];
@@ -234,7 +245,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
     }
   }
   p.hp = Math.min(st.maxHp, p.hp + REGEN_PER_SEC * s.mods.regen * dt);
-  if (!s.breakT && !s.bossSpawned && s.wave % BOSS_EVERY === 0 && s.waveTime >= BOSS_AT && !s.boss) {
+  if (!s.breakT && !s.bossSpawned && (s.mode === "bossrush" ? s.waveTime >= 2 : s.wave % BOSS_EVERY === 0 && s.waveTime >= BOSS_AT) && !s.boss) {
     s.bossSpawned = true;
     spawnEnemy(s, "boss");
     ev.bossSpawn = true;
@@ -242,14 +253,15 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
 
   // Ice physics
   if (joy) {
-    p.vx += joy.x * ACCEL * dt;
-    p.vy += joy.y * ACCEL * dt;
+    p.vx += joy.x * ACCEL * s.cls.move * dt;
+    p.vy += joy.y * ACCEL * s.cls.move * dt;
     p.thrust = Math.min(1, Math.hypot(joy.x, joy.y));
   } else p.thrust = 0;
   const damp = Math.exp(-FRICTION * dt);
   p.vx *= damp; p.vy *= damp;
   const spd = Math.hypot(p.vx, p.vy);
-  if (spd > MAX_SPEED) { p.vx = (p.vx / spd) * MAX_SPEED; p.vy = (p.vy / spd) * MAX_SPEED; }
+  const maxSp = MAX_SPEED * s.cls.move * (spd > MAX_SPEED * 1.5 ? 2.6 : 1); // dash may exceed briefly
+  if (spd > maxSp) { p.vx = (p.vx / spd) * maxSp; p.vy = (p.vy / spd) * maxSp; }
   p.x += p.vx * dt; p.y += p.vy * dt;
   if (p.x < PLAYER_R) { p.x = PLAYER_R; p.vx = Math.abs(p.vx) * 0.55; }
   if (p.x > s.w - PLAYER_R) { p.x = s.w - PLAYER_R; p.vx = -Math.abs(p.vx) * 0.55; }
@@ -272,13 +284,13 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
   p.angle += Math.max(-turn, Math.min(turn, da));
   const aimError = Math.abs(da) - Math.min(Math.abs(da), turn);
   p.invuln = Math.max(0, p.invuln - dt);
-  if (p.thrust > 0.2 && s.particles.length < MAX_PARTICLES && Math.random() < 0.8) {
+  if (p.thrust > 0.2 && s.particles.length < MAX_PARTICLES && rnd() < 0.8) {
     const bx = p.x - Math.cos(p.angle) * 14, by = p.y - Math.sin(p.angle) * 14;
-    const life = 0.25 + Math.random() * 0.2;
+    const life = 0.25 + rnd() * 0.2;
     s.particles.push({
-      id: s.nextId++, x: bx, y: by, life, max: life, size: 3 + Math.random() * 2, tone: "exhaust",
-      vx: -Math.cos(p.angle + (Math.random() - 0.5) * 0.6) * 120 + p.vx * 0.3,
-      vy: -Math.sin(p.angle + (Math.random() - 0.5) * 0.6) * 120 + p.vy * 0.3,
+      id: s.nextId++, x: bx, y: by, life, max: life, size: 3 + rnd() * 2, tone: "exhaust",
+      vx: -Math.cos(p.angle + (rnd() - 0.5) * 0.6) * 120 + p.vx * 0.3,
+      vy: -Math.sin(p.angle + (rnd() - 0.5) * 0.6) * 120 + p.vy * 0.3,
     });
   }
 
@@ -286,28 +298,30 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
   s.spawnTimer -= dt;
   // Hard cap on enemies alive (per difficulty, ramping with wave) so the arena never floods
   const alive = Math.min(s.mods.cap, 10 + s.wave * 2, MAX_ENEMIES);
-  if (!s.breakT && s.spawnTimer <= 0 && s.enemies.length < alive) {
+  if (!s.breakT && s.mode !== "bossrush" && s.spawnTimer <= 0 && s.enemies.length < alive) {
     const n = Math.min(1 + Math.floor(s.wave / 8), alive - s.enemies.length);
     let heft = 1;
     for (let i = 0; i < n; i++) { const k = pickMob(s); heft = Math.max(heft, MOBS[k].hp); spawnEnemy(s, k); }
     // tougher enemies arrive less often so total pressure stays fair
-    s.spawnTimer = (Math.max(0.7, 1.8 - s.wave * 0.05) * (s.boss ? 1.8 : 1) * Math.sqrt(heft)) / s.mods.spawn;
+    s.spawnTimer = (Math.max(0.7, 1.8 - s.wave * 0.05) * (s.boss ? 1.8 : 1) * Math.sqrt(heft)) / (s.mods.spawn * WAVE_MODS[s.waveMod].spawn);
   }
 
   // Fire only from the nose, once the ship is lined up with its target
-  s.fireTimer -= dt;
-  if (nearest && s.fireTimer <= 0 && aimError < 0.2) {
+  s.fireTimer -= dt * (s.overT > 0 ? 2 : 1);
+  updateArsenal(s, dt, nearest, aimError, ev);
+  if (activeWeapon(s) === "cannon" && nearest && s.fireTimer <= 0 && aimError < 0.2) {
     const a = p.angle;
     const nx = p.x + Math.cos(a) * 16, ny = p.y + Math.sin(a) * 16;
     s.fireTimer = 1 / st.fireRate;
     ev.shot = true;
     const n = st.projectiles;
+    const sp = 540 * (1 + 0.3 * (s.picks.cn_velocity ?? 0)), heavy = 1 + 0.25 * (s.picks.cn_heavy ?? 0);
     for (let i = 0; i < n; i++) {
       const off = (i - (n - 1) / 2) * 0.16;
-      const crit = Math.random() < st.crit;
+      const crit = rnd() < st.crit;
       s.bullets.push({
-        id: s.nextId++, x: nx, y: ny, vx: Math.cos(a + off) * 540, vy: Math.sin(a + off) * 540,
-        dmg: Math.round(st.damage * (crit ? 2 : 1)), crit, life: 1.4,
+        id: s.nextId++, x: nx, y: ny, vx: Math.cos(a + off) * sp, vy: Math.sin(a + off) * sp,
+        dmg: Math.round(st.damage * heavy * (crit ? 2 : 1)), crit, life: 1.4,
       });
     }
   }
@@ -318,6 +332,8 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
     for (const e of s.enemies) {
       if (e.hp <= 0) continue;
       if ((e.x - b.x) ** 2 + (e.y - b.y) ** 2 < (e.r + 3) ** 2) {
+        if (b.hits?.includes(e.id)) continue;
+        if (bulletHit(s, b, e)) continue;
         e.hp -= b.dmg; e.flash = 0.08; b.life = 0;
         s.floaters.push({ id: s.nextId++, x: e.x, y: e.y - e.r, text: String(b.dmg), life: 0.6, crit: b.crit });
         burst(s, b.x, b.y, 2, "spark", 90, 2);
@@ -327,7 +343,9 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
   }
   s.bullets = s.bullets.filter((b) => b.life > 0 && b.x > -20 && b.x < s.w + 20 && b.y > -20 && b.y < s.h + 20);
 
-  // Enemies
+  // Enemies (time slow affects enemies + their shots only)
+  const realDt = dt;
+  dt = s.slowT > 0 ? dt * 0.35 : dt;
   for (const e of s.enemies) {
     if (e.hp <= 0) continue;
     const dx = p.x - e.x, dy = p.y - e.y;
@@ -347,9 +365,9 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
     if (e.kind === "phantom") {
       e.ringTimer -= dt;
       if (e.ringTimer <= 0) {
-        e.ringTimer = 3.5 + Math.random() * 1.5;
+        e.ringTimer = 3.5 + rnd() * 1.5;
         burst(s, e.x, e.y, 10, "spark", 120, 3);
-        const a = Math.random() * Math.PI * 2, r = 110 + Math.random() * 40;
+        const a = rnd() * Math.PI * 2, r = 110 + rnd() * 40;
         e.x = Math.max(e.r, Math.min(s.w - e.r, p.x + Math.cos(a) * r));
         e.y = Math.max(e.r, Math.min(s.h - e.r, p.y + Math.sin(a) * r));
         e.flash = 0.15;
@@ -412,15 +430,18 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
       b.vx = Math.cos(na) * sp; b.vy = Math.sin(na) * sp;
     }
     b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
+    if (s.shieldT > 0 && (b.x - p.x) ** 2 + (b.y - p.y) ** 2 < 48 * 48) { reflect(s, b); continue; }
     if ((b.x - p.x) ** 2 + (b.y - p.y) ** 2 < (PLAYER_R + 4) ** 2) { b.life = 0; hurtPlayer(s, b.dmg, ev); }
   }
   s.eBullets = s.eBullets.filter((b) => b.life > 0 && b.x > -30 && b.x < s.w + 30 && b.y > -30 && b.y < s.h + 30);
 
+  dt = realDt;
   // Deaths
   for (const e of s.enemies) {
     if (e.hp > 0) continue;
     s.kills += 1;
     ev.kill = true;
+    onEnemyDeath(s, e);
     if (e.kind === "boss") {
       s.coins += (10 + s.wave * 3) * s.mods.coins;
       s.gems.push({ id: s.nextId++, x: e.x, y: e.y, value: 5 + s.wave, pulled: true });

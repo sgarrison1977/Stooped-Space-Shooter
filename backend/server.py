@@ -64,7 +64,7 @@ class ScoreSubmit(BaseModel):
     name: str = Field(min_length=1, max_length=20)
     wave: int = Field(ge=1, le=10000)
     kills: int = Field(ge=0, le=1000000)
-    difficulty: Literal["casual", "normal", "hard", "extreme"] = "normal"
+    difficulty: str = Field("normal", pattern=r"^(casual|normal|hard|extreme|bossrush|hardcore|daily-\d{8})$")
 
 
 class LeaderboardEntry(BaseModel):
@@ -117,7 +117,7 @@ async def submit_score(body: ScoreSubmit):
 
 @api_router.get("/leaderboard", response_model=List[LeaderboardEntry])
 async def leaderboard(player_id: Optional[str] = None,
-                      difficulty: Literal["casual", "normal", "hard", "extreme"] = "normal",
+                      difficulty: str = Query("normal", pattern=r"^(casual|normal|hard|extreme|bossrush|hardcore|daily-\d{8})$"),
                       limit: int = Query(50, ge=1, le=100)):
     docs = await db.scores.find({"difficulty": difficulty}).sort([("best_wave", -1), ("best_kills", -1)]).to_list(limit)
     out = []

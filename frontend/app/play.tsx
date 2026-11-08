@@ -5,8 +5,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { StatusBar } from "expo-status-bar";
 import { fonts, makeStyles, radius, spacing } from "@/src/theme";
-import { applySystem, createGame, GameState, step, Vec } from "@/src/game/sim";
-import { baseStats, pickSystems, SystemDef } from "@/src/game/config";
+import { createGame, GameState, step, Vec } from "@/src/game/sim";
+import { activateAbility, applyChoice, boardKey, levelChoices, pathOptions, setupLoadout } from "@/src/game/arsenal-sim";
+import { MODES, WaveModId } from "@/src/game/arsenal";
+
+const runLabel = (g: GameState) => (g.mode === "standard" ? g.mods.name : MODES.find((m) => m.id === g.mode)!.name);
+import { AbilityButton, PathOverlay } from "@/src/components/ArenaExtras";
+import { baseStats, SystemDef } from "@/src/game/config";
 import { loadProfile, mergeBossKills, saveProfile, submitScore } from "@/src/game/profile";
 import { BOSSES, difficulty, SKINS, skinById, TRAILS, trailById } from "@/src/game/content";
 import { playSfx, startMusic } from "@/src/game/audio";
@@ -14,7 +19,7 @@ import { ArenaView } from "@/src/components/ArenaView";
 import { Hud } from "@/src/components/Hud";
 import { GameOverOverlay, LevelUpOverlay, PauseOverlay } from "@/src/components/Overlays";
 
-type Mode = "play" | "levelup" | "paused" | "over";
+type Mode = "play" | "levelup" | "paused" | "over" | "path";
 
 export default function Play() {
   const s = useStyles();
@@ -34,6 +39,7 @@ export default function Play() {
   const [runId, setRunId] = useState(0);
   const [look, setLook] = useState({ skin: SKINS[0], trail: TRAILS[0] });
   const [highlight, setHighlight] = useState<string | null>(null);
+  const [pathOpts, setPathOpts] = useState<WaveModId[]>([]);
 
   const setMode = (m: Mode) => { modeRef.current = m; setModeState(m); };
 
@@ -46,7 +52,7 @@ export default function Play() {
     setHighlight(hl);
     const next = { ...p, coins: p.coins + earned, kills: p.kills + g.kills, runs: p.runs + 1, bestWave: Math.max(p.bestWave, g.wave), bossRecords: records };
     await saveProfile(next);
-    try { setRank((await submitScore(next, g.wave, g.kills)).rank); } catch { setRank(null); }
+    try { setRank((await submitScore(next, g.wave, g.kills, boardKey(g))).rank); } catch { setRank(null); }
   }, []);
 
   // Start / restart a run once the arena is measured
@@ -54,7 +60,10 @@ export default function Play() {
     if (!size.current) return;
     const p = await loadProfile();
     setLook({ skin: skinById(p.skin), trail: trailById(p.trail) });
-    game.current = createGame(baseStats(p.upgrades), size.current.w, size.current.h, difficulty(p.difficulty));
+    // Special modes use Normal; Daily also ignores Armoury upgrades so it is the same for everyone
+    const ups = p.mode === "daily" ? { cannon: 1, deflector: 1, hull: 1 } : p.upgrades;
+    game.current = createGame(baseStats(ups), size.current.w, size.current.h, difficulty(p.mode === "standard" ? p.difficulty : "normal"));
+    setupLoadout(game.current, { mode: p.mode, weapon: p.weapon, ability: p.ability, cls: p.shipClass });
     joy.current = null;
     drag.current = null;
     setRank(null);
@@ -90,8 +99,11 @@ export default function Play() {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
         setMode("over");
         finishRun(g);
+      } else if (g.pathPending) {
+        setPathOpts(pathOptions());
+        setMode("path");
       } else if (g.pendingLevelUps > 0) {
-        setChoices(pickSystems(3));
+        setChoices(levelChoices(g));
         setMode("levelup");
       }
       setFrame((f) => (f + 1) % 1000000);
@@ -144,9 +156,9 @@ export default function Play() {
   const pick = (sys: SystemDef) => {
     const g = game.current;
     if (!g) return;
-    applySystem(g, sys.id);
+    applyChoice(g, sys.id);
     g.pendingLevelUps -= 1;
-    if (g.pendingLevelUps > 0) setChoices(pickSystems(3));
+    if (g.pendingLevelUps > 0) setChoices(levelChoices(g));
     else setMode("play");
   };
 
@@ -172,15 +184,17 @@ export default function Play() {
         onResponderTerminate={onRelease}
       >
         {g ? <ArenaView g={g} skin={look.skin} trail={look.trail} /> : null}
+        {g && mode === "play" ? <AbilityButton g={g} onPress={() => activateAbility(g)} /> : null}
         {d && j ? (
           <View pointerEvents="none" style={[s.stick, { left: d.lx - STICK, top: d.ly - STICK }]} testID="thumbstick">
             <View style={[s.knob, { transform: [{ translateX: j.x * STICK }, { translateY: j.y * STICK }] }]} />
           </View>
         ) : null}
-        <Text style={s.hint} pointerEvents="none">Drag to thrust · You attack on your own</Text>
+        <Text style={s.hint} pointerEvents="none">Drag to thrust · Automatically attacks</Text>
       </View>
 
       {g && mode === "levelup" ? <LevelUpOverlay key={`${g.level}-${g.pendingLevelUps}`} wide={wide} level={g.level - g.pendingLevelUps + 1} options={choices} onPick={pick} /> : null}
+      {g && mode === "path" ? <PathOverlay wide={wide} wave={g.wave} options={pathOpts} onPick={(id) => { g.nextMod = id; g.pathPending = false; setMode("play"); }} /> : null}
       {mode === "paused" ? <PauseOverlay onResume={() => setMode("play")} onQuit={() => { if (g) { g.dead = true; setMode("over"); finishRun(g); } }} /> : null}
       {g && mode === "over" ? (
         <GameOverOverlay
@@ -190,12 +204,12 @@ export default function Play() {
           wave={g.wave}
           kills={g.kills}
           coins={Math.floor(g.coins)}
-          difficultyName={g.mods.name}
+          difficultyName={runLabel(g)}
           rank={rank}
           onAgain={() => setRunId((r) => r + 1)}
           abandoned={g.player.hp > 0}
           onReturn={() => (router.canGoBack() ? router.back() : router.replace("/"))}
-          onShare={() => Share.share({ message: `I reached wave ${g.wave} on ${g.mods.name} with ${g.kills} kills and ${g.bossesDown} bosses down in Stooopid Space Shooter Game. Think you can beat that?` }).catch(() => {})}
+          onShare={() => Share.share({ message: `I reached wave ${g.wave} on ${runLabel(g)} with ${g.kills} kills and ${g.bossesDown} bosses down in Stooopid Space Shooter Game. Think you can beat that?` }).catch(() => {})}
         />
       ) : null}
     </View>
@@ -210,7 +224,7 @@ const useStyles = makeStyles((c) => ({
   },
   hint: {
     position: "absolute", bottom: spacing.sm, left: 0, right: 0, textAlign: "center",
-    fontFamily: fonts.text, fontSize: 9, letterSpacing: 1.8, color: c.muted, opacity: 0.6, textTransform: "uppercase",
+    fontFamily: fonts.text, fontSize: 9, letterSpacing: 1.8, color: c.onSurfaceSecondary, opacity: 0.85, textTransform: "uppercase",
   },
   stick: {
     position: "absolute", width: 100, height: 100, borderRadius: 50, borderWidth: 1, borderColor: c.border,

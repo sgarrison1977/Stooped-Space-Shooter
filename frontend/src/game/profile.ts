@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { storage } from "@/src/utils/storage";
 import { UpgradeKey } from "./config";
 import { DifficultyId } from "./content";
+import { AbilityId, ClassId, ModeId, WeaponId } from "./arsenal";
 
 export interface Profile {
   id: string;
@@ -17,6 +18,7 @@ export interface Profile {
   ownedSkins: string[];
   ownedTrails: string[];
   muted: boolean;
+  mode: ModeId; weapon: WeaponId; ability: AbilityId; shipClass: ClassId;
   // Boss gallery: keyed by boss index
   bossRecords: Record<string, BossRecord>;
 }
@@ -54,22 +56,30 @@ function newId() {
 function fresh(): Profile {
   return {
     id: newId(), name: "", coins: 0, bestWave: 0, kills: 0, runs: 0, upgrades: { cannon: 1, deflector: 1, hull: 1 },
-    difficulty: "normal", skin: "vanguard", trail: "ion", ownedSkins: ["vanguard"], ownedTrails: ["ion"], muted: false, bossRecords: {},
+    difficulty: "normal", skin: "vanguard", trail: "ion", ownedSkins: ["vanguard"], ownedTrails: ["ion"], muted: false, bossRecords: {}, mode: "standard", weapon: "cannon", ability: "dash", shipClass: "standard",
   };
 }
 
 let cache: Profile | null = null;
 const listeners = new Set<(p: Profile) => void>();
 
-export async function loadProfile(): Promise<Profile> {
-  if (cache) return cache;
-  const raw = await storage.getItem<string | null>(KEY, null);
-  let p = fresh();
-  if (raw) {
-    try { p = { ...p, ...JSON.parse(raw) }; } catch { /* corrupted -> fresh */ }
+let loading: Promise<Profile> | null = null;
+
+// Single in-flight load so concurrent callers never overwrite each other's updates
+export function loadProfile(): Promise<Profile> {
+  if (cache) return Promise.resolve(cache);
+  if (!loading) {
+    loading = (async () => {
+      const raw = await storage.getItem<string | null>(KEY, null);
+      let p = fresh();
+      if (raw) {
+        try { p = { ...p, ...JSON.parse(raw) }; } catch { /* corrupted -> fresh */ }
+      }
+      cache = cache ?? p;
+      return cache;
+    })();
   }
-  cache = p;
-  return p;
+  return loading;
 }
 
 export async function saveProfile(p: Profile) {
@@ -93,11 +103,11 @@ export function useProfile() {
   return { profile, update };
 }
 
-export async function submitScore(p: Profile, wave: number, kills: number) {
+export async function submitScore(p: Profile, wave: number, kills: number, board: string) {
   const res = await fetch(`${API}/api/scores`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ player_id: p.id, name: p.name || "Pilot", wave, kills, difficulty: p.difficulty }),
+    body: JSON.stringify({ player_id: p.id, name: p.name || "Pilot", wave, kills, difficulty: board }),
   });
   if (!res.ok) throw new Error("submit failed");
   return (await res.json()) as { rank: number };
@@ -105,7 +115,7 @@ export async function submitScore(p: Profile, wave: number, kills: number) {
 
 export interface LeaderRow { rank: number; name: string; best_wave: number; best_kills: number; runs: number; is_you: boolean }
 
-export async function fetchLeaderboard(difficulty: DifficultyId, playerId?: string): Promise<LeaderRow[]> {
+export async function fetchLeaderboard(difficulty: string, playerId?: string): Promise<LeaderRow[]> {
   const q = `?difficulty=${difficulty}` + (playerId ? `&player_id=${encodeURIComponent(playerId)}` : "");
   const res = await fetch(`${API}/api/leaderboard${q}`);
   if (!res.ok) throw new Error("leaderboard failed");

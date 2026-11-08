@@ -10,6 +10,7 @@ import { EmberBackground } from "@/src/components/Ember";
 import { CoinPill, MuteButton } from "@/src/components/ui";
 import { ArmouryCard, MusterCard } from "@/src/components/HomeCards";
 import { startMusic } from "@/src/game/audio";
+import { LoadoutCard } from "@/src/components/Loadout";
 
 export default function Home() {
   const s = useStyles();
@@ -54,15 +55,16 @@ export default function Home() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={wide ? s.col : undefined}>
+          <View style={wide ? s.col : s.stack}>
           <MusterCard
             profile={profile}
             onRename={(name) => update((p) => ({ ...p, name }))}
             onEnter={() => { startMusic(); router.push("/play"); }}
             onDifficulty={(difficulty) => update((p) => ({ ...p, difficulty }))}
           />
+          <LoadoutCard profile={profile} update={update} />
           </View>
-          <View style={wide ? s.col : undefined}>
+          <View style={wide ? s.col : s.stack}>
           <ArmouryCard
             profile={profile}
             onBuy={(key, cost) =>
@@ -88,6 +90,7 @@ const useStyles = makeStyles((c) => ({
   loading: { flex: 1, alignItems: "center", justifyContent: "center", gap: spacing.md },
   content: { gap: spacing.lg },
   contentWide: { flexDirection: "row", alignItems: "flex-start", maxWidth: 1000, width: "100%", alignSelf: "center" },
-  col: { flex: 1 },
+  col: { flex: 1, gap: spacing.lg },
+  stack: { gap: spacing.lg },
   headRight: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
 }));

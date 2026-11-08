@@ -49,7 +49,7 @@ export interface SystemDef {
 }
 
 export const SYSTEMS: SystemDef[] = [
-  { id: "ion_lance", name: "Ion Lance", desc: "+15% cannon damage", icon: "rocket" },
+  { id: "ion_lance", name: "Ion Lance", desc: "+15% weapon damage", icon: "rocket" },
   { id: "hull_plating", name: "Hull Plating", desc: "+20 max hull, repaired", icon: "shield" },
   { id: "overclocked", name: "Overclocked Coils", desc: "+15% fire rate", icon: "zap" },
   { id: "tractor", name: "Tractor Beam", desc: "+40% pickup range", icon: "magnet" },

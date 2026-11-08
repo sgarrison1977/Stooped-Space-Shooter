@@ -88,7 +88,7 @@ export function MusterCard({ profile, onRename, onEnter, onDifficulty }: { profi
       <DifficultyChips value={profile.difficulty} onChange={onDifficulty} testPrefix="difficulty-chip" />
       <Text style={s.diffDesc} testID="difficulty-desc">{difficulty(profile.difficulty).desc}</Text>
       <PrimaryButton title="Enter the Deep" testID="enter-the-deep-button" onPress={onEnter} disabled={!profile.name} />
-      <Text style={s.hint}>{profile.name ? "Drag to thrust · You attack on your own" : "Name your pilot to dive"}</Text>
+      <Text style={s.hint}>{profile.name ? "Drag to thrust · Automatically attacks" : "Name your pilot to dive"}</Text>
     </Animated.View>
   );
 }

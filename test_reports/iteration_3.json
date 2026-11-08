@@ -1,0 +1,49 @@
+{
+  "summary": "Tested the arsenal iteration: backend mode leaderboard keys, the headless sim, and the Expo web UI at 390x844. Backend: 12/12 new pytest cases pass. bossrush, hardcore and daily-YYYYMMDD are accepted and kept on separate boards, and invalid keys return 422. Sim (/tmp/sim_arsenal.ts): all 8 weapons, 5 abilities, 4 classes and 3 modes run with no exceptions. UI: the Loadout card (mode/weapon/ability/class chips, *-desc updates, Daily hiding the pickers and showing daily-loadout, persistence across reload) works. All 8 weapons got kills in about 10s in the live UI (cannon 5, spread 5, railgun 6, flamer 6, missiles 7, arc 5, blades 5, mines 3). The ability button counts down from the right cooldown for each ability (dash 4, shield 9, overdrive 14, gravity 12, time slow 16). Class HP applies (interceptor 75, gunship 150, engineer 90). After wave 1 the path overlay shows 2 path-option-* buttons, the game pauses, and picking one starts wave 2. Daily Run uses today's loadout and Boss Rush spawns a boss within 1.5s. Pause, level-up (3 options), game over (rank #1, Dive Again), leaderboard chips (bossrush, hardcore, daily-YYYYMMDD; no errors), hangar and bosses all work. Main defects: mode boards ignore difficulty, the game-over label shows the difficulty instead of the mode, and the wave-break banner overlaps the path overlay. No deprecated Expo packages detected (expo-audio is used, not expo-av).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/scores", "issue": "difficulty is only checked against the pattern ^[a-z0-9-]{3,24}$, not a list of allowed keys. Any string such as 'foo' or 'zzzz' creates a new leaderboard bucket. Consider a whitelist: casual|normal|hard|extreme|bossrush|hardcore|daily-\\d{8}."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "PathOverlay + wave-break-banner", "issue": "While the path overlay is open, the wave-break banner ('Wave 1 cleared / Wave 2 in 4 / Hull repaired · catch your breath', ArenaView.tsx:119-125) still renders underneath. Its text overlaps the first path option card (the Volatile/Heavies text is hard to read). Hide the banner when mode==='path', or make the path scrim opaque.", "testID": "path-overlay", "priority": "MEDIUM"},
+      {"component": "GameOverOverlay", "issue": "In Hardcore, Boss Rush and Daily runs the header says 'RUN ENDED · NORMAL' (play.tsx:203 difficultyName={g.mods.name}). The share message (play.tsx:208) also says 'on Normal', but the score goes to the hardcore/bossrush/daily board. Show the mode name for non-standard modes.", "testID": "game-over-overlay", "priority": "LOW"}
+    ],
+    "integration_issues": [
+      {"flow": "Mode leaderboards fairness", "issue": "Boss Rush, Hardcore and Daily keep the selected difficulty modifiers (createGame(..., difficulty(p.difficulty)) at play.tsx:61), but boardKey() (arsenal-sim.ts:50) drops difficulty for these modes. Casual and Extreme players therefore share one board, and the difficulty chips stay visible on Home in these modes. Either force a fixed difficulty for these modes (e.g. normal, and hide the difficulty chips) or include difficulty in the key. Daily Run also applies the player's armoury upgrades, so it is not the same for everyone.", "affected_testIDs": ["mode-chip-bossrush", "mode-chip-hardcore", "mode-chip-daily", "game-over-rank"]},
+      {"flow": "Profile load race", "issue": "Once, a loadout chip pick made right after a cold page load did not stick (gravity was chosen but the run started with overdrive). Likely cause: profile.ts:66 loadProfile() caches only after the async storage read, so two calls running at once (useProfile mount + update) can each set the cache, and the later one overwrites an update with stale data. Fix: memoize the loading promise. Could not reproduce when waiting about 1s after load.", "affected_testIDs": ["ability-chip-*", "weapon-chip-*"]}
+    ],
+    "design_issues": [
+      {"screen": "Home / Loadout", "issues": ["Loadout chips are 36px tall, below the 44px minimum touch target", "Home hint still says 'Drag to thrust · You attack on your own' (HomeCards.tsx:91) while the in-game hint says 'Drag to thrust · Automatically attacks'. Make the wording the same", "The Loadout card sits below the Enter the Deep button, so the user must scroll past the CTA to configure a run"]},
+      {"screen": "Play", "issues": ["The bottom hint text in the arena has very low contrast", "Boss Rush: the boss sprite spawns at the top-left corner, partly offscreen and overlapping the boss health bar label"]}
+    ],
+    "react_native_issues": [
+      {"component": "Require cycle", "issue": "Metro warns 'Require cycle: src/game/sim.ts -> src/game/arsenal-sim.ts -> src/game/sim.ts'. It works today but is fragile (an uninitialised import becomes possible if top-level use is added). Reference: /app/frontend/src/game/arsenal-sim.ts:2"}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_mode_leaderboards.py", "/app/test_reports/pytest/pytest_modes.xml"],
+  "action_items": [
+    "Hide wave-break-banner while the PathOverlay is open (or use an opaque scrim) so the path cards are readable",
+    "Decide difficulty handling for bossrush/hardcore/daily: force one difficulty (and hide the difficulty chips) or include difficulty in boardKey",
+    "Show the mode name (Hardcore/Boss Rush/Daily) in the game-over header and share text instead of the difficulty name",
+    "Memoize the loadProfile() promise to prevent the stale-cache overwrite race",
+    "Optionally whitelist difficulty keys on the backend",
+    "Make loadout chips at least 44px tall and use the same hint text on Home and in game",
+    "Break the sim.ts <-> arsenal-sim.ts require cycle (move shared helpers like rnd/burst/hit into a separate module)",
+    "The older test file /app/backend/tests/test_scores_leaderboard.py cleans up with a regex delete on the TEST_ prefix; change it to delete by created ids"
+  ],
+  "critical_code_review_comments": [
+    "arsenal-sim.ts:15/195 bladeCd: Record<enemyId, number> is never pruned, so it grows for the whole run (small memory leak in long runs)",
+    "Daily 'same seed' only holds roughly: rnd() is seeded but results depend on frame dt and arena size, so daily runs differ by device",
+    "Not verified in the UI: a Hardcore one-hit death (my ship could not be reliably rammed into enemies). The code (sim.ts:204) and the sim (hardcore died in wave 1) confirm the logic",
+    "Not tested in the UI: mid-run pickups (3% drop rate) and evolutions. The sim showed evolutions firing (plasma_storm, vampiric)"
+  ],
+  "updated_files": ["/app/backend/tests/test_mode_leaderboards.py"],
+  "success_rate": {"backend": "100%", "frontend": "95%"},
+  "seed_data_creation": "None kept. Pytest TEST_ scores were deleted by player_id+difficulty. The 3 UI-created scores (name TEST_T1: daily-20261108, bossrush, hardcore) were deleted by _id.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Frontend URL is EXPO_PUBLIC_BACKEND_URL in frontend/.env. A new browser context needs the pilot name set (pilot-name-input + pilot-name-save-button) or Enter the Deep stays disabled. Wait about 1s after home loads before clicking chips (profile load race). The path overlay pauses the game, so handle it in long loops. The container date is 2026-11-08, so the daily key is daily-20261108."
+}

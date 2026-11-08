@@ -6,6 +6,7 @@ import { Enemy, GameState } from "@/src/game/sim";
 import { BOSSES, MOBS, Skin, Trail } from "@/src/game/content";
 import { EliteSprite, RaiderSprite } from "./Sprites";
 import { MobSprite } from "./MobArt";
+import { ArenaExtras, ArenaOverlays } from "./ArenaExtras";
 import { BossSprite, PlayerSprite } from "./ShipArt";
 import { Starfield } from "./Starfield";
 
@@ -69,7 +70,7 @@ export function ArenaView({ g, skin, trail }: { g: GameState; skin: Skin; trail:
         {g.bullets.map((b) => (
           <View
             key={b.id}
-            style={[s.bullet, b.crit && s.bulletCrit, { left: b.x - 7, top: b.y - 1.5, transform: [{ rotate: `${Math.atan2(b.vy, b.vx)}rad` }] }]}
+            style={[s.bullet, b.crit && s.bulletCrit, b.kind === "flame" && s.flameB, b.kind === "missile" && s.missileB, { left: b.x - 7, top: b.y - 1.5, transform: [{ rotate: `${Math.atan2(b.vy, b.vx)}rad` }] }]}
           />
         ))}
         {g.eBullets.map((b) =>
@@ -83,6 +84,7 @@ export function ArenaView({ g, skin, trail }: { g: GameState; skin: Skin; trail:
             </View>
           ),
         )}
+        <ArenaExtras g={g} />
         {!g.dead ? (
           <View testID="player-ship" style={{ position: "absolute", left: p.x - 18, top: p.y - 18, width: 36, height: 36, opacity: blink ? 0.35 : 1, transform: [{ rotate: deg(p.angle) }] }}>
             <LinearGradient
@@ -113,7 +115,8 @@ export function ArenaView({ g, skin, trail }: { g: GameState; skin: Skin; trail:
           </View>
         </View>
       ) : null}
-      {g.breakT > 0 ? (
+      <ArenaOverlays g={g} />
+      {g.breakT > 0 && !g.pathPending ? (
         <View style={s.banner} testID="wave-break-banner">
           <Text style={s.bannerLabel}>Wave {g.wave} cleared</Text>
           <Text style={s.bannerName}>Wave {g.wave + 1} in {Math.ceil(g.breakT)}</Text>
@@ -135,6 +138,8 @@ const useStyles = makeStyles((c) => ({
   fill: { position: "absolute", left: 0, top: 0, right: 0, bottom: 0, overflow: "hidden" },
   gem: { position: "absolute", backgroundColor: c.xp, borderWidth: 1, borderColor: c.shipLight, transform: [{ rotate: "45deg" }] },
   bullet: { position: "absolute", width: 14, height: 3, borderRadius: 2, backgroundColor: c.bullet },
+  flameB: { backgroundColor: c.engineGlow, width: 9, height: 7, borderRadius: 4, opacity: 0.85 },
+  missileB: { backgroundColor: c.brandSecondary, width: 12, height: 4 },
   bulletCrit: { backgroundColor: c.warning, height: 4 },
   eBullet: { position: "absolute", width: 10, height: 10, borderRadius: 5, backgroundColor: c.enemy, alignItems: "center", justifyContent: "center" },
   eCore: { width: 4, height: 4, borderRadius: 2, backgroundColor: c.bossCore },

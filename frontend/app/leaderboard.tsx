@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import { fonts, makeStyles, radius, spacing, useTheme } from "@/src/theme";
 import { fetchLeaderboard, LeaderRow, loadProfile } from "@/src/game/profile";
-import { DifficultyId } from "@/src/game/content";
+import { BOARDS } from "@/src/game/arsenal";
 import { DifficultyChips } from "@/src/components/DifficultyChips";
 import { EmberBackground } from "@/src/components/Ember";
 import { Label, OutlineButton } from "@/src/components/ui";
@@ -18,9 +18,9 @@ export default function Leaderboard() {
   const [rows, setRows] = useState<LeaderRow[] | null>(null);
   const [error, setError] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [diff, setDiff] = useState<DifficultyId | null>(null);
+  const [diff, setDiff] = useState<string | null>(null);
 
-  const load = useCallback(async (d?: DifficultyId) => {
+  const load = useCallback(async (d?: string) => {
     try {
       const p = await loadProfile();
       const use = d ?? diff ?? p.difficulty;
@@ -34,7 +34,7 @@ export default function Leaderboard() {
 
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const choose = (d: DifficultyId) => { setDiff(d); setRows(null); load(d); };
+  const choose = (d: string) => { setDiff(d); setRows(null); load(d); };
 
   return (
     <View style={s.root} testID="leaderboard-screen">
@@ -49,7 +49,7 @@ export default function Leaderboard() {
         </View>
       </View>
       <View style={[s.chips, { paddingLeft: insets.left, paddingRight: insets.right }]}>
-        {diff ? <DifficultyChips value={diff} onChange={choose} testPrefix="leaderboard-diff" padded /> : null}
+        {diff ? <DifficultyChips options={BOARDS} value={diff} onChange={choose} testPrefix="leaderboard-diff" padded /> : null}
       </View>
       {!rows && !error ? (
         <View style={s.center}><ActivityIndicator color={colors.brandPrimary} /></View>

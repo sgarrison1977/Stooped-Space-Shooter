@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { storage } from "@/src/utils/storage";
 import { UpgradeKey } from "./config";
 import { DifficultyId } from "./content";
-import { AbilityId, ClassId, ModeId, WeaponId } from "./arsenal";
+import { AbilityId, ClassId, ModeId, WeaponId, WEAPONS } from "./arsenal";
 
 export interface Profile {
   id: string;
@@ -74,6 +74,7 @@ export function loadProfile(): Promise<Profile> {
       let p = fresh();
       if (raw) {
         try { p = { ...p, ...JSON.parse(raw) }; } catch { /* corrupted -> fresh */ }
+        if (!WEAPONS.some((w) => w.id === p.weapon)) p.weapon = "cannon"; // removed weapons (e.g. mines)
       }
       cache = cache ?? p;
       return cache;

@@ -84,7 +84,8 @@ export default function Play() {
       const dt = Math.min(0.05, (t - last) / 1000);
       last = t;
       if (!g || modeRef.current !== "play") return;
-      const ev = step(g, dt, joy.current);
+      let ev;
+      try { ev = step(g, dt, joy.current); } catch (e) { console.warn("[step] skipped frame", e); return; } // never let one bad frame kill the run
       if (ev.shot) playSfx("laser");
       if (ev.kill && !ev.bossDown) playSfx("explosion");
       if (ev.pickup) playSfx("pickup");

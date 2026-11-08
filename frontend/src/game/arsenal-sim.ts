@@ -11,8 +11,7 @@ export interface ArsenalState {
   grav: { x: number; y: number; t: number } | null;
   beams: { id: number; x: number; y: number; a: number; life: number }[];
   arcs: { id: number; pts: Vec[]; life: number }[];
-  pMines: { id: number; x: number; y: number; life: number; mini?: boolean }[];
-  bladeA: number; bladeCd: Record<number, number>; mineT: number;
+  bladeA: number; bladeCd: Record<number, number>; shardT: number;
   drone: { a: number; cd: number } | null;
   pickups: { id: number; x: number; y: number; kind: PickupKind; life: number }[];
   tempWeapon: { id: WeaponId; t: number } | null;
@@ -21,8 +20,8 @@ export interface ArsenalState {
 
 export const arsenalDefaults = (): ArsenalState => ({
   mode: "standard", weapon: "cannon", ability: "dash", cls: CLASSES[0],
-  abilityCd: 0, shieldT: 0, overT: 0, slowT: 0, buffShieldT: 0, grav: null, beams: [], arcs: [], pMines: [],
-  bladeA: 0, bladeCd: {}, mineT: 0, drone: null, pickups: [], tempWeapon: null, picks: {}, evolved: [],
+  abilityCd: 0, shieldT: 0, overT: 0, slowT: 0, buffShieldT: 0, grav: null, beams: [], arcs: [],
+  bladeA: 0, bladeCd: {}, shardT: 0, drone: null, pickups: [], tempWeapon: null, picks: {}, evolved: [],
 });
 
 function mulberry(seed: number) {
@@ -121,7 +120,7 @@ export function activateAbility(s: GameState): boolean {
 }
 
 function fire(s: GameState, w: WeaponId, nearest: Enemy | null, aimError: number, ev: StepEvents) {
-  if (!nearest || s.fireTimer > 0 || w === "cannon" || w === "blades" || w === "mines") return;
+  if (!nearest || s.fireTimer > 0 || w === "cannon" || w === "blades") return;
   const st = s.stats, p = s.player, a = p.angle, rate = st.fireRate / 2.8;
   const crit = rnd() < st.crit, dmg = st.damage * (crit ? 2 : 1);
   const nx = p.x + Math.cos(a) * 16, ny = p.y + Math.sin(a) * 16;
@@ -131,7 +130,7 @@ function fire(s: GameState, w: WeaponId, nearest: Enemy | null, aimError: number
     case "spread": {
       if (aimError > 0.25) return;
       s.fireTimer = 0.45 / rate;
-      const n = 5 + 2 * L(s, "sp_choke"), fans = st.projectiles, life = 0.42 * (1 + 0.35 * L(s, "sp_barrel"));
+      const fans = st.projectiles, n = Math.min(5 + 2 * L(s, "sp_choke"), Math.max(5, Math.floor(36 / fans))), life = 0.42 * (1 + 0.35 * L(s, "sp_barrel"));
       // each extra barrel fires its own fan, angled out to the side
       for (let f = 0; f < fans; f++) {
         const fa = a + (f - (fans - 1) / 2) * 0.45;
@@ -214,8 +213,8 @@ export function updateArsenal(s: GameState, dt: number, nearest: Enemy | null, a
     const motor = 1 + 0.3 * L(s, "bl_motor"), tether = 1 + 0.2 * L(s, "bl_tether");
     s.bladeA += 4 * motor * dt;
     const n = bladeCount(s), reach = bladeReach(s);
-    const storm = evolvedW(s, "bl_evo") && nearest && (s.mineT -= dt) <= 0;
-    if (storm) s.mineT = 1.2;
+    const storm = evolvedW(s, "bl_evo") && nearest && (s.shardT -= dt) <= 0;
+    if (storm) s.shardT = 1.2;
     for (let i = 0; i < n; i++) {
       const a = s.bladeA + (i / n) * Math.PI * 2, bx = p.x + Math.cos(a) * reach, by = p.y + Math.sin(a) * reach;
       if (storm) s.bullets.push({ id: s.nextId++, x: bx, y: by, vx: Math.cos(a) * 420, vy: Math.sin(a) * 420, dmg: Math.max(1, Math.round(st.damage)), crit: false, life: 0.8, kind: "pierce", hits: [] });
@@ -226,29 +225,6 @@ export function updateArsenal(s: GameState, dt: number, nearest: Enemy | null, a
         }
       }
     }
-  }
-  if (w === "mines") {
-    const layer = L(s, "mn_layer");
-    s.mineT -= dt * (s.overT > 0 ? 2 : 1);
-    if (s.mineT <= 0 && Math.hypot(p.vx, p.vy) > 40 && s.pMines.length < 14 + 4 * layer) {
-      s.mineT = (0.45 * Math.pow(0.85, layer)) / (st.fireRate / 2.8);
-      s.pMines.push({ id: s.nextId++, x: p.x - Math.cos(p.angle) * 16, y: p.y - Math.sin(p.angle) * 16, life: 6 });
-    }
-    const blast = 75 * (1 + 0.3 * L(s, "mn_blast")), payload = 3 * (1 + 0.35 * L(s, "mn_payload"));
-    const spawn: { x: number; y: number }[] = [];
-    for (const m of s.pMines) {
-      m.life -= dt;
-      if (s.enemies.some((e) => (e.x - m.x) ** 2 + (e.y - m.y) ** 2 < (e.r + 18) ** 2)) {
-        const k = m.mini ? 0.55 : 1;
-        m.life = 0; explode(s, m.x, m.y, blast * k, st.damage * payload * k * (rnd() < st.crit ? 2 : 1)); ev.shot = true;
-        if (!m.mini && evolvedW(s, "mn_evo")) spawn.push(m);
-      }
-    }
-    for (const m of spawn) for (let i = 0; i < 2; i++) {
-      const a = rnd() * Math.PI * 2;
-      s.pMines.push({ id: s.nextId++, x: Math.max(8, Math.min(s.w - 8, m.x + Math.cos(a) * 45)), y: Math.max(8, Math.min(s.h - 8, m.y + Math.sin(a) * 45)), life: 3, mini: true });
-    }
-    s.pMines = s.pMines.filter((m) => m.life > 0);
   }
   for (const b of s.bullets) {
     if (b.kind !== "missile" || !nearest) continue;

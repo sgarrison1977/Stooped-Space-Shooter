@@ -88,3 +88,5 @@ User built "Hypershift" (in-game title EMBERDEEP) on Base44 and wants it rebuilt
 - Twin Barrels no longer offered with Spread (Wide Choke is its pellet upgrade).
 - Twin Barrels on Spread now fires an extra side-angled fan per pick (re-enabled).
 - XP curve: exponential (x1.28+2) until level 10, then +15 per level. Fallback 'Field Repair' choice when all upgrades are maxed.
+- Crash fix (late game ~lvl 22): hard caps on bullets(160)/enemy bullets(90)/damage numbers(30), Spread pellets capped ~36 per blast, game loop step wrapped in try/catch. Stress test: tests_sim/late_stress_test.ts
+- Removed Mines weapon entirely (loadout + temp weapon pickup); saved profiles with mines fall back to Cannon. Slag King boss mines unchanged.

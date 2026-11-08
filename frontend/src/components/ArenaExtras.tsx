@@ -16,7 +16,7 @@ function Seg({ x1, y1, x2, y2, color, w }: { x1: number; y1: number; x2: number;
 
 const PICKUP_ICON = { shield: "shield", magnet: "magnet", repair: "wrench", weapon: "crosshair" } as const;
 
-// Weapon effects, mines, blades, drone, pickups, ability visuals.
+// Weapon effects, blades, drone, pickups, ability visuals.
 export function ArenaExtras({ g }: { g: GameState }) {
   const s = useStyles();
   const { colors } = useTheme();
@@ -29,7 +29,6 @@ export function ArenaExtras({ g }: { g: GameState }) {
           <Lucide name={PICKUP_ICON[k.kind]} size={14} color={colors.onSurface} />
         </View>
       ))}
-      {g.pMines.map((m) => <View key={m.id} style={[s.pMine, { left: m.x - 7, top: m.y - 7 }]} />)}
       {g.beams.map((b) => <Seg key={b.id} x1={b.x} y1={b.y} x2={b.x + Math.cos(b.a) * 1400} y2={b.y + Math.sin(b.a) * 1400} color={colors.xp} w={2 + b.life * 24} />)}
       {g.arcs.map((a) => a.pts.slice(1).map((pt, i) => <Seg key={`${a.id}-${i}`} x1={a.pts[i].x} y1={a.pts[i].y} x2={pt.x} y2={pt.y} color={colors.shipLight} w={3} />))}
       {activeWeapon(g) === "blades" ? Array.from({ length: nBlades }, (_, i) => {
@@ -77,7 +76,6 @@ export function AbilityButton({ g, onPress }: { g: GameState; onPress: () => voi
 
 const useStyles = makeStyles((c) => ({
   pickup: { position: "absolute", width: 26, height: 26, borderRadius: 13, backgroundColor: c.brandPrimary, borderWidth: 2, borderColor: c.bossCore, alignItems: "center", justifyContent: "center" },
-  pMine: { position: "absolute", width: 14, height: 14, borderRadius: 7, borderWidth: 2, borderColor: c.xp, backgroundColor: c.shipDark },
   blade: { position: "absolute", width: 16, height: 16, backgroundColor: c.shipLight, borderWidth: 1.5, borderColor: c.xp, borderRadius: 3 },
   drone: { position: "absolute", width: 12, height: 12, borderRadius: 6, backgroundColor: c.xp, borderWidth: 2, borderColor: c.shipLight },
   grav: { position: "absolute", width: 80, height: 80, borderRadius: 40, borderWidth: 3, borderColor: c.info, backgroundColor: c.scrimLight },

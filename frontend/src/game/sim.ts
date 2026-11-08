@@ -42,6 +42,8 @@ const BOSS_AT = 10; // seconds into a boss wave
 const BOSS_EVERY = 3; // boss on waves 3, 6, 9...
 const MAX_ENEMIES = 70;
 const MAX_PARTICLES = 220;
+// Hard caps keep late-game render load bounded on phones (oldest dropped first)
+const MAX_BULLETS = 160, MAX_EBULLETS = 90, MAX_FLOATERS = 30;
 // "On ice" handling: thrust accelerates, very little friction, walls bounce.
 const ACCEL = 1050;
 const MAX_SPEED = 330;
@@ -336,7 +338,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
       }
     }
   }
-  s.bullets = s.bullets.filter((b) => b.life > 0 && b.x > -20 && b.x < s.w + 20 && b.y > -20 && b.y < s.h + 20);
+  s.bullets = s.bullets.filter((b) => b.life > 0 && b.x > -20 && b.x < s.w + 20 && b.y > -20 && b.y < s.h + 20).slice(-MAX_BULLETS);
 
   // Enemies (time slow affects enemies + their shots only)
   const realDt = dt;
@@ -428,7 +430,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
     if (s.shieldT > 0 && (b.x - p.x) ** 2 + (b.y - p.y) ** 2 < 48 * 48) { reflect(s, b); continue; }
     if ((b.x - p.x) ** 2 + (b.y - p.y) ** 2 < (PLAYER_R + 4) ** 2) { b.life = 0; hurtPlayer(s, b.dmg, ev); }
   }
-  s.eBullets = s.eBullets.filter((b) => b.life > 0 && b.x > -30 && b.x < s.w + 30 && b.y > -30 && b.y < s.h + 30);
+  s.eBullets = s.eBullets.filter((b) => b.life > 0 && b.x > -30 && b.x < s.w + 30 && b.y > -30 && b.y < s.h + 30).slice(-MAX_EBULLETS);
 
   dt = realDt;
   // Deaths
@@ -481,7 +483,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
   }
 
   for (const f of s.floaters) { f.life -= dt; f.y -= 30 * dt; }
-  s.floaters = s.floaters.filter((f) => f.life > 0);
+  s.floaters = s.floaters.filter((f) => f.life > 0).slice(-MAX_FLOATERS);
   for (const q of s.particles) { q.life -= dt; q.x += q.vx * dt; q.y += q.vy * dt; q.vx *= 0.94; q.vy *= 0.94; }
   s.particles = s.particles.filter((q) => q.life > 0);
 

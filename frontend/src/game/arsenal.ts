@@ -1,6 +1,6 @@
 import { SystemIcon } from "./config";
 
-export type WeaponId = "cannon" | "spread" | "railgun" | "flame" | "homing" | "arc" | "blades" | "mines";
+export type WeaponId = "cannon" | "spread" | "railgun" | "flame" | "homing" | "arc" | "blades";
 export type AbilityId = "dash" | "shield" | "overdrive" | "gravity" | "timeslow";
 export type ClassId = "standard" | "interceptor" | "gunship" | "engineer";
 export type ModeId = "standard" | "bossrush" | "daily" | "hardcore";
@@ -16,7 +16,6 @@ export const WEAPONS: Item<WeaponId>[] = [
   { id: "homing", name: "Missiles", desc: "Slow homing missiles with a small blast" },
   { id: "arc", name: "Arc", desc: "Lightning chains 3–5 enemies · weak vs bosses" },
   { id: "blades", name: "Blades", desc: "Spinning blades orbit you · ram enemies" },
-  { id: "mines", name: "Mines", desc: "Drops mines behind you as you glide" },
 ];
 
 export const ABILITIES: (Item<AbilityId> & { cd: number; icon: "zap" | "shield" | "flame" | "magnet" | "clock" })[] = [
@@ -83,11 +82,6 @@ export const WEAPON_UPGRADES: Record<WeaponId, WUp[]> = {
     { id: "bl_motor", name: "Spin Motor", desc: "BLADES · +30% spin speed, hit more often", icon: "zap" },
     { id: "bl_tether", name: "Long Tether", desc: "BLADES · +20% orbit reach and hit size", icon: "crosshair" },
   ],
-  mines: [
-    { id: "mn_payload", name: "Payload", desc: "MINES · +35% mine damage", icon: "rocket" },
-    { id: "mn_blast", name: "Big Boom", desc: "MINES · +30% blast radius", icon: "sparkles" },
-    { id: "mn_layer", name: "Mine Layer", desc: "MINES · drop faster, +4 max mines", icon: "wrench" },
-  ],
 };
 
 // Weapon combo: unlocks once both listed weapon upgrades have 2+ picks
@@ -99,7 +93,6 @@ export const WEAPON_EVOS: Record<WeaponId, WUp & { from: [string, string] }> = {
   homing: { id: "hm_evo", name: "Cluster Warheads", desc: "COMBO · blasts throw out shrapnel", icon: "sparkles", from: ["hm_pod", "hm_warhead"] },
   arc: { id: "ar_evo", name: "Storm Fork", desc: "COMBO · lightning splits on every bounce", icon: "sparkles", from: ["ar_fork", "ar_volt"] },
   blades: { id: "bl_evo", name: "Blade Storm", desc: "COMBO · blades fling razor shards outward", icon: "sparkles", from: ["bl_extra", "bl_motor"] },
-  mines: { id: "mn_evo", name: "Cluster Mines", desc: "COMBO · mines scatter mini mines when they blow", icon: "sparkles", from: ["mn_payload", "mn_blast"] },
 };
 
 const QUICK: WUp = { id: "ab_cd", name: "Quick Recharge", desc: "ABILITY · 12% shorter cooldown", icon: "wrench" };
@@ -126,7 +119,7 @@ export const CLASS_UPGRADES: Record<ClassId, WUp[]> = {
 
 // Generic systems that do nothing for a given weapon
 export const SYSTEM_EXCLUDE: Partial<Record<WeaponId, string[]>> = {
-  arc: ["twin"], mines: ["twin"], blades: ["overclocked"],
+  arc: ["twin"], blades: ["overclocked"],
 };
 
 export const todaySeed = () => { const d = new Date(); return d.getUTCFullYear() * 10000 + (d.getUTCMonth() + 1) * 100 + d.getUTCDate(); };

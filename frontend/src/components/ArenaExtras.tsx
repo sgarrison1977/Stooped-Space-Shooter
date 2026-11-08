@@ -29,7 +29,6 @@ export function ArenaExtras({ g }: { g: GameState }) {
           <Lucide name={PICKUP_ICON[k.kind]} size={14} color={colors.onSurface} />
         </View>
       ))}
-      {g.beams.map((b) => <Seg key={b.id} x1={b.x} y1={b.y} x2={b.x + Math.cos(b.a) * 1400} y2={b.y + Math.sin(b.a) * 1400} color={colors.xp} w={2 + b.life * 24} />)}
       {g.arcs.map((a) => a.pts.slice(1).map((pt, i) => <Seg key={`${a.id}-${i}`} x1={a.pts[i].x} y1={a.pts[i].y} x2={pt.x} y2={pt.y} color={colors.shipLight} w={3} />))}
       {activeWeapon(g) === "blades" ? Array.from({ length: nBlades }, (_, i) => {
         const a = g.bladeA + (i / nBlades) * Math.PI * 2;

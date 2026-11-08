@@ -1,6 +1,6 @@
 import { SystemIcon } from "./config";
 
-export type WeaponId = "cannon" | "spread" | "railgun" | "flame" | "homing" | "arc" | "blades";
+export type WeaponId = "cannon" | "spread" | "flame" | "homing" | "arc" | "blades";
 export type AbilityId = "dash" | "shield" | "overdrive" | "gravity" | "timeslow";
 export type ClassId = "standard" | "interceptor" | "gunship" | "engineer";
 export type ModeId = "standard" | "bossrush" | "daily" | "hardcore";
@@ -11,7 +11,6 @@ type Item<T> = { id: T; name: string; desc: string };
 export const WEAPONS: Item<WeaponId>[] = [
   { id: "cannon", name: "Cannon", desc: "Reliable nose cannon" },
   { id: "spread", name: "Spread", desc: "5-shot fan · brutal up close, short range" },
-  { id: "railgun", name: "Railgun", desc: "Slow charge · beam pierces everything in line" },
   { id: "flame", name: "Flamer", desc: "Short cone of fire · melts swarms" },
   { id: "homing", name: "Missiles", desc: "Slow homing missiles with a small blast" },
   { id: "arc", name: "Arc", desc: "Lightning chains 3–5 enemies · weak vs bosses" },
@@ -59,11 +58,6 @@ export const WEAPON_UPGRADES: Record<WeaponId, WUp[]> = {
     { id: "sp_choke", name: "Wide Choke", desc: "SPREAD · +2 pellets per blast", icon: "sparkles" },
     { id: "sp_barrel", name: "Long Barrel", desc: "SPREAD · +35% range", icon: "crosshair" },
   ],
-  railgun: [
-    { id: "rg_overcharge", name: "Overcharge", desc: "RAILGUN · +35% beam damage", icon: "zap" },
-    { id: "rg_wide", name: "Wide Beam", desc: "RAILGUN · +60% beam width", icon: "sparkles" },
-    { id: "rg_caps", name: "Capacitor Bank", desc: "RAILGUN · 15% faster charge", icon: "wrench" },
-  ],
   flame: [
     { id: "fl_napalm", name: "Napalm Mix", desc: "FLAMER · +30% fire damage", icon: "rocket" },
     { id: "fl_nozzle", name: "Pressure Nozzle", desc: "FLAMER · +30% flame range", icon: "crosshair" },
@@ -88,7 +82,6 @@ export const WEAPON_UPGRADES: Record<WeaponId, WUp[]> = {
 export const WEAPON_EVOS: Record<WeaponId, WUp & { from: [string, string] }> = {
   cannon: { id: "cn_evo", name: "Explosive Rounds", desc: "COMBO · cannon shots explode on impact", icon: "sparkles", from: ["cn_heavy", "cn_velocity"] },
   spread: { id: "sp_evo", name: "Flak Storm", desc: "COMBO · pellets pierce through enemies", icon: "sparkles", from: ["sp_choke", "sp_barrel"] },
-  railgun: { id: "rg_evo", name: "Ion Burst", desc: "COMBO · every enemy the beam hits explodes", icon: "sparkles", from: ["rg_overcharge", "rg_wide"] },
   flame: { id: "fl_evo", name: "Dragon's Breath", desc: "COMBO · flames also blast out behind you", icon: "sparkles", from: ["fl_napalm", "fl_nozzle"] },
   homing: { id: "hm_evo", name: "Cluster Warheads", desc: "COMBO · blasts throw out shrapnel", icon: "sparkles", from: ["hm_pod", "hm_warhead"] },
   arc: { id: "ar_evo", name: "Storm Fork", desc: "COMBO · lightning splits on every bounce", icon: "sparkles", from: ["ar_fork", "ar_volt"] },

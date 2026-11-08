@@ -9,7 +9,6 @@ export interface ArsenalState {
   mode: ModeId; weapon: WeaponId; ability: AbilityId; cls: ClassDef;
   abilityCd: number; shieldT: number; overT: number; slowT: number; buffShieldT: number;
   grav: { x: number; y: number; t: number } | null;
-  beams: { id: number; x: number; y: number; a: number; life: number }[];
   arcs: { id: number; pts: Vec[]; life: number }[];
   bladeA: number; bladeCd: Record<number, number>; shardT: number;
   drone: { a: number; cd: number } | null;
@@ -20,7 +19,7 @@ export interface ArsenalState {
 
 export const arsenalDefaults = (): ArsenalState => ({
   mode: "standard", weapon: "cannon", ability: "dash", cls: CLASSES[0],
-  abilityCd: 0, shieldT: 0, overT: 0, slowT: 0, buffShieldT: 0, grav: null, beams: [], arcs: [],
+  abilityCd: 0, shieldT: 0, overT: 0, slowT: 0, buffShieldT: 0, grav: null, arcs: [],
   bladeA: 0, bladeCd: {}, shardT: 0, drone: null, pickups: [], tempWeapon: null, picks: {}, evolved: [],
 });
 
@@ -138,19 +137,6 @@ function fire(s: GameState, w: WeaponId, nearest: Enemy | null, aimError: number
       }
       break;
     }
-    case "railgun": {
-      if (aimError > 0.1) return;
-      s.fireTimer = (1.4 * Math.pow(0.85, L(s, "rg_caps"))) / rate;
-      const width = 6 * (1 + 0.6 * L(s, "rg_wide")), rdmg = dmg * 3.2 * (1 + (st.projectiles - 1) * 0.3) * (1 + 0.35 * L(s, "rg_overcharge"));
-      const struck: Vec[] = [];
-      for (const e of s.enemies) {
-        const dx = e.x - p.x, dy = e.y - p.y, along = dx * Math.cos(a) + dy * Math.sin(a);
-        if (along > 0 && Math.abs(-dx * Math.sin(a) + dy * Math.cos(a)) < e.r + width) { hit(s, e, rdmg, crit); struck.push({ x: e.x, y: e.y }); }
-      }
-      if (evolvedW(s, "rg_evo")) for (const pt of struck.slice(0, 6)) explode(s, pt.x, pt.y, 45, rdmg * 0.3);
-      s.beams.push({ id: s.nextId++, x: nx, y: ny, a, life: 0.25 });
-      break;
-    }
     case "flame":
       if (aimError > 0.35) return;
       s.fireTimer = 0.07 / rate;
@@ -196,9 +182,8 @@ export function updateArsenal(s: GameState, dt: number, nearest: Enemy | null, a
   s.abilityCd = Math.max(0, s.abilityCd - dt); s.shieldT = Math.max(0, s.shieldT - dt); s.overT = Math.max(0, s.overT - dt);
   s.slowT = Math.max(0, s.slowT - dt); s.buffShieldT = Math.max(0, s.buffShieldT - dt);
   if (s.tempWeapon && (s.tempWeapon.t -= dt) <= 0) s.tempWeapon = null;
-  for (const b of s.beams) b.life -= dt;
   for (const a of s.arcs) a.life -= dt;
-  s.beams = s.beams.filter((b) => b.life > 0); s.arcs = s.arcs.filter((a) => a.life > 0);
+  s.arcs = s.arcs.filter((a) => a.life > 0);
   const w = activeWeapon(s);
   fire(s, w, nearest, aimError, ev);
 

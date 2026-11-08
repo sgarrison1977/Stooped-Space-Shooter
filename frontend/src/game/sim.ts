@@ -1,6 +1,5 @@
 import { RunStats } from "./config";
 import { BOSSES, DifficultyDef, MobKind, MOBS } from "./content";
-import { WAVE_MODS } from "./arsenal";
 import { activeWeapon, ArsenalState, arsenalDefaults, bulletHit, evolvedW, moveMul, onEnemyDeath, reflect, updateArsenal, waveDone } from "./arsenal-sim";
 
 // Swappable RNG so the Daily Run is the same for everyone
@@ -82,10 +81,9 @@ function spawnEnemy(s: GameState, kind: EnemyKind, at?: Vec) {
     ? { hp: (120 + w * 70) * (1 + cycle * 0.5), speed: 22 + w, r: 36, dmg: 12 + w * 2 }
     : { hp: (8 + w * 4) * mob.hp, speed: (Math.min(90, 38 + w * 2.5) + rnd() * 14) * mob.speed, r: mob.r, dmg: (5 + w * 1.2) * mob.dmg };
   const pt = at ?? edgePoint(s, cfg.r + 10);
-  const wm = WAVE_MODS[s.waveMod];
-  const hp = cfg.hp * m.hp * (kind === "boss" ? 1 : wm.hp);
+  const hp = cfg.hp * m.hp;
   const e: Enemy = {
-    id: s.nextId++, x: pt.x, y: pt.y, hp, maxHp: hp, speed: cfg.speed * m.speed * (kind === "boss" ? 1 : wm.speed), r: cfg.r, dmg: cfg.dmg * m.dmg,
+    id: s.nextId++, x: pt.x, y: pt.y, hp, maxHp: hp, speed: cfg.speed * m.speed, r: cfg.r, dmg: cfg.dmg * m.dmg,
     kind, angle: 0, flash: 0, fireTimer: 2, ringTimer: 2.5,
     variant: 0, spin: 0, warn: 0, dash: 0, dvx: 0, dvy: 0, patT: 0, spawnedAt: s.time,
   };
@@ -105,7 +103,7 @@ function spawnEnemy(s: GameState, kind: EnemyKind, at?: Vec) {
 
 // Weighted pick among enemy types unlocked by the current wave.
 function pickMob(s: GameState): MobKind {
-  const pool = (Object.keys(MOBS) as MobKind[]).filter((k) => MOBS[k].weight > 0 && (s.waveMod === "heavies" ? ["brute", "elite", "juggernaut", "splitter"].includes(k) : MOBS[k].minWave <= s.wave));
+  const pool = (Object.keys(MOBS) as MobKind[]).filter((k) => MOBS[k].weight > 0 && MOBS[k].minWave <= s.wave);
   let r = rnd() * pool.reduce((a, k) => a + MOBS[k].weight, 0);
   for (const k of pool) { r -= MOBS[k].weight; if (r <= 0) return k; }
   return "grunt";
@@ -300,7 +298,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
     let heft = 1;
     for (let i = 0; i < n; i++) { const k = pickMob(s); heft = Math.max(heft, MOBS[k].hp); spawnEnemy(s, k); }
     // tougher enemies arrive less often so total pressure stays fair
-    s.spawnTimer = (Math.max(0.7, 1.8 - s.wave * 0.05) * (s.boss ? 1.8 : 1) * Math.sqrt(heft)) / (s.mods.spawn * WAVE_MODS[s.waveMod].spawn);
+    s.spawnTimer = (Math.max(0.7, 1.8 - s.wave * 0.05) * (s.boss ? 1.8 : 1) * Math.sqrt(heft)) / s.mods.spawn;
   }
 
   // Fire only from the nose, once the ship is lined up with its target

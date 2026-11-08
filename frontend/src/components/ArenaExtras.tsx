@@ -49,13 +49,9 @@ export function ArenaExtras({ g }: { g: GameState }) {
 // Full-arena overlays: darkness wave + time slow tint.
 export function ArenaOverlays({ g }: { g: GameState }) {
   const s = useStyles();
-  const R = 110, B = 1600;
   return (
     <>
       {g.slowT > 0 ? <View pointerEvents="none" style={s.slow} /> : null}
-      {g.waveMod === "dark" && !g.breakT ? (
-        <View pointerEvents="none" style={[s.dark, { left: g.player.x - R - B, top: g.player.y - R - B, width: (R + B) * 2, height: (R + B) * 2, borderRadius: R + B, borderWidth: B }]} />
-      ) : null}
       {g.tempWeapon ? <Text style={s.temp}>{WEAPONS.find((w) => w.id === g.tempWeapon!.id)!.name} · {Math.ceil(g.tempWeapon.t)}s</Text> : null}
     </>
   );
@@ -87,7 +83,6 @@ const useStyles = makeStyles((c) => ({
   grav: { position: "absolute", width: 80, height: 80, borderRadius: 40, borderWidth: 3, borderColor: c.info, backgroundColor: c.scrimLight },
   bubble: { position: "absolute", width: 52, height: 52, borderRadius: 26, borderWidth: 2, borderColor: c.xp, backgroundColor: c.transparent },
   slow: { position: "absolute", left: 0, top: 0, right: 0, bottom: 0, backgroundColor: c.nebulaBlue, opacity: 0.18 },
-  dark: { position: "absolute", borderColor: c.arena, opacity: 0.96 },
   temp: { position: "absolute", bottom: 26, alignSelf: "center", fontFamily: fonts.display, fontSize: 13, color: c.brandSecondary },
   ability: {
     position: "absolute", right: spacing.lg, bottom: spacing.lg, width: 72, height: 72, borderRadius: 36, backgroundColor: c.brandPrimary,

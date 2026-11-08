@@ -2,7 +2,7 @@ import { SYSTEMS, SystemDef } from "./config";
 import { applySystem, burst, Enemy, EBullet, GameState, rnd, setRng, StepEvents, Vec, Bullet } from "./sim";
 import {
   ABILITIES, ABILITY_UPGRADES, AbilityId, CLASS_UPGRADES, ClassDef, CLASSES, ClassId, dailyLoadout, EVOLUTIONS, ModeId, PickupKind,
-  SYSTEM_EXCLUDE, todaySeed, WAVE_MODS, WaveModId, WEAPON_EVOS, WEAPON_UPGRADES, WeaponId, WEAPONS,
+  SYSTEM_EXCLUDE, todaySeed, WEAPON_EVOS, WEAPON_UPGRADES, WeaponId, WEAPONS,
 } from "./arsenal";
 
 export interface ArsenalState {
@@ -17,14 +17,12 @@ export interface ArsenalState {
   pickups: { id: number; x: number; y: number; kind: PickupKind; life: number }[];
   tempWeapon: { id: WeaponId; t: number } | null;
   picks: Record<string, number>; evolved: string[];
-  waveMod: WaveModId;
 }
 
 export const arsenalDefaults = (): ArsenalState => ({
   mode: "standard", weapon: "cannon", ability: "dash", cls: CLASSES[0],
   abilityCd: 0, shieldT: 0, overT: 0, slowT: 0, buffShieldT: 0, grav: null, beams: [], arcs: [], pMines: [],
   bladeA: 0, bladeCd: {}, mineT: 0, drone: null, pickups: [], tempWeapon: null, picks: {}, evolved: [],
-  waveMod: "none",
 });
 
 function mulberry(seed: number) {
@@ -94,14 +92,6 @@ export function reflect(s: GameState, b: EBullet) {
 
 export function onEnemyDeath(s: GameState, e: Enemy) {
   delete s.bladeCd[e.id];
-  const wm = WAVE_MODS[s.waveMod];
-  if (wm.coins > 1) s.coins += (wm.coins - 1) * s.mods.coins;
-  if (s.waveMod === "volatile" && e.kind !== "boss") {
-    for (let i = 0; i < 6; i++) {
-      const a = (i / 6) * Math.PI * 2;
-      s.eBullets.push({ id: s.nextId++, x: e.x, y: e.y, vx: Math.cos(a) * 120, vy: Math.sin(a) * 120, dmg: (3 + s.wave * 0.5) * s.mods.dmg, life: 1.6 });
-    }
-  }
   if (rnd() < (e.kind === "boss" ? 1 : 0.03)) {
     const kinds: PickupKind[] = ["shield", "magnet", "repair", "weapon"];
     s.pickups.push({ id: s.nextId++, x: e.x, y: e.y, kind: kinds[Math.floor(rnd() * 4)], life: 12 });

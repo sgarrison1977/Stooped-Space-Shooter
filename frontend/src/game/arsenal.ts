@@ -4,7 +4,6 @@ export type WeaponId = "cannon" | "spread" | "railgun" | "flame" | "homing" | "a
 export type AbilityId = "dash" | "shield" | "overdrive" | "gravity" | "timeslow";
 export type ClassId = "standard" | "interceptor" | "gunship" | "engineer";
 export type ModeId = "standard" | "bossrush" | "daily" | "hardcore";
-export type WaveModId = "none" | "swarm" | "heavies" | "elite" | "fast" | "dark" | "volatile";
 export type PickupKind = "shield" | "magnet" | "repair" | "weapon";
 
 type Item<T> = { id: T; name: string; desc: string };
@@ -42,16 +41,6 @@ export const MODES: Item<ModeId>[] = [
   { id: "daily", name: "Daily Run", desc: "Same seed, loadout + stats for everyone today" },
   { id: "hardcore", name: "Hardcore", desc: "One hit and you're done · Normal difficulty" },
 ];
-
-export const WAVE_MODS: Record<WaveModId, { name: string; desc: string; spawn: number; hp: number; speed: number; coins: number }> = {
-  none: { name: "Standard", desc: "", spawn: 1, hp: 1, speed: 1, coins: 1 },
-  swarm: { name: "Swarm", desc: "Many weak enemies", spawn: 1.6, hp: 0.6, speed: 1, coins: 1.2 },
-  heavies: { name: "Heavies", desc: "Only armoured threats · 1.4x coins", spawn: 0.6, hp: 1, speed: 1, coins: 1.4 },
-  elite: { name: "Elite Wave", desc: "Few, very tough · 2x coins", spawn: 0.45, hp: 2.6, speed: 1, coins: 2 },
-  fast: { name: "Rush", desc: "Enemies 40% faster · 1.3x coins", spawn: 1, hp: 1, speed: 1.4, coins: 1.3 },
-  dark: { name: "Darkness", desc: "You only see near your ship · 1.5x coins", spawn: 1, hp: 1, speed: 1, coins: 1.5 },
-  volatile: { name: "Volatile", desc: "Enemies burst into shrapnel · 1.4x coins", spawn: 1, hp: 1, speed: 1, coins: 1.4 },
-};
 
 export const EVOLUTIONS: { id: string; name: string; desc: string; icon: SystemIcon; from: [string, string] }[] = [
   { id: "plasma_storm", name: "Plasma Storm", desc: "EVOLUTION · +2 projectiles, +30% damage", icon: "sparkles", from: ["twin", "ion_lance"] },

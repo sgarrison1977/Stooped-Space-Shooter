@@ -126,7 +126,7 @@ export const CLASS_UPGRADES: Record<ClassId, WUp[]> = {
 
 // Generic systems that do nothing for a given weapon
 export const SYSTEM_EXCLUDE: Partial<Record<WeaponId, string[]>> = {
-  arc: ["twin"], mines: ["twin"], spread: ["twin"], blades: ["overclocked"],
+  arc: ["twin"], mines: ["twin"], blades: ["overclocked"],
 };
 
 export const todaySeed = () => { const d = new Date(); return d.getUTCFullYear() * 10000 + (d.getUTCMonth() + 1) * 100 + d.getUTCDate(); };

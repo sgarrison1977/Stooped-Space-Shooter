@@ -131,8 +131,12 @@ function fire(s: GameState, w: WeaponId, nearest: Enemy | null, aimError: number
     case "spread": {
       if (aimError > 0.25) return;
       s.fireTimer = 0.45 / rate;
-      const n = 5 + (st.projectiles - 1) * 2 + 2 * L(s, "sp_choke");
-      for (let i = 0; i < n; i++) shot(a + (i / (n - 1) - 0.5) * 0.7, 480, 0.42 * (1 + 0.35 * L(s, "sp_barrel")), dmg * 0.75, evolvedW(s, "sp_evo") ? "pierce" : undefined);
+      const n = 5 + 2 * L(s, "sp_choke"), fans = st.projectiles, life = 0.42 * (1 + 0.35 * L(s, "sp_barrel"));
+      // each extra barrel fires its own fan, angled out to the side
+      for (let f = 0; f < fans; f++) {
+        const fa = a + (f - (fans - 1) / 2) * 0.45;
+        for (let i = 0; i < n; i++) shot(fa + (i / (n - 1) - 0.5) * 0.7, 480, life, dmg * 0.75, evolvedW(s, "sp_evo") ? "pierce" : undefined);
+      }
       break;
     }
     case "railgun": {

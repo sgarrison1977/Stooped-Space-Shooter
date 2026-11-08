@@ -27,7 +27,8 @@ export default function Home() {
       <EmberBackground />
       <View style={[s.header, padH, { paddingTop: insets.top + (wide ? spacing.md : spacing.lg) }]}>
         <View style={{ flex: 1 }}>
-          <Text style={s.title}>EMBERDEEP</Text>
+          <Text style={s.title} numberOfLines={1} adjustsFontSizeToFit>STOOOPID</Text>
+          <Text style={s.titleSub} testID="home-game-title">Space Shooter Game</Text>
           <Text testID="home-subtitle" style={s.subtitle} numberOfLines={1}>
             {(profile?.name || "New pilot").toUpperCase()} · BEST WAVE {profile?.bestWave ?? 0}
           </Text>
@@ -82,6 +83,7 @@ const useStyles = makeStyles((c) => ({
   root: { flex: 1, backgroundColor: c.surface },
   header: { flexDirection: "row", alignItems: "center", paddingBottom: spacing.lg },
   title: { fontFamily: fonts.display, fontSize: 26, letterSpacing: 9, color: c.onSurface },
+  titleSub: { fontFamily: fonts.display, fontSize: 11, letterSpacing: 4, color: c.brandSecondary, textTransform: "uppercase", marginTop: 2 },
   subtitle: { fontFamily: fonts.text, fontSize: 10, letterSpacing: 2.4, color: c.muted, marginTop: spacing.xs },
   loading: { flex: 1, alignItems: "center", justifyContent: "center", gap: spacing.md },
   content: { gap: spacing.lg },

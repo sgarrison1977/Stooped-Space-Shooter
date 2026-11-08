@@ -195,7 +195,7 @@ export default function Play() {
           onAgain={() => setRunId((r) => r + 1)}
           abandoned={g.player.hp > 0}
           onReturn={() => (router.canGoBack() ? router.back() : router.replace("/"))}
-          onShare={() => Share.share({ message: `I reached wave ${g.wave} on ${g.mods.name} with ${g.kills} kills and ${g.bossesDown} bosses down in EMBERDEEP. Think you can dive deeper?` }).catch(() => {})}
+          onShare={() => Share.share({ message: `I reached wave ${g.wave} on ${g.mods.name} with ${g.kills} kills and ${g.bossesDown} bosses down in Stooopid Space Shooter Game. Think you can beat that?` }).catch(() => {})}
         />
       ) : null}
     </View>

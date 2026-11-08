@@ -116,7 +116,7 @@ export function ArenaView({ g, skin, trail }: { g: GameState; skin: Skin; trail:
         </View>
       ) : null}
       <ArenaOverlays g={g} />
-      {g.breakT > 0 && !g.pathPending ? (
+      {g.breakT > 0 ? (
         <View style={s.banner} testID="wave-break-banner">
           <Text style={s.bannerLabel}>Wave {g.wave} cleared</Text>
           <Text style={s.bannerName}>Wave {g.wave + 1} in {Math.ceil(g.breakT)}</Text>

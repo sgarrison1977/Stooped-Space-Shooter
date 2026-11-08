@@ -6,11 +6,11 @@ import * as Haptics from "expo-haptics";
 import { StatusBar } from "expo-status-bar";
 import { fonts, makeStyles, radius, spacing } from "@/src/theme";
 import { createGame, GameState, step, Vec } from "@/src/game/sim";
-import { activateAbility, applyChoice, boardKey, levelChoices, pathOptions, setupLoadout } from "@/src/game/arsenal-sim";
-import { MODES, WaveModId } from "@/src/game/arsenal";
+import { activateAbility, applyChoice, boardKey, levelChoices, setupLoadout } from "@/src/game/arsenal-sim";
+import { MODES } from "@/src/game/arsenal";
 
 const runLabel = (g: GameState) => (g.mode === "standard" ? g.mods.name : MODES.find((m) => m.id === g.mode)!.name);
-import { AbilityButton, PathOverlay } from "@/src/components/ArenaExtras";
+import { AbilityButton } from "@/src/components/ArenaExtras";
 import { baseStats, SystemDef } from "@/src/game/config";
 import { loadProfile, mergeBossKills, saveProfile, submitScore } from "@/src/game/profile";
 import { BOSSES, difficulty, SKINS, skinById, TRAILS, trailById } from "@/src/game/content";
@@ -19,7 +19,7 @@ import { ArenaView } from "@/src/components/ArenaView";
 import { Hud } from "@/src/components/Hud";
 import { GameOverOverlay, LevelUpOverlay, PauseOverlay } from "@/src/components/Overlays";
 
-type Mode = "play" | "levelup" | "paused" | "over" | "path";
+type Mode = "play" | "levelup" | "paused" | "over";
 
 export default function Play() {
   const s = useStyles();
@@ -39,7 +39,6 @@ export default function Play() {
   const [runId, setRunId] = useState(0);
   const [look, setLook] = useState({ skin: SKINS[0], trail: TRAILS[0] });
   const [highlight, setHighlight] = useState<string | null>(null);
-  const [pathOpts, setPathOpts] = useState<WaveModId[]>([]);
 
   const setMode = (m: Mode) => { modeRef.current = m; setModeState(m); };
 
@@ -99,9 +98,6 @@ export default function Play() {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
         setMode("over");
         finishRun(g);
-      } else if (g.pathPending) {
-        setPathOpts(pathOptions());
-        setMode("path");
       } else if (g.pendingLevelUps > 0) {
         setChoices(levelChoices(g));
         setMode("levelup");
@@ -194,7 +190,6 @@ export default function Play() {
       </View>
 
       {g && mode === "levelup" ? <LevelUpOverlay key={`${g.level}-${g.pendingLevelUps}`} wide={wide} level={g.level - g.pendingLevelUps + 1} options={choices} onPick={pick} /> : null}
-      {g && mode === "path" ? <PathOverlay wide={wide} wave={g.wave} options={pathOpts} onPick={(id) => { g.nextMod = id; g.pathPending = false; setMode("play"); }} /> : null}
       {mode === "paused" ? <PauseOverlay onResume={() => setMode("play")} onQuit={() => { if (g) { g.dead = true; setMode("over"); finishRun(g); } }} /> : null}
       {g && mode === "over" ? (
         <GameOverOverlay

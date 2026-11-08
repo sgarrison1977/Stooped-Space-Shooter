@@ -101,6 +101,40 @@ export const WEAPON_UPGRADES: Record<WeaponId, WUp[]> = {
   ],
 };
 
+// Weapon combo: unlocks once both listed weapon upgrades have 2+ picks
+export const WEAPON_EVOS: Record<WeaponId, WUp & { from: [string, string] }> = {
+  cannon: { id: "cn_evo", name: "Explosive Rounds", desc: "COMBO · cannon shots explode on impact", icon: "sparkles", from: ["cn_heavy", "cn_velocity"] },
+  spread: { id: "sp_evo", name: "Flak Storm", desc: "COMBO · pellets pierce through enemies", icon: "sparkles", from: ["sp_choke", "sp_barrel"] },
+  railgun: { id: "rg_evo", name: "Ion Burst", desc: "COMBO · every enemy the beam hits explodes", icon: "sparkles", from: ["rg_overcharge", "rg_wide"] },
+  flame: { id: "fl_evo", name: "Dragon's Breath", desc: "COMBO · flames also blast out behind you", icon: "sparkles", from: ["fl_napalm", "fl_nozzle"] },
+  homing: { id: "hm_evo", name: "Cluster Warheads", desc: "COMBO · blasts throw out shrapnel", icon: "sparkles", from: ["hm_pod", "hm_warhead"] },
+  arc: { id: "ar_evo", name: "Storm Fork", desc: "COMBO · lightning splits on every bounce", icon: "sparkles", from: ["ar_fork", "ar_volt"] },
+  blades: { id: "bl_evo", name: "Blade Storm", desc: "COMBO · blades fling razor shards outward", icon: "sparkles", from: ["bl_extra", "bl_motor"] },
+  mines: { id: "mn_evo", name: "Cluster Mines", desc: "COMBO · mines scatter mini mines when they blow", icon: "sparkles", from: ["mn_payload", "mn_blast"] },
+};
+
+const QUICK: WUp = { id: "ab_cd", name: "Quick Recharge", desc: "ABILITY · 12% shorter cooldown", icon: "wrench" };
+export const ABILITY_UPGRADES: Record<AbilityId, WUp[]> = {
+  dash: [QUICK, { id: "ab_dash", name: "Phase Dash", desc: "DASH · dash further, longer invulnerability", icon: "zap" }],
+  shield: [QUICK, { id: "ab_shield", name: "Mirror Field", desc: "SHIELD · reflects 0.6s longer", icon: "shield" }],
+  overdrive: [QUICK, { id: "ab_over", name: "Afterburn Core", desc: "OVERDRIVE · lasts 2s longer", icon: "zap" }],
+  gravity: [QUICK, { id: "ab_grav", name: "Event Horizon", desc: "GRAVITY · +30% pull range and blast damage", icon: "magnet" }],
+  timeslow: [QUICK, { id: "ab_slow", name: "Deep Freeze", desc: "TIME SLOW · lasts 1s longer", icon: "crosshair" }],
+};
+
+export const CLASS_UPGRADES: Record<ClassId, WUp[]> = {
+  standard: [{ id: "cl_std", name: "Balanced Tuning", desc: "STANDARD · +8% damage, +10 max hull", icon: "rocket" }],
+  interceptor: [
+    { id: "cl_burn", name: "Afterburners", desc: "INTERCEPTOR · +12% flight speed", icon: "zap" },
+    { id: "cl_hot", name: "Hot Guns", desc: "INTERCEPTOR · +12% damage", icon: "rocket" },
+  ],
+  gunship: [{ id: "cl_hull", name: "Reinforced Hull", desc: "GUNSHIP · +25 max hull, +3% resist", icon: "shield" }],
+  engineer: [
+    { id: "cl_drone", name: "Extra Drone", desc: "ENGINEER · +1 helper drone", icon: "sparkles" },
+    { id: "cl_dronefire", name: "Drone Overclock", desc: "ENGINEER · drones fire faster and harder", icon: "wrench" },
+  ],
+};
+
 // Generic systems that do nothing for a given weapon
 export const SYSTEM_EXCLUDE: Partial<Record<WeaponId, string[]>> = {
   arc: ["twin"], mines: ["twin"], blades: ["overclocked"],

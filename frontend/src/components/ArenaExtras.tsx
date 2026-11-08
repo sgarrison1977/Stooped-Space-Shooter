@@ -2,12 +2,10 @@ import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import * as Haptics from "expo-haptics";
-import Animated, { FadeIn } from "react-native-reanimated";
 import { fonts, makeStyles, radius, spacing, useTheme } from "@/src/theme";
 import { GameState } from "@/src/game/sim";
-import { ABILITIES, WAVE_MODS, WaveModId, WEAPONS } from "@/src/game/arsenal";
-import { activeWeapon, bladeCount, bladeReach } from "@/src/game/arsenal-sim";
-import { Label } from "./ui";
+import { ABILITIES, WEAPONS } from "@/src/game/arsenal";
+import { activeWeapon, bladeCount, bladeReach, droneCount } from "@/src/game/arsenal-sim";
 
 function Seg({ x1, y1, x2, y2, color, w }: { x1: number; y1: number; x2: number; y2: number; color: string; w: number }) {
   const len = Math.hypot(x2 - x1, y2 - y1);
@@ -38,7 +36,10 @@ export function ArenaExtras({ g }: { g: GameState }) {
         const a = g.bladeA + (i / nBlades) * Math.PI * 2;
         return <View key={i} style={[s.blade, { left: p.x + Math.cos(a) * reach - 8, top: p.y + Math.sin(a) * reach - 8, transform: [{ rotate: `${a + 0.8}rad` }] }]} />;
       }) : null}
-      {g.drone ? <View style={[s.drone, { left: p.x + Math.cos(g.drone.a) * 40 - 6, top: p.y + Math.sin(g.drone.a) * 40 - 6 }]} /> : null}
+      {g.drone ? Array.from({ length: droneCount(g) }, (_, i) => {
+        const a = g.drone!.a + (i / droneCount(g)) * Math.PI * 2;
+        return <View key={`d${i}`} style={[s.drone, { left: p.x + Math.cos(a) * 40 - 6, top: p.y + Math.sin(a) * 40 - 6 }]} />;
+      }) : null}
       {g.grav ? <View style={[s.grav, { left: g.grav.x - 40, top: g.grav.y - 40, transform: [{ scale: 0.5 + g.grav.t * 0.6 }] }]} /> : null}
       {g.shieldT > 0 || g.buffShieldT > 0 ? <View style={[s.bubble, { left: p.x - 26, top: p.y - 26 }]} /> : null}
     </>
@@ -77,23 +78,6 @@ export function AbilityButton({ g, onPress }: { g: GameState; onPress: () => voi
   );
 }
 
-export function PathOverlay({ wave, options, onPick, wide }: { wave: number; options: WaveModId[]; onPick: (id: WaveModId) => void; wide: boolean }) {
-  const s = useStyles();
-  return (
-    <Animated.View entering={FadeIn.duration(200)} style={s.scrim} testID="path-overlay">
-      <Label style={{ textAlign: "center" }}>Wave {wave} cleared</Label>
-      <Text style={s.title}>Choose your path</Text>
-      <View style={[s.list, wide && { flexDirection: "row" }]}>
-        {options.map((id) => (
-          <Pressable key={id} testID={`path-option-${id}`} onPress={() => onPick(id)} style={({ pressed }) => [s.option, wide && { flex: 1 }, pressed && s.optionOn]}>
-            <Text style={s.optName}>{WAVE_MODS[id].name}</Text>
-            <Text style={s.optDesc}>{WAVE_MODS[id].desc}</Text>
-          </Pressable>
-        ))}
-      </View>
-    </Animated.View>
-  );
-}
 
 const useStyles = makeStyles((c) => ({
   pickup: { position: "absolute", width: 26, height: 26, borderRadius: 13, backgroundColor: c.brandPrimary, borderWidth: 2, borderColor: c.bossCore, alignItems: "center", justifyContent: "center" },

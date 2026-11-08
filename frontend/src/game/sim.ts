@@ -1,7 +1,7 @@
 import { RunStats } from "./config";
 import { BOSSES, DifficultyDef, MobKind, MOBS } from "./content";
 import { WAVE_MODS } from "./arsenal";
-import { activeWeapon, ArsenalState, arsenalDefaults, bulletHit, onEnemyDeath, reflect, updateArsenal, waveDone } from "./arsenal-sim";
+import { activeWeapon, ArsenalState, arsenalDefaults, bulletHit, evolvedW, moveMul, onEnemyDeath, reflect, updateArsenal, waveDone } from "./arsenal-sim";
 
 // Swappable RNG so the Daily Run is the same for everyone
 export let rnd: () => number = Math.random;
@@ -15,7 +15,7 @@ export interface Enemy {
   kind: EnemyKind; angle: number; flash: number; fireTimer: number; ringTimer: number;
   variant: number; spin: number; warn: number; dash: number; dvx: number; dvy: number; patT: number; spawnedAt: number;
 }
-export interface Bullet { id: number; x: number; y: number; vx: number; vy: number; dmg: number; crit: boolean; life: number; kind?: "flame" | "missile"; hits?: number[] }
+export interface Bullet { id: number; x: number; y: number; vx: number; vy: number; dmg: number; crit: boolean; life: number; kind?: "flame" | "missile" | "shell" | "pierce"; hits?: number[] }
 export interface EBullet { id: number; x: number; y: number; vx: number; vy: number; dmg: number; life: number; homing?: boolean; fuse?: number }
 export interface Gem { id: number; x: number; y: number; value: number; pulled: boolean }
 export interface Floater { id: number; x: number; y: number; text: string; life: number; crit: boolean }
@@ -226,8 +226,6 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
       s.wave += 1;
       s.waveTime = 0;
       s.bossSpawned = false;
-      s.waveMod = s.nextMod;
-      s.nextMod = "none";
       ev.waveUp = true;
     }
   } else {
@@ -235,7 +233,6 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
     // a living boss must be beaten before the wave can end
     if (waveDone(s)) {
       s.breakT = WAVE_BREAK;
-      s.pathPending = true;
       p.hp = Math.min(st.maxHp, p.hp + st.maxHp * 0.25); // breather heal between waves
       for (const e of s.enemies) burst(s, e.x, e.y, 6, "ember", 120, 3);
       s.enemies = [];
@@ -253,14 +250,14 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
 
   // Ice physics
   if (joy) {
-    p.vx += joy.x * ACCEL * s.cls.move * dt;
-    p.vy += joy.y * ACCEL * s.cls.move * dt;
+    p.vx += joy.x * ACCEL * moveMul(s) * dt;
+    p.vy += joy.y * ACCEL * moveMul(s) * dt;
     p.thrust = Math.min(1, Math.hypot(joy.x, joy.y));
   } else p.thrust = 0;
   const damp = Math.exp(-FRICTION * dt);
   p.vx *= damp; p.vy *= damp;
   const spd = Math.hypot(p.vx, p.vy);
-  const maxSp = MAX_SPEED * s.cls.move * (spd > MAX_SPEED * 1.5 ? 2.6 : 1); // dash may exceed briefly
+  const maxSp = MAX_SPEED * moveMul(s) * (spd > MAX_SPEED * 1.5 ? 2.6 : 1); // dash may exceed briefly
   if (spd > maxSp) { p.vx = (p.vx / spd) * maxSp; p.vy = (p.vy / spd) * maxSp; }
   p.x += p.vx * dt; p.y += p.vy * dt;
   if (p.x < PLAYER_R) { p.x = PLAYER_R; p.vx = Math.abs(p.vx) * 0.55; }
@@ -321,7 +318,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
       const crit = rnd() < st.crit;
       s.bullets.push({
         id: s.nextId++, x: nx, y: ny, vx: Math.cos(a + off) * sp, vy: Math.sin(a + off) * sp,
-        dmg: Math.round(st.damage * heavy * (crit ? 2 : 1)), crit, life: 1.4,
+        dmg: Math.round(st.damage * heavy * (crit ? 2 : 1)), crit, life: 1.4, kind: evolvedW(s, "cn_evo") ? "shell" : undefined,
       });
     }
   }

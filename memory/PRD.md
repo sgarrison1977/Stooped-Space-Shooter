@@ -79,3 +79,8 @@ User built "Hypershift" (in-game title EMBERDEEP) on Base44 and wants it rebuilt
 - Each loadout weapon has 2-3 own upgrades (WEAPON_UPGRADES in arsenal.ts); at least one offered per level-up.
 - Generic upgrades that don't affect the weapon are hidden (SYSTEM_EXCLUDE: arc/mines no Twin Barrels, blades no Overclocked). Blades/mines now crit.
 - Test: frontend/tests_sim/weapon_upgrades_test.ts
+
+## Update: Weapon combos, ability upgrades, class perks, loadout preview
+- WEAPON_EVOS (1 combo per weapon, needs its 2 listed weapon upgrades at 2+ picks), ABILITY_UPGRADES (Quick Recharge + 1 specific), CLASS_UPGRADES (perks per class) in arsenal.ts; logic in arsenal-sim.ts.
+- Loadout card shows each weapon's upgrades + combo, ability upgrades, class perks (testIDs weapon-chip-upgrades, ability-chip-upgrades, class-chip-upgrades).
+- Removed 'Choose your path' wave picker between waves (waves are always standard now).

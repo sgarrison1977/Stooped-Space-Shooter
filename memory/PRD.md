@@ -85,3 +85,4 @@ User built "Hypershift" (in-game title EMBERDEEP) on Base44 and wants it rebuilt
 - Loadout card shows each weapon's upgrades + combo, ability upgrades, class perks (testIDs weapon-chip-upgrades, ability-chip-upgrades, class-chip-upgrades).
 - Removed 'Choose your path' wave picker between waves (waves are always standard now).
 - Deleted special wave types (WAVE_MODS: swarm/heavies/elite/rush/darkness/volatile) entirely.
+- Twin Barrels no longer offered with Spread (Wide Choke is its pellet upgrade).

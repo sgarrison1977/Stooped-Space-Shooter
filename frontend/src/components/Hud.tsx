@@ -32,6 +32,7 @@ export function Hud({ g, onPause, wide }: { g: GameState; onPause: () => void; w
       <View style={s.barText}>
         <Text testID="hud-hp" style={s.small}>{Math.ceil(g.player.hp)}/{g.stats.maxHp}</Text>
         <Text testID="hud-level" style={s.small}>Lv {g.level}</Text>
+        <Text testID="hud-lives" style={s.small}>{"♥".repeat(Math.max(0, g.lives))}</Text>
       </View>
     </View>
   );

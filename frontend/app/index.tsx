@@ -6,6 +6,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { StatusBar } from "expo-status-bar";
 import { fonts, makeStyles, spacing, useTheme } from "@/src/theme";
 import { useProfile } from "@/src/game/profile";
+import { useSavedRun } from "@/src/game/save";
 import { EmberBackground } from "@/src/components/Ember";
 import { CoinPill, MuteButton } from "@/src/components/ui";
 import { ArmouryCard, MusterCard } from "@/src/components/HomeCards";
@@ -18,6 +19,7 @@ export default function Home() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { profile, update } = useProfile();
+  const saved = useSavedRun();
   const { width, height } = useWindowDimensions();
   const wide = width > height;
   const padH = { paddingLeft: insets.left + spacing.xl, paddingRight: insets.right + spacing.xl };
@@ -60,6 +62,8 @@ export default function Home() {
             profile={profile}
             onRename={(name) => update((p) => ({ ...p, name }))}
             onEnter={() => { startMusic(); router.push("/play"); }}
+            saved={saved}
+            onContinue={() => { startMusic(); router.push("/play?resume=1"); }}
             onDifficulty={(difficulty) => update((p) => ({ ...p, difficulty }))}
           />
           <LoadoutCard profile={profile} update={update} />

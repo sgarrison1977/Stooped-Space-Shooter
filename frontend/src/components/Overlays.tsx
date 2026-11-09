@@ -43,7 +43,7 @@ export function LevelUpOverlay({ level, options, onPick, wide }: { level: number
   );
 }
 
-export function PauseOverlay({ onResume, onQuit }: { onResume: () => void; onQuit: () => void }) {
+export function PauseOverlay({ onResume, onQuit, onSaveLeave }: { onResume: () => void; onQuit: () => void; onSaveLeave: () => void }) {
   const s = useStyles();
   return (
     <Animated.View entering={FadeIn.duration(180)} style={s.scrim} testID="pause-overlay">
@@ -51,6 +51,7 @@ export function PauseOverlay({ onResume, onQuit }: { onResume: () => void; onQui
       <Text style={s.title}>Paused</Text>
       <View style={s.list}>
         <PrimaryButton title="Resume" testID="pause-resume-button" onPress={onResume} />
+        <OutlineButton title="Save & Leave" icon="save" testID="pause-save-leave-button" onPress={onSaveLeave} />
         <OutlineButton title="Abandon Run" testID="pause-abandon-button" onPress={onQuit} />
         <View style={s.muteRow}>
           <Text style={s.statLabel}>Sound & Music</Text>

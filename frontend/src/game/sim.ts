@@ -31,7 +31,7 @@ export interface GameState extends ArsenalState {
   pendingLevelUps: number; nextId: number; dead: boolean;
   bossSpawned: boolean; boss: Enemy | null; bossName: string; bossBanner: number; bossesDown: number; bossCount: number;
   bossKills: { variant: number; secs: number }[];
-  seen: string[]; intro: { name: string; desc: string; t: number } | null;
+  seen: string[]; intro: { name: string; desc: string; t: number; label?: string } | null;
   shake: number; time: number; mods: DifficultyDef; breakT: number;
 }
 

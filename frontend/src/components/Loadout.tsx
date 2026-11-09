@@ -3,7 +3,7 @@ import { Text, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { fonts, makeStyles, radius, spacing } from "@/src/theme";
 import { Profile } from "@/src/game/profile";
-import { ABILITIES, ABILITY_UPGRADES, CLASS_UPGRADES, CLASSES, dailyLoadout, MODES, WEAPON_EVOS, WEAPON_UPGRADES, WeaponId, WEAPONS } from "@/src/game/arsenal";
+import { ABILITIES, ABILITY_UPGRADES, CLASS_UPGRADES, CLASSES, dailyLoadout, MODES, SPEEDS, WEAPON_EVOS, WEAPON_UPGRADES, WeaponId, WEAPONS } from "@/src/game/arsenal";
 import { DifficultyChips } from "./DifficultyChips";
 import { Label } from "./ui";
 
@@ -33,6 +33,7 @@ export function LoadoutCard({ profile, update }: { profile: Profile; update: Upd
     <Animated.View entering={FadeInDown.duration(450).delay(60)} style={s.card} testID="loadout-card">
       <Text style={s.title}>Loadout</Text>
       <Row label="Mode" options={MODES} value={profile.mode} onChange={(mode) => update((p) => ({ ...p, mode: mode as Profile["mode"] }))} prefix="mode-chip" />
+          <Row label="Game Speed" options={SPEEDS} value={profile.speed} onChange={(speed) => update((p) => ({ ...p, speed: speed as Profile["speed"] }))} prefix="speed-chip" />
       {daily ? (
         <Text style={s.daily} testID="daily-loadout">Today: {nm(WEAPONS, d.weapon)} · {nm(ABILITIES, d.ability)} · {nm(CLASSES, d.cls)}</Text>
       ) : (

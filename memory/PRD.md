@@ -91,3 +91,9 @@ User built "Hypershift" (in-game title EMBERDEEP) on Base44 and wants it rebuilt
 - Crash fix (late game ~lvl 22): hard caps on bullets(160)/enemy bullets(90)/damage numbers(30), Spread pellets capped ~36 per blast, game loop step wrapped in try/catch. Stress test: tests_sim/late_stress_test.ts
 - Removed Mines weapon entirely (loadout + temp weapon pickup); saved profiles with mines fall back to Cannon. Slag King boss mines unchanged.
 - Removed Railgun weapon entirely (looked too similar to Arc); saved profiles fall back to Cannon.
+
+## Update: Arc visuals, game speed, lives, save/continue
+- Arc lightning: jagged, flickering bolts with glow + side sprigs (Bolt in ArenaExtras.tsx).
+- Game speed (profile.speed): Slow 0.75x / Normal 1x / Fast 1.5x / Lightning Fast 2x; whole sim runs faster via substeps (play.tsx). All speeds count on leaderboards.
+- 3 lives (Hardcore = 1): on death the current wave restarts with full hull, level/upgrades kept (retryWave in arsenal-sim.ts). Hearts in HUD.
+- Auto-save (src/game/save.ts, AsyncStorage key stooopid_run_v1): on pause, background, wave clear, level-up pick, every 10s, Save & Leave in pause menu. Home shows Continue button (resumes paused). Save cleared when run ends or a new run starts.

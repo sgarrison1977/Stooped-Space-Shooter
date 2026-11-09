@@ -7,11 +7,31 @@ import { GameState } from "@/src/game/sim";
 import { ABILITIES, WEAPONS } from "@/src/game/arsenal";
 import { activeWeapon, bladeCount, bladeReach, droneCount } from "@/src/game/arsenal-sim";
 
-function Seg({ x1, y1, x2, y2, color, w }: { x1: number; y1: number; x2: number; y2: number; color: string; w: number }) {
+function Seg({ x1, y1, x2, y2, color, w, op = 1 }: { x1: number; y1: number; x2: number; y2: number; color: string; w: number; op?: number }) {
   const len = Math.hypot(x2 - x1, y2 - y1);
   return (
-    <View style={{ position: "absolute", left: (x1 + x2) / 2 - len / 2, top: (y1 + y2) / 2 - w / 2, width: len, height: w, borderRadius: w, backgroundColor: color, transform: [{ rotate: `${Math.atan2(y2 - y1, x2 - x1)}rad` }] }} />
+    <View style={{ position: "absolute", left: (x1 + x2) / 2 - len / 2, top: (y1 + y2) / 2 - w / 2, width: len, height: w, borderRadius: w, opacity: op, backgroundColor: color, transform: [{ rotate: `${Math.atan2(y2 - y1, x2 - x1)}rad` }] }} />
   );
+}
+
+// Jagged lightning: re-randomised every frame so it crackles, with a glow pass and small side sprigs
+function Bolt({ from, to, glow, core }: { from: { x: number; y: number }; to: { x: number; y: number }; glow: string; core: string }) {
+  const dx = to.x - from.x, dy = to.y - from.y, len = Math.hypot(dx, dy) || 1;
+  const nx = -dy / len, ny = dx / len, n = Math.max(3, Math.min(8, Math.round(len / 22)));
+  const pts = [from];
+  for (let i = 1; i < n; i++) { const t = i / n, j = (Math.random() - 0.5) * Math.min(26, len * 0.25); pts.push({ x: from.x + dx * t + nx * j, y: from.y + dy * t + ny * j }); }
+  pts.push(to);
+  const segs: React.ReactNode[] = [];
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1], b = pts[i];
+    segs.push(<Seg key={`g${i}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y} color={glow} w={7} op={0.35} />);
+    segs.push(<Seg key={`c${i}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y} color={core} w={2} />);
+    if (i < pts.length - 1 && Math.random() < 0.45) {
+      const ang = Math.atan2(dy, dx) + (Math.random() < 0.5 ? 1 : -1) * (0.5 + Math.random() * 0.7), l = 10 + Math.random() * 16;
+      segs.push(<Seg key={`s${i}`} x1={b.x} y1={b.y} x2={b.x + Math.cos(ang) * l} y2={b.y + Math.sin(ang) * l} color={core} w={1.5} op={0.8} />);
+    }
+  }
+  return <>{segs}</>;
 }
 
 const PICKUP_ICON = { shield: "shield", magnet: "magnet", repair: "wrench", weapon: "crosshair" } as const;
@@ -29,7 +49,7 @@ export function ArenaExtras({ g }: { g: GameState }) {
           <Lucide name={PICKUP_ICON[k.kind]} size={14} color={colors.onSurface} />
         </View>
       ))}
-      {g.arcs.map((a) => a.pts.slice(1).map((pt, i) => <Seg key={`${a.id}-${i}`} x1={a.pts[i].x} y1={a.pts[i].y} x2={pt.x} y2={pt.y} color={colors.shipLight} w={3} />))}
+      {g.arcs.map((a) => a.pts.slice(1).map((pt, i) => <Bolt key={`${a.id}-${i}`} from={a.pts[i]} to={pt} glow={colors.xp} core={colors.shipLight} />))}
       {activeWeapon(g) === "blades" ? Array.from({ length: nBlades }, (_, i) => {
         const a = g.bladeA + (i / nBlades) * Math.PI * 2;
         return <View key={i} style={[s.blade, { left: p.x + Math.cos(a) * reach - 8, top: p.y + Math.sin(a) * reach - 8, transform: [{ rotate: `${a + 0.8}rad` }] }]} />;

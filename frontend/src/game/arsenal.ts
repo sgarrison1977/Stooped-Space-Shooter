@@ -33,6 +33,14 @@ export const CLASSES: ClassDef[] = [
   { id: "engineer", name: "Engineer", desc: "Helper drone shoots for you", move: 1, hp: 0.9, dmg: 1, proj: 0, resist: 0, drone: true },
 ];
 
+export type SpeedId = "slow" | "normal" | "fast" | "lightning";
+export const SPEEDS: (Item<SpeedId> & { mul: number })[] = [
+  { id: "slow", name: "Slow", desc: "Everything moves at 75% speed", mul: 0.75 },
+  { id: "normal", name: "Normal", desc: "The standard pace", mul: 1 },
+  { id: "fast", name: "Fast", desc: "Everything runs 1.5x faster", mul: 1.5 },
+  { id: "lightning", name: "Lightning Fast", desc: "Everything runs 2x faster", mul: 2 },
+];
+
 export const MODES: Item<ModeId>[] = [
   { id: "standard", name: "Standard", desc: "Waves, bosses every 3rd wave" },
   { id: "bossrush", name: "Boss Rush", desc: "Endless bosses back to back · Normal difficulty" },

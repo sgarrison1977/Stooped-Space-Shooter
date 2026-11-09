@@ -102,7 +102,7 @@ export function ArenaView({ g, skin, trail }: { g: GameState; skin: Skin; trail:
       </View>
       {g.intro && !g.bossBanner ? (
         <View style={[s.intro, { top: boss ? 44 : 10, opacity: Math.min(1, g.intro.t * 2) }]} testID="enemy-intro">
-          <Text style={s.introLabel}>New threat</Text>
+          <Text style={s.introLabel}>{g.intro.label ?? "New threat"}</Text>
           <Text style={s.introName}>{g.intro.name}</Text>
           <Text style={s.introDesc}>{g.intro.desc}</Text>
         </View>

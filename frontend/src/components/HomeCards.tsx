@@ -6,6 +6,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { fonts, makeStyles, radius, spacing, useTheme } from "@/src/theme";
 import { Label, PrimaryButton, OutlineButton } from "./ui";
 import { Profile } from "@/src/game/profile";
+import { RunSummary } from "@/src/game/save";
 import { baseStats, MAX_UPGRADE_LEVEL, roman, UPGRADES, upgradeCost, UpgradeKey } from "@/src/game/config";
 import { difficulty, DifficultyId } from "@/src/game/content";
 import { DifficultyChips } from "./DifficultyChips";
@@ -34,7 +35,7 @@ function Row({ label, value, testID }: { label: string; value: string; testID: s
   );
 }
 
-export function MusterCard({ profile, onRename, onEnter, onDifficulty }: { profile: Profile; onRename: (n: string) => void; onEnter: () => void; onDifficulty: (d: DifficultyId) => void }) {
+export function MusterCard({ profile, onRename, onEnter, onDifficulty, saved, onContinue }: { profile: Profile; onRename: (n: string) => void; onEnter: () => void; onDifficulty: (d: DifficultyId) => void; saved: RunSummary | null; onContinue: () => void }) {
   const s = useStyles();
   const { colors } = useTheme();
   const [editing, setEditing] = useState(!profile.name);
@@ -87,8 +88,15 @@ export function MusterCard({ profile, onRename, onEnter, onDifficulty }: { profi
       <Label>Difficulty</Label>
       <DifficultyChips value={profile.difficulty} onChange={onDifficulty} testPrefix="difficulty-chip" />
       <Text style={s.diffDesc} testID="difficulty-desc">{difficulty(profile.difficulty).desc}</Text>
-      <PrimaryButton title="Enter the Deep" testID="enter-the-deep-button" onPress={onEnter} disabled={!profile.name} />
-      <Text style={s.hint}>{profile.name ? "Drag to thrust · Automatically attacks" : "Name your pilot to dive"}</Text>
+      {saved && profile.name ? (
+        <PrimaryButton title={`Continue · Wave ${saved.wave} · Lv ${saved.level} · ${"♥".repeat(saved.lives)}`} testID="continue-run-button" onPress={onContinue} />
+      ) : null}
+      {saved && profile.name ? (
+        <OutlineButton title="New Run" testID="enter-the-deep-button" onPress={onEnter} />
+      ) : (
+        <PrimaryButton title="Enter the Deep" testID="enter-the-deep-button" onPress={onEnter} disabled={!profile.name} />
+      )}
+      <Text style={s.hint}>{!profile.name ? "Name your pilot to dive" : saved ? "Starting a new run replaces your saved run" : "Drag to thrust · Automatically attacks"}</Text>
     </Animated.View>
   );
 }

@@ -14,13 +14,13 @@ export interface ArsenalState {
   drone: { a: number; cd: number } | null;
   pickups: { id: number; x: number; y: number; kind: PickupKind; life: number }[];
   tempWeapon: { id: WeaponId; t: number } | null;
-  picks: Record<string, number>; evolved: string[];
+  picks: Record<string, number>; evolved: string[]; lives: number;
 }
 
 export const arsenalDefaults = (): ArsenalState => ({
   mode: "standard", weapon: "cannon", ability: "dash", cls: CLASSES[0],
   abilityCd: 0, shieldT: 0, overT: 0, slowT: 0, buffShieldT: 0, grav: null, arcs: [],
-  bladeA: 0, bladeCd: {}, shardT: 0, drone: null, pickups: [], tempWeapon: null, picks: {}, evolved: [],
+  bladeA: 0, bladeCd: {}, shardT: 0, drone: null, pickups: [], tempWeapon: null, picks: {}, evolved: [], lives: 3,
 });
 
 function mulberry(seed: number) {
@@ -39,6 +39,18 @@ export function setupLoadout(s: GameState, lo: { mode: ModeId; weapon: WeaponId;
   st.maxHp = Math.round(st.maxHp * s.cls.hp); s.player.hp = st.maxHp;
   st.damage *= s.cls.dmg; st.projectiles += s.cls.proj; st.resist = Math.min(0.75, st.resist + s.cls.resist);
   if (s.cls.drone) s.drone = { a: 0, cd: 1 };
+  s.lives = lo.mode === "hardcore" ? 1 : 3;
+}
+
+// Lose a life: the current wave starts over with full hull; level and upgrades are kept
+export function retryWave(s: GameState) {
+  const p = s.player;
+  s.lives -= 1;
+  s.dead = false;
+  p.hp = s.stats.maxHp; p.x = s.w / 2; p.y = s.h / 2; p.vx = 0; p.vy = 0; p.invuln = 2.5;
+  s.enemies = []; s.eBullets = []; s.bullets = []; s.boss = null; s.bossSpawned = false; s.bossBanner = 0;
+  s.waveTime = 0; s.breakT = 0; s.spawnTimer = 1.5; s.grav = null;
+  s.intro = { label: "Life lost", name: `Wave ${s.wave} restarts`, desc: `${s.lives} ${s.lives === 1 ? "life" : "lives"} left`, t: 2.6 };
 }
 
 // Pick count of a weapon upgrade, only while the loadout weapon is the one firing
@@ -170,7 +182,7 @@ function fire(s: GameState, w: WeaponId, nearest: Enemy | null, aimError: number
           if (fk) { done.add(fk.id); hit(s, fk, dmg * volt * (fk.kind === "boss" ? 0.3 : 0.8), crit); s.arcs.push({ id: s.nextId++, pts: [{ x: best.x, y: best.y }, { x: fk.x, y: fk.y }], life: 0.15 }); }
         }
       }
-      if (pts.length > 1) s.arcs.push({ id: s.nextId++, pts, life: 0.15 });
+      if (pts.length > 1) s.arcs.push({ id: s.nextId++, pts, life: 0.2 });
       break;
     }
   }

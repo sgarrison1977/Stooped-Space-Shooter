@@ -3,7 +3,7 @@ import { Pressable, Text, View } from "react-native";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { fonts, makeStyles, radius, spacing, useTheme, pop } from "@/src/theme";
+import { fonts, makeStyles, radius, spacing, useTheme, pop, ink } from "@/src/theme";
 import { SystemDef } from "@/src/game/config";
 import { Label, MuteButton, OutlineButton, PrimaryButton } from "./ui";
 
@@ -113,9 +113,9 @@ const useStyles = makeStyles((c) => ({
     flexDirection: "row", alignItems: "center", gap: spacing.md, padding: spacing.lg, borderRadius: radius.md,
     ...pop(c), backgroundColor: c.surfaceSecondary, minHeight: 76,
   },
-  optionActive: { backgroundColor: c.brandTertiary },
+  optionActive: { backgroundColor: c.brandTertiary, transform: [{ rotate: "-1deg" }] },
   iconBox: {
-    width: 44, height: 44, borderRadius: radius.pill, ...pop(c),
+    width: 44, height: 44, borderRadius: radius.pill, ...ink(c),
     alignItems: "center", justifyContent: "center", backgroundColor: c.brandPrimary,
   },
   optName: { fontFamily: fonts.display, fontSize: 19, color: c.onSurface, paddingTop: 3 },
@@ -126,7 +126,7 @@ const useStyles = makeStyles((c) => ({
   },
   statRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   muteRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: spacing.sm, padding: spacing.md, borderRadius: radius.md, backgroundColor: c.surfaceSecondary, ...pop(c) },
-  highlight: { fontFamily: fonts.display, fontSize: 15, color: c.brandPrimary, textAlign: "center" },
+  highlight: { fontFamily: fonts.display, fontSize: 15, color: c.brandSecondary, textAlign: "center" },
   statLabel: { fontFamily: fonts.bold, fontSize: 13, color: c.muted, textTransform: "uppercase" },
   statValue: { fontFamily: fonts.display, fontSize: 22, color: c.onSurface },
 }));

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
+import { Paper } from "@/src/components/Paper";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -64,6 +65,7 @@ export default function Hangar() {
 
   return (
     <View style={s.root} testID="hangar-screen">
+      <Paper />
       <EmberBackground />
       <View style={[s.header, { paddingTop: insets.top + spacing.md, paddingLeft: insets.left + spacing.lg, paddingRight: insets.right + spacing.lg }]}>
         <Pressable testID="hangar-back-button" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} style={s.back} hitSlop={8}>
@@ -129,7 +131,7 @@ const useStyles = makeStyles((c) => ({
   previewTrail: { position: "absolute", top: 92, width: 26, height: 58, borderRadius: 13 },
   previewName: { fontFamily: fonts.display, fontSize: 22, color: c.onArena, marginTop: spacing.sm },
   previewSub: { fontFamily: fonts.text, fontSize: 13, color: c.onArenaMuted, marginTop: 2 },
-  section: { fontFamily: fonts.text, fontSize: 11, letterSpacing: 2.4, color: c.brandSecondary, textTransform: "uppercase", marginTop: spacing.sm },
+  section: { fontFamily: fonts.text, fontSize: 14, letterSpacing: 2.4, color: c.brandSecondary, textTransform: "uppercase", marginTop: spacing.sm },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, justifyContent: "space-between" },
   card: {
     alignItems: "center", gap: spacing.sm, padding: spacing.md, borderRadius: radius.md, ...pop(c),
@@ -145,6 +147,6 @@ const useStyles = makeStyles((c) => ({
   btnEquipped: { borderColor: c.border, backgroundColor: c.surfaceTertiary },
   btnDisabled: { opacity: 0.4 },
   btnText: { fontFamily: fonts.display, fontSize: 12, color: c.brandSecondary },
-  btnTextOn: { fontFamily: fonts.text, fontSize: 11, letterSpacing: 1, color: c.onBrandTertiary },
-  note: { fontFamily: fonts.text, fontSize: 11, color: c.muted, textAlign: "center", marginTop: spacing.md },
+  btnTextOn: { fontFamily: fonts.text, fontSize: 14, letterSpacing: 1, color: c.onBrandTertiary },
+  note: { fontFamily: fonts.text, fontSize: 14, color: c.muted, textAlign: "center", marginTop: spacing.md },
 }));

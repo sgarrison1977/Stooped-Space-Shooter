@@ -1,5 +1,6 @@
 import React from "react";
 import { Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
+import { Paper } from "@/src/components/Paper";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Lucide } from "@react-native-vector-icons/lucide";
@@ -26,6 +27,7 @@ export default function BossGallery() {
 
   return (
     <View style={s.root} testID="boss-gallery-screen">
+      <Paper />
       <EmberBackground />
       <View style={[s.header, { paddingTop: insets.top + spacing.md, paddingLeft: insets.left + spacing.lg, paddingRight: insets.right + spacing.lg }]}>
         <Pressable testID="boss-gallery-back-button" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} style={s.back} hitSlop={8}>
@@ -89,7 +91,7 @@ const useStyles = makeStyles((c) => ({
   title: { fontFamily: fonts.display, fontSize: 24, color: c.onSurface, letterSpacing: 1 },
   progress: { alignItems: "flex-end" },
   progressText: { fontFamily: fonts.display, fontSize: 20, color: c.brandSecondary },
-  progressLabel: { fontFamily: fonts.text, fontSize: 9, letterSpacing: 1.6, color: c.muted, textTransform: "uppercase" },
+  progressLabel: { fontFamily: fonts.text, fontSize: 12, letterSpacing: 1.6, color: c.muted, textTransform: "uppercase" },
   grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: spacing.sm, width: "100%", maxWidth: 900, alignSelf: "center" },
   card: {
     padding: spacing.md, borderRadius: radius.md, ...pop(c), backgroundColor: c.surfaceSecondary,
@@ -99,10 +101,10 @@ const useStyles = makeStyles((c) => ({
   art: { width: 96, height: 96, alignItems: "center", justifyContent: "center" },
   lock: { position: "absolute" },
   name: { fontFamily: fonts.display, fontSize: 14, color: c.onSurface, textAlign: "center" },
-  tag: { fontFamily: fonts.text, fontSize: 11, color: c.muted, textAlign: "center", minHeight: 30 },
+  tag: { fontFamily: fonts.text, fontSize: 14, color: c.muted, textAlign: "center", minHeight: 30 },
   stats: { alignSelf: "stretch", gap: 4, marginTop: spacing.xs, paddingTop: spacing.sm, borderTopWidth: 1, borderTopColor: c.divider },
   statRow: { flexDirection: "row", justifyContent: "space-between" },
-  statLabel: { fontFamily: fonts.text, fontSize: 10, letterSpacing: 1.4, color: c.muted, textTransform: "uppercase" },
+  statLabel: { fontFamily: fonts.text, fontSize: 13, letterSpacing: 1.4, color: c.muted, textTransform: "uppercase" },
   statValue: { fontFamily: fonts.display, fontSize: 13, color: c.onSurface },
-  diff: { fontFamily: fonts.text, fontSize: 10, color: c.brandSecondary, textAlign: "center", marginTop: 2 },
+  diff: { fontFamily: fonts.text, fontSize: 13, color: c.brandSecondary, textAlign: "center", marginTop: 2 },
 }));

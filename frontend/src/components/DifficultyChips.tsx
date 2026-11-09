@@ -40,7 +40,7 @@ const useStyles = makeStyles((c) => ({
     height: 40, paddingHorizontal: spacing.md, borderRadius: radius.pill, ...ink(c),
     backgroundColor: c.surface, alignItems: "center", justifyContent: "center", flexShrink: 0,
   },
-  chipOn: { ...pop(c), backgroundColor: c.brandTertiary },
+  chipOn: { ...pop(c), backgroundColor: c.brandTertiary, transform: [{ rotate: "-2deg" }] },
   text: { fontFamily: fonts.bold, fontSize: 13, color: c.muted, textTransform: "uppercase" },
   textOn: { color: c.onBrandTertiary },
 }));

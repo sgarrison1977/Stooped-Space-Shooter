@@ -109,3 +109,7 @@ User built "Hypershift" (in-game title EMBERDEEP) on Base44 and wants it rebuilt
 
 ## Update: Clean racing HUD restyle (replaced retro arcade)
 - theme.ts: graphite panels (#0E1013/#171A1F), white type, single lime accent #C6FF00; fonts Barlow Condensed Bold Italic (display) + Barlow Medium/SemiBold; radius 4-10; pop() = hairline border + lime left accent strip; primary buttons lime and skewed. Scanlines removed.
+
+## Update: Notebook doodle restyle (replaced racing HUD)
+- theme.ts: ruled-paper cream, ballpoint-blue ink, red pen accents, highlighter yellow buttons/selection; fonts Permanent Marker (display) + Patrick Hand (text); pop() = uneven hand-drawn corners with heavier bottom stroke; slight tilts on selected items.
+- Paper.tsx: ruled lines + red margin behind home/hangar/leaderboard/bosses. Arena stays dark slate.

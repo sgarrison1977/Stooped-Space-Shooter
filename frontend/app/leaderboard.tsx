@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from "react-native";
+import { Paper } from "@/src/components/Paper";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Lucide } from "@react-native-vector-icons/lucide";
@@ -38,6 +39,7 @@ export default function Leaderboard() {
 
   return (
     <View style={s.root} testID="leaderboard-screen">
+      <Paper />
       <EmberBackground />
       <View style={[s.header, { paddingTop: insets.top + spacing.md, paddingLeft: insets.left + spacing.lg, paddingRight: insets.right + spacing.lg }]}>
         <Pressable testID="leaderboard-back-button" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} style={s.back} hitSlop={8}>
@@ -100,7 +102,7 @@ const useStyles = makeStyles((c) => ({
   rank: { width: 28, fontFamily: fonts.display, fontSize: 16, color: c.muted, textAlign: "center" },
   rankTop: { color: c.brandSecondary },
   name: { fontFamily: fonts.display, fontSize: 15, color: c.onSurface },
-  muted: { fontFamily: fonts.text, fontSize: 12, color: c.muted },
+  muted: { fontFamily: fonts.text, fontSize: 15, color: c.muted },
   wave: { fontFamily: fonts.display, fontSize: 20, color: c.onSurface },
-  waveLabel: { fontFamily: fonts.text, fontSize: 8, letterSpacing: 1.6, color: c.muted },
+  waveLabel: { fontFamily: fonts.text, fontSize: 11, letterSpacing: 1.6, color: c.muted },
 }));

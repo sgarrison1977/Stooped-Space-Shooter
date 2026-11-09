@@ -79,7 +79,7 @@ const useStyles = makeStyles((c) => ({
   xpTrack: { height: 5, borderRadius: radius.pill, backgroundColor: c.surfaceSecondary, overflow: "hidden", borderWidth: 1, borderColor: c.border },
   xpFill: { height: "100%", backgroundColor: c.xp },
   barText: { flexDirection: "row", justifyContent: "space-between" },
-  small: { fontFamily: fonts.bold, fontSize: 12, color: c.onSurface },
+  small: { fontFamily: fonts.bold, fontSize: 15, color: c.onSurface },
   pause: {
     width: 44, height: 44, borderRadius: radius.sm, ...pop(c),
     alignItems: "center", justifyContent: "center", backgroundColor: c.surfaceSecondary,
@@ -89,6 +89,6 @@ const useStyles = makeStyles((c) => ({
     flexDirection: "row", alignItems: "center", gap: 5, height: 34, paddingHorizontal: spacing.sm + 2,
     borderRadius: radius.sm, ...pop(c), backgroundColor: c.surfaceSecondary,
   },
-  pillLabel: { fontFamily: fonts.bold, fontSize: 11, color: c.muted, textTransform: "uppercase" },
+  pillLabel: { fontFamily: fonts.bold, fontSize: 14, color: c.muted, textTransform: "uppercase" },
   pillValue: { fontFamily: fonts.display, fontSize: 15, color: c.onSurface, paddingTop: 2 },
 }));

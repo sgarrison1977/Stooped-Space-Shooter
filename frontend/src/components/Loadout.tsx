@@ -51,7 +51,7 @@ const useStyles = makeStyles((c) => ({
   card: { backgroundColor: c.surfaceSecondary, ...pop(c), borderRadius: radius.md, padding: spacing.xl, gap: spacing.md },
   title: { fontFamily: fonts.display, fontSize: 20, color: c.onSurface, letterSpacing: 1 },
   row: { gap: spacing.xs },
-  desc: { fontFamily: fonts.text, fontSize: 11, color: c.muted },
-  ups: { fontFamily: fonts.text, fontSize: 11, color: c.brandSecondary, lineHeight: 16 },
+  desc: { fontFamily: fonts.text, fontSize: 14, color: c.muted },
+  ups: { fontFamily: fonts.text, fontSize: 14, color: c.brandSecondary, lineHeight: 16 },
   daily: { fontFamily: fonts.display, fontSize: 14, color: c.brandSecondary },
 }));

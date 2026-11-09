@@ -18,9 +18,8 @@ LogBox.ignoreAllLogs(true)
 
 export default function RootLayout() {
   const [loaded, err] = useFonts({
-    "BarlowCondensed-BoldItalic": require("../assets/fonts/BarlowCondensed-BoldItalic.ttf"),
-    "Barlow-Medium": require("../assets/fonts/Barlow-Medium.ttf"),
-    "Barlow-SemiBold": require("../assets/fonts/Barlow-SemiBold.ttf"),
+    PermanentMarker: require("../assets/fonts/PermanentMarker.ttf"),
+    PatrickHand: require("../assets/fonts/PatrickHand.ttf"),
   });
   useEffect(() => {
     initAudio();

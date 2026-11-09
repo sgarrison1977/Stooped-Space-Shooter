@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { StatusBar } from "expo-status-bar";
-import { fonts, makeStyles, radius, spacing, pop } from "@/src/theme";
+import { fonts, makeStyles, radius, spacing, pop, ink } from "@/src/theme";
 import { createGame, GameState, setRng, step, StepEvents, Vec } from "@/src/game/sim";
 import { activateAbility, applyChoice, boardKey, levelChoices, retryWave, setupLoadout } from "@/src/game/arsenal-sim";
 import { MODES, SPEEDS } from "@/src/game/arsenal";
@@ -268,10 +268,10 @@ const useStyles = makeStyles((c) => ({
   },
   hint: {
     position: "absolute", bottom: spacing.sm, left: 0, right: 0, textAlign: "center",
-    fontFamily: fonts.bold, fontSize: 11, letterSpacing: 1, color: c.onArenaMuted, opacity: 0.9, textTransform: "uppercase",
+    fontFamily: fonts.bold, fontSize: 14, letterSpacing: 1, color: c.onArenaMuted, opacity: 0.9, textTransform: "uppercase",
   },
   stick: {
-    position: "absolute", width: 100, height: 100, borderRadius: 50, ...pop(c),
+    position: "absolute", width: 100, height: 100, borderRadius: 50, ...ink(c), borderColor: c.onArenaMuted,
     backgroundColor: c.scrimLight, alignItems: "center", justifyContent: "center",
   },
   knob: { width: 40, height: 40, borderRadius: 20, backgroundColor: c.brandPrimary },

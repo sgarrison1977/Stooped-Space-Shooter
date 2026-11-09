@@ -87,6 +87,7 @@ interface UiStyle {
     pressed: object;
     titleColor: keyof ThemeColors; titleShadow: Shadow; overlayTitle: keyof ThemeColors; overlayShadow: Shadow;
     titleEm: number; // approx glyph width / font size of the display font (fits the home title)
+    arenaBg: "space" | "paper" | "grid"; // battle background
   };
 }
 
@@ -95,7 +96,7 @@ const noShadow: Shadow = {};
 const hard = (color: string, d = 3): Shadow => ({ textShadowColor: color, textShadowOffset: { width: d, height: d }, textShadowRadius: 1 });
 const baseFx = {
   backdrop: "none" as Backdrop, scanlines: false, statusBar: "light" as const, tilt: "0deg", primaryTransform: [],
-  pressed: { opacity: 0.85, transform: [{ scale: 0.98 }] },
+  pressed: { opacity: 0.85, transform: [{ scale: 0.98 }] }, arenaBg: "space" as const,
   titleColor: "onSurface" as const, titleShadow: noShadow, overlayTitle: "onArena" as const, overlayShadow: noShadow, titleEm: 0.75,
 };
 
@@ -167,8 +168,9 @@ export const UI_STYLES: UiStyle[] = [
       onSurfaceTertiary: "#1F2A5A", surfaceInverse: "#1F2A5A", onSurfaceInverse: "#FBF7EC", muted: "#7A7F99",
       brand: "#FFE14D", onBrand: "#1F2A5A", brandPrimary: "#FFE14D", onBrandPrimary: "#1F2A5A", brandSecondary: "#E0393E", onBrandSecondary: "#FFFFFF",
       brandTertiary: "#FFF08A", onBrandTertiary: "#1F2A5A", success: "#3FA34D", onSuccess: "#FFFFFF", warning: "#F2A900", error: "#E0393E", info: "#3D7FD9",
-      border: "#1F2A5A", borderStrong: "#E0393E", divider: "#BFD3EE", onArena: "#FFFFFF", onArenaMuted: "#C3CBE6",
-      arena: "#1F2433", hpTrack: "#5A2430", xp: "#9CF06B", nebulaBlue: "#2C3A6B", nebulaEmber: "#E0393E", scrim: "rgba(31,36,51,0.88)", scrimLight: "rgba(31,36,51,0.6)",
+      border: "#1F2A5A", borderStrong: "#E0393E", divider: "#BFD3EE", onArena: "#1F2A5A", onArenaMuted: "#6E7596",
+      arena: "#FBF7EC", hpTrack: "#F1C9CC", xp: "#3FA34D", bullet: "#1F2A5A", nebulaBlue: "#2C3A6B", nebulaEmber: "#E0393E",
+      scrim: "rgba(251,247,236,0.93)", scrimLight: "rgba(251,247,236,0.7)",
     },
     fonts: { display: "PermanentMarker", text: "PatrickHand", bold: "PatrickHand" }, radius: { sm: 8, md: 12, lg: 16 },
     pop: (c) => ({
@@ -178,7 +180,7 @@ export const UI_STYLES: UiStyle[] = [
     ink: flat(2),
     fx: {
       ...baseFx, backdrop: "paper", statusBar: "dark", tilt: "-2deg", primaryTransform: [{ rotate: "-1deg" }],
-      pressed: { transform: [{ rotate: "-1.5deg" }, { scale: 0.97 }] }, titleEm: 0.8,
+      pressed: { transform: [{ rotate: "-1.5deg" }, { scale: 0.97 }] }, titleEm: 0.8, arenaBg: "paper",
     },
   },
   {
@@ -227,7 +229,7 @@ export const UI_STYLES: UiStyle[] = [
     },
     fonts: { display: "ArchitectsDaughter", text: "ShareTechMono", bold: "ShareTechMono" }, radius: { sm: 2, md: 3, lg: 4 },
     pop: flat(1.5), ink: flat(1.5),
-    fx: { ...baseFx, backdrop: "grid", titleColor: "brandSecondary", overlayTitle: "brandSecondary", titleEm: 0.7 },
+    fx: { ...baseFx, backdrop: "grid", titleColor: "brandSecondary", overlayTitle: "brandSecondary", titleEm: 0.7, arenaBg: "grid" },
   },
 ];
 

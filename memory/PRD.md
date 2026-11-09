@@ -123,3 +123,4 @@ User built "Hypershift" (in-game title EMBERDEEP) on Base44 and wants it rebuilt
 ## Update: Per-style sound packs + art
 - scripts/gen_sound_packs.py generates 7 sfx + music per non-ember style into assets/sounds/<style>/ and writes src/game/soundPacks.ts. audio.ts setSoundPack(id) swaps packs (called at boot and when UI style changes).
 - src/game/art.ts af/ak/aw recolour fills/strokes/stroke widths of ShipArt/MobArt/Sprites per style (cartoon/comic black outlines, blueprint white wireframe, notebook ink on pastel, retro neon on dark, military olive, racing lime).
+- Arena backgrounds: Notebook = paper page (ruled lines + margin, ink-coloured arena text/bullets, light scrim); Blueprint = grid on blueprint blue (fx.arenaBg, Starfield.tsx ArenaSheet). Other styles keep space.

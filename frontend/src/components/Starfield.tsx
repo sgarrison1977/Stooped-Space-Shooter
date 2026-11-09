@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 import Svg, { Circle, Defs, RadialGradient, Rect, Stop } from "react-native-svg";
-import { colors as c } from "@/src/theme";
+import { colors as c, fx, makeStyles } from "@/src/theme";
 
 function rng(seed: number) {
   let s = seed;
@@ -46,7 +46,24 @@ const StarLayer = memo(function StarLayer({ w, h, count, seed, maxR }: { w: numb
   );
 });
 
+// Notebook page (ruled lines + red margin) or blueprint grid instead of space
+const ArenaSheet = memo(function ArenaSheet({ w, h, kind }: { w: number; h: number; kind: "paper" | "grid" }) {
+  const step = kind === "paper" ? 28 : 24;
+  const sheet = useSheet();
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      {Array.from({ length: Math.ceil(h / step) }, (_, i) => (
+        <View key={`h${i}`} style={[sheet.hLine, { top: (i + 1) * step }, kind === "grid" && i % 5 === 4 && sheet.major]} />
+      ))}
+      {kind === "grid"
+        ? Array.from({ length: Math.ceil(w / step) }, (_, i) => <View key={`v${i}`} style={[sheet.vLine, { left: (i + 1) * step }, i % 5 === 4 && sheet.major]} />)
+        : <View style={sheet.margin} />}
+    </View>
+  );
+});
+
 export function Starfield({ w, h, px, py }: { w: number; h: number; px: number; py: number }) {
+  if (fx.arenaBg !== "space") return <ArenaSheet w={w} h={h} kind={fx.arenaBg} />;
   const ox = (px / w - 0.5), oy = (py / h - 0.5);
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
@@ -62,3 +79,10 @@ export function Starfield({ w, h, px, py }: { w: number; h: number; px: number; 
 }
 
 const styles = StyleSheet.create({ layer: { position: "absolute", left: 0, top: 0 } });
+// built per mount so they pick up the current UI style's colours
+const useSheet = makeStyles((k) => ({
+  hLine: { position: "absolute", left: 0, right: 0, height: 1, backgroundColor: k.divider, opacity: 0.6 },
+  vLine: { position: "absolute", top: 0, bottom: 0, width: 1, backgroundColor: k.divider, opacity: 0.6 },
+  major: { opacity: 1 },
+  margin: { position: "absolute", top: 0, bottom: 0, left: 30, width: 2, backgroundColor: k.borderStrong, opacity: 0.45 },
+}));

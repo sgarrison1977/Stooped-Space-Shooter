@@ -2,11 +2,13 @@
 // opt-in run modifiers and UI style unlocks. Pure functions over the Profile + a finished run.
 import { weekKey, WeaponId, WEAPONS } from "./arsenal";
 export { weekKey };
-import type { Profile } from "./profile";
+import { freshLife, type Profile } from "./profile";
+import { activeSeason, SEASON_GOAL, seasonKey, SEASONS } from "./seasons";
+import { PRESTIGE_WAVE } from "./prestige";
 
 export interface RunResult {
   wave: number; kills: number; level: number; bosses: number; coins: number;
-  mode: string; difficulty: string; weapon: WeaponId; cls: string; mods: string[]; livesLeft: number; combos: number;
+  mode: string; difficulty: string; weapon: WeaponId; cls: string; mods: string[]; livesLeft: number; combos: number; time: number;
 }
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -35,8 +37,8 @@ export type RunModId = (typeof RUN_MODS)[number]["id"];
 export const modBonus = (mods: string[]) => 1 + RUN_MODS.filter((m) => mods.includes(m.id)).reduce((a, m) => a + m.bonus, 0);
 
 // ---------- Daily missions (3 per day, same for everyone) ----------
-type MissionDef = { id: string; text: string; goal: number; reward: number; score: (r: RunResult) => number; weapon?: WeaponId };
-const MISSION_POOL: MissionDef[] = [
+export type MissionDef = { id: string; text: string; goal: number; reward: number; score: (r: RunResult) => number; weapon?: WeaponId };
+export const MISSION_POOL: MissionDef[] = [
   { id: "kills", text: "Destroy 400 enemies", goal: 400, reward: 60, score: (r) => r.kills },
   { id: "kills2", text: "Destroy 1,000 enemies", goal: 1000, reward: 120, score: (r) => r.kills },
   { id: "wave8", text: "Reach wave 8 in one run", goal: 8, reward: 70, score: (r) => r.wave },
@@ -61,7 +63,7 @@ export const masteryLevel = (kills: number) => MASTERY.filter((t) => kills >= t)
 export const isGold = (p: Profile, w: string) => masteryLevel(p.mastery?.[w] ?? 0) >= MASTERY.length;
 
 // ---------- Achievements ----------
-type Ach = { id: string; name: string; desc: string; test: (p: Profile, r: RunResult) => boolean };
+type Ach = { id: string; name: string; desc: string; season?: string; test: (p: Profile, r: RunResult) => boolean };
 const reached = (n: number, diff?: string) => (_: Profile, r: RunResult) => r.wave >= n && (!diff || r.difficulty === diff);
 export const ACHIEVEMENTS: Ach[] = [
   { id: "first", name: "Liftoff", desc: "Finish your first run", test: () => true },
@@ -90,6 +92,13 @@ export const ACHIEVEMENTS: Ach[] = [
   { id: "gold", name: "Golden Gun", desc: "Max a weapon's mastery", test: (p) => WEAPONS.some((w) => isGold(p, w.id)) },
   { id: "classes", name: "Pilot School", desc: "Finish a run with every ship class", test: (p) => (p.classesUsed ?? []).length >= 4 },
   { id: "rich", name: "Moneybags", desc: "Hold 2,000 coins", test: (p) => p.coins >= 2000 },
+  { id: "prestige1", name: "Born Again", desc: "Prestige a ship", test: (p) => Object.values(p.prestige ?? {}).some((n) => n > 0) },
+  { id: "prestige4", name: "Ace of Aces", desc: "Prestige every ship class", test: (p) => Object.values(p.prestige ?? {}).filter((n) => n > 0).length >= 4 },
+  // limited-time: only earnable while the event is running
+  ...SEASONS.map((se) => ({
+    id: `season_${se.id}`, name: se.name, season: se.id, desc: `Destroy ${SEASON_GOAL} enemies during the ${se.name} event`,
+    test: (p: Profile) => { const a = activeSeason(); return a?.id === se.id && p.seasonProg?.key === seasonKey(a) && p.seasonProg.kills >= SEASON_GOAL; },
+  })),
 ];
 
 // ---------- UI styles: first 3 free, the rest unlock in on-screen order every 3 achievements ----------
@@ -103,7 +112,7 @@ export const STREAK_REWARDS = [
   { days: 30, kind: "skin" as const, id: "eternal", name: "Eternal skin" },
 ];
 
-export interface RunReport { coinsFromMissions: number; missionsDone: string[]; newAchievements: string[]; streakReward: string | null; masteryUp: number | null; styleUnlocked: boolean }
+export interface RunReport { prestigeReady: string | null; coinsFromMissions: number; missionsDone: string[]; newAchievements: string[]; streakReward: string | null; masteryUp: number | null; styleUnlocked: boolean }
 
 // Apply a finished run to the profile: streak, missions, mastery, achievements, unlocks
 export function applyRun(p0: Profile, r: RunResult): { profile: Profile; report: RunReport } {
@@ -141,12 +150,26 @@ export function applyRun(p0: Profile, r: RunResult): { profile: Profile; report:
   p.mastery[r.weapon] = (p.mastery[r.weapon] ?? 0) + r.kills;
   const after = masteryLevel(p.mastery[r.weapon]);
   p.classesUsed = Array.from(new Set([...(p.classesUsed ?? []), r.cls]));
+  // ship prestige progress
+  const prevBest = p.shipBest?.[r.cls] ?? 0;
+  p.shipBest = { ...p.shipBest, [r.cls]: Math.max(prevBest, r.wave) };
+  const prestigeReady = prevBest < PRESTIGE_WAVE && r.wave >= PRESTIGE_WAVE ? r.cls : null;
+  // lifetime stats
+  const l = { ...freshLife(), ...p.life };
+  p.life = {
+    ...l, waves: l.waves + r.wave, bosses: l.bosses + r.bosses, coins: l.coins + r.coins + coinsFromMissions, time: l.time + r.time,
+    levels: l.levels + r.level - 1, longest: Math.max(l.longest, r.time), bestKills: Math.max(l.bestKills, r.kills),
+    bestStreak: Math.max(l.bestStreak, p.streak.count), classRuns: { ...l.classRuns, [r.cls]: (l.classRuns[r.cls] ?? 0) + 1 },
+  };
+  // seasonal event progress
+  const se = activeSeason();
+  if (se) { const key = seasonKey(se); p.seasonProg = { key, kills: (p.seasonProg?.key === key ? p.seasonProg.kills : 0) + r.kills }; }
   // achievements
   const stylesBefore = stylesUnlocked(p);
   const newAchievements = ACHIEVEMENTS.filter((a) => !p.achievements.includes(a.id) && a.test(p, r)).map((a) => a.id);
   p.achievements.push(...newAchievements);
   return {
     profile: p,
-    report: { coinsFromMissions, missionsDone, newAchievements, streakReward, masteryUp: after > before ? after : null, styleUnlocked: stylesUnlocked(p) > stylesBefore },
+    report: { prestigeReady, coinsFromMissions, missionsDone, newAchievements, streakReward, masteryUp: after > before ? after : null, styleUnlocked: stylesUnlocked(p) > stylesBefore },
   };
 }

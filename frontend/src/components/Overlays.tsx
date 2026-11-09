@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { t } from "@/src/i18n";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
@@ -13,8 +14,8 @@ export function LevelUpOverlay({ level, options, onPick, wide, title }: { level:
   const [chosen, setChosen] = useState<string | null>(null);
   return (
     <Animated.View entering={FadeIn.duration(200)} style={s.scrim} testID="level-up-overlay">
-      <Label style={{ textAlign: "center" }} testID="level-up-level">{title ? "Rare event" : `Level ${level}`}</Label>
-      <Text style={[s.title, wide && s.titleWide]}>{title ?? "Choose a System"}</Text>
+      <Label style={{ textAlign: "center" }} testID="level-up-level">{title ? t("Rare event") : t("Level {n}", { n: level })}</Label>
+      <Text style={[s.title, wide && s.titleWide]}>{title ?? t("Choose a System")}</Text>
       <View style={[s.list, wide && s.listRow]}>
         {options.map((o, i) => (
           <Animated.View key={o.id} entering={FadeInDown.delay(80 * i).duration(260)} style={wide ? { flex: 1 } : undefined}>
@@ -32,8 +33,8 @@ export function LevelUpOverlay({ level, options, onPick, wide, title }: { level:
                 <Lucide name={o.icon} size={18} color={colors.onBrandPrimary} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={s.optName}>{o.name}</Text>
-                <Text style={s.optDesc}>{o.desc}</Text>
+                <Text style={s.optName}>{t(o.name)}</Text>
+                <Text style={s.optDesc}>{t(o.desc)}</Text>
               </View>
             </Pressable>
           </Animated.View>
@@ -47,14 +48,14 @@ export function PauseOverlay({ onResume, onQuit, onSaveLeave }: { onResume: () =
   const s = useStyles();
   return (
     <Animated.View entering={FadeIn.duration(180)} style={s.scrim} testID="pause-overlay">
-      <Label style={{ textAlign: "center" }}>Holding Position</Label>
-      <Text style={s.title}>Paused</Text>
+      <Label style={{ textAlign: "center" }}>{t("Holding Position")}</Label>
+      <Text style={s.title}>{t("Paused")}</Text>
       <View style={s.list}>
-        <PrimaryButton title="Resume" testID="pause-resume-button" onPress={onResume} />
-        <OutlineButton title="Save & Leave" icon="save" testID="pause-save-leave-button" onPress={onSaveLeave} />
-        <OutlineButton title="Abandon Run" testID="pause-abandon-button" onPress={onQuit} />
+        <PrimaryButton title={t("Resume")} testID="pause-resume-button" onPress={onResume} />
+        <OutlineButton title={t("Save & Leave")} icon="save" testID="pause-save-leave-button" onPress={onSaveLeave} />
+        <OutlineButton title={t("Abandon Run")} testID="pause-abandon-button" onPress={onQuit} />
         <View style={s.muteRow}>
-          <Text style={s.statLabel}>Sound & Music</Text>
+          <Text style={s.statLabel}>{t("Sound & Music")}</Text>
           <MuteButton testID="pause-mute-button" />
         </View>
       </View>
@@ -79,8 +80,8 @@ export function GameOverOverlay({
   return (
     <Animated.View entering={FadeIn.duration(300)} style={s.scrim} testID="game-over-overlay">
       <ScrollView contentContainerStyle={s.overScroll} showsVerticalScrollIndicator={false}>
-      <Label style={{ textAlign: "center" }}>Run Ended · {difficultyName}</Label>
-      <Text style={[s.title, wide && s.titleWide]}>{abandoned ? "Run Abandoned" : "Hull Breached"}</Text>
+      <Label style={{ textAlign: "center" }}>{t("Run Ended")} · {difficultyName}</Label>
+      <Text style={[s.title, wide && s.titleWide]}>{abandoned ? t("Run Abandoned") : t("Hull Breached")}</Text>
       {news?.length ? (
         <View style={[s.list, s.statsCard]} testID="game-over-news">
           {news.map((n, i) => <Text key={i} style={s.highlight}>{n}</Text>)}
@@ -88,17 +89,17 @@ export function GameOverOverlay({
       ) : null}
       <View style={[s.list, wide && s.listRow]}>
         <View style={[s.list, s.statsCard, wide && { flex: 1, marginBottom: 0 }]}>
-          <Stat label="Wave Reached" value={wave} testID="game-over-wave" />
-          <Stat label="Kills" value={kills} testID="game-over-kills" />
-          <Stat label="Bosses Down" value={bosses} testID="game-over-bosses" />
+          <Stat label={t("Wave Reached")} value={wave} testID="game-over-wave" />
+          <Stat label={t("Kills")} value={kills} testID="game-over-kills" />
+          <Stat label={t("Bosses Down")} value={bosses} testID="game-over-bosses" />
           {highlight ? <Text style={s.highlight} testID="game-over-boss-record">{highlight}</Text> : null}
-          <Stat label="Coins Gathered" value={`+${coins}`} testID="game-over-coins" />
-          <Stat label="Global Rank" value={rank ? `#${rank}` : "—"} testID="game-over-rank" />
+          <Stat label={t("Coins Gathered")} value={`+${coins}`} testID="game-over-coins" />
+          <Stat label={t("Global Rank")} value={rank ? `#${rank}` : "—"} testID="game-over-rank" />
         </View>
         <View style={[s.list, wide && { flex: 1, justifyContent: "center" }]}>
-          <PrimaryButton title="Dive Again" testID="game-over-again-button" onPress={onAgain} />
-          <OutlineButton title="Challenge a Friend" icon="share-2" testID="game-over-share-button" onPress={onShare} />
-          <OutlineButton title="Return to Muster" testID="game-over-return-button" onPress={onReturn} />
+          <PrimaryButton title={t("Dive Again")} testID="game-over-again-button" onPress={onAgain} />
+          <OutlineButton title={t("Challenge a Friend")} icon="share-2" testID="game-over-share-button" onPress={onShare} />
+          <OutlineButton title={t("Return to Hangar")} testID="game-over-return-button" onPress={onReturn} />
         </View>
       </View>
       {card}

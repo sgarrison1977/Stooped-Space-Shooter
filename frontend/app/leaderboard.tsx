@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { t } from "@/src/i18n";
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 import { Backdrop } from "@/src/components/Backdrop";
 import { StatusBar } from "expo-status-bar";
@@ -46,8 +47,8 @@ export default function Leaderboard() {
           <Lucide name="arrow-left" size={18} color={colors.onSurface} />
         </Pressable>
         <View>
-          <Label>Deepest Dives</Label>
-          <Text style={s.title}>Leaderboard</Text>
+          <Label>{t("Deepest Dives")}</Label>
+          <Text style={s.title}>{t("Leaderboard")}</Text>
         </View>
       </View>
       <View style={[s.chips, { paddingLeft: insets.left, paddingRight: insets.right }]}>
@@ -57,8 +58,8 @@ export default function Leaderboard() {
         <View style={s.center}><ActivityIndicator color={colors.brandPrimary} /></View>
       ) : error && !rows ? (
         <View style={s.center}>
-          <Text style={s.muted} testID="leaderboard-error">Could not reach the deep. Check your connection.</Text>
-          <OutlineButton title="Retry" testID="leaderboard-retry-button" onPress={() => load()} style={{ paddingHorizontal: spacing.xl }} />
+          <Text style={s.muted} testID="leaderboard-error">{t("Could not reach the deep. Check your connection.")}</Text>
+          <OutlineButton title={t("Retry")} testID="leaderboard-retry-button" onPress={() => load()} style={{ paddingHorizontal: spacing.xl }} />
         </View>
       ) : (
         <FlatList
@@ -66,17 +67,17 @@ export default function Leaderboard() {
           keyExtractor={(r) => `${r.rank}-${r.name}`}
           contentContainerStyle={[s.list, { paddingBottom: insets.bottom + spacing.xl, paddingLeft: insets.left + spacing.lg, paddingRight: insets.right + spacing.lg }]}
           refreshControl={<RefreshControl tintColor={colors.brandPrimary} refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}
-          ListEmptyComponent={<Text style={[s.muted, { textAlign: "center" }]} testID="leaderboard-empty">No dives yet. Be the first to climb.</Text>}
+          ListEmptyComponent={<Text style={[s.muted, { textAlign: "center" }]} testID="leaderboard-empty">{t("No dives yet. Be the first to climb.")}</Text>}
           renderItem={({ item }) => (
             <View style={[s.row, item.is_you && s.rowYou]} testID={`leaderboard-row-${item.rank}`}>
               <Text style={[s.rank, item.rank <= 3 && s.rankTop]}>{item.rank}</Text>
               <View style={{ flex: 1 }}>
-                <Text style={s.name} numberOfLines={1}>{item.name}{item.is_you ? "  (you)" : ""}</Text>
-                <Text style={s.muted}>{item.best_kills} kills · {item.runs} {item.runs === 1 ? "run" : "runs"}</Text>
+                <Text style={s.name} numberOfLines={1}>{item.name}{item.is_you ? `  (${t("you")})` : ""}</Text>
+                <Text style={s.muted}>{t(item.runs === 1 ? "{k} kills · {r} run" : "{k} kills · {r} runs", { k: item.best_kills, r: item.runs })}</Text>
               </View>
               <View style={{ alignItems: "flex-end" }}>
                 <Text style={s.wave}>{item.best_wave}</Text>
-                <Text style={s.waveLabel}>WAVE</Text>
+                <Text style={s.waveLabel}>{t("Wave").toUpperCase()}</Text>
               </View>
             </View>
           )}

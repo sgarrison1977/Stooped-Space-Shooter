@@ -31,7 +31,7 @@ export interface GameState extends ArsenalState {
   pendingLevelUps: number; nextId: number; dead: boolean;
   bossSpawned: boolean; boss: Enemy | null; bossName: string; bossBanner: number; bossesDown: number; bossCount: number;
   bossKills: { variant: number; secs: number }[];
-  seen: string[]; intro: { name: string; desc: string; t: number; label?: string } | null;
+  seen: string[]; intro: { name: string; desc: string; t: number; label?: string; vars?: Record<string, string | number> } | null;
   shake: number; time: number; mods: DifficultyDef; breakT: number;
 }
 
@@ -241,7 +241,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
     // a living boss must be beaten before the wave can end
     if (waveDone(s)) {
       s.breakT = WAVE_BREAK;
-      if (!s.noHeal) p.hp = Math.min(st.maxHp, p.hp + st.maxHp * 0.25); // breather heal between waves
+      if (!s.noHeal) p.hp = Math.min(st.maxHp, p.hp + st.maxHp * (0.25 + (s.waveHeal ?? 0))); // breather heal between waves
       if (s.wave >= 3 && rnd() < 0.18) { s.merchant = true; s.pendingLevelUps += 1; } // mystery merchant
       for (const e of s.enemies) burst(s, e.x, e.y, 6, "ember", 120, 3);
       s.enemies = [];
@@ -481,7 +481,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
       const sp = Math.min(d, 480 * dt);
       g.x += (dx / d) * sp; g.y += (dy / d) * sp;
     } else { g.x += (dx / d) * 14 * dt; g.y += (dy / d) * 14 * dt; }
-    if (d < PLAYER_R + 5) { s.xp += g.value; g.value = 0; ev.pickup = true; }
+    if (d < PLAYER_R + 5) { s.xp += g.value * (s.xpMul ?? 1); g.value = 0; ev.pickup = true; }
   }
   s.gems = s.gems.filter((g) => g.value > 0);
   while (s.xp >= s.xpNext) {

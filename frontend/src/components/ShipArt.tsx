@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import Svg, { Circle, Defs, Ellipse, G, LinearGradient, Path, RadialGradient, Stop } from "react-native-svg";
-import { af, ak, aw } from "@/src/game/art";
+import { af, ak, aw, ef } from "@/src/game/art";
 import { BOSSES, Skin } from "@/src/game/content";
 
 // Nose-up sprites in a 100x100 box. Gradient ids are unique per palette so
@@ -48,26 +48,26 @@ function BossBody({ v }: { v: number }) {
     case 1: // Ashen Leviathan – segmented serpent
       return (
         <G>
-          <Circle cx={50} cy={93} r={6} fill={af(b.dark)} stroke={ak(b.light)} strokeWidth={aw(1)} />
-          <Circle cx={50} cy={81} r={9} fill={af(hull)} stroke={ak(b.light)} strokeWidth={aw(1)} />
-          <Circle cx={50} cy={66} r={12} fill={af(hull)} stroke={ak(b.light)} strokeWidth={aw(1.2)} />
-          <Path d="M34 60 L14 70 L36 70 Z M66 60 L86 70 L64 70 Z" fill={af(b.light)} opacity={0.8} />
-          <Circle cx={50} cy={48} r={15} fill={af(hull)} stroke={ak(b.light)} strokeWidth={aw(1.5)} />
-          <Ellipse cx={50} cy={26} rx={20} ry={17} fill={af(hull)} stroke={ak(b.light)} strokeWidth={aw(1.8)} />
-          <Path d="M36 14 L30 2 L42 12 Z M64 14 L70 2 L58 12 Z" fill={af(b.light)} />
-          <Circle cx={42} cy={24} r={3.5} fill={af(b.core)} />
-          <Circle cx={58} cy={24} r={3.5} fill={af(b.core)} />
-          <Circle cx={50} cy={48} r={6} fill={af(core)} />
+          <Circle cx={50} cy={93} r={6} fill={ef(b.dark)} stroke={ak(b.light)} strokeWidth={aw(1)} />
+          <Circle cx={50} cy={81} r={9} fill={ef(hull)} stroke={ak(b.light)} strokeWidth={aw(1)} />
+          <Circle cx={50} cy={66} r={12} fill={ef(hull)} stroke={ak(b.light)} strokeWidth={aw(1.2)} />
+          <Path d="M34 60 L14 70 L36 70 Z M66 60 L86 70 L64 70 Z" fill={ef(b.light)} opacity={0.8} />
+          <Circle cx={50} cy={48} r={15} fill={ef(hull)} stroke={ak(b.light)} strokeWidth={aw(1.5)} />
+          <Ellipse cx={50} cy={26} rx={20} ry={17} fill={ef(hull)} stroke={ak(b.light)} strokeWidth={aw(1.8)} />
+          <Path d="M36 14 L30 2 L42 12 Z M64 14 L70 2 L58 12 Z" fill={ef(b.light)} />
+          <Circle cx={42} cy={24} r={3.5} fill={ef(b.core)} />
+          <Circle cx={58} cy={24} r={3.5} fill={ef(b.core)} />
+          <Circle cx={50} cy={48} r={6} fill={ef(core)} />
         </G>
       );
     case 2: // Pyre Warden – crested shield
       return (
         <G>
-          <Path d="M36 18 L40 2 L46 16 M54 16 L60 2 L64 18 M47 14 L50 0 L53 14" fill={af(b.core)} stroke={ak(b.light)} strokeWidth={aw(1.5)} />
-          <Path d="M50 10 L86 24 L82 62 L50 96 L18 62 L14 24 Z" fill={af(hull)} stroke={ak(b.light)} strokeWidth={aw(2)} />
+          <Path d="M36 18 L40 2 L46 16 M54 16 L60 2 L64 18 M47 14 L50 0 L53 14" fill={ef(b.core)} stroke={ak(b.light)} strokeWidth={aw(1.5)} />
+          <Path d="M50 10 L86 24 L82 62 L50 96 L18 62 L14 24 Z" fill={ef(hull)} stroke={ak(b.light)} strokeWidth={aw(2)} />
           <Path d="M50 22 L72 32 L70 58 L50 82 L30 58 L28 32 Z" fill="none" stroke={ak(b.light)} strokeWidth={aw(1.2)} strokeDasharray="5 3" />
-          <Path d="M50 34 L62 50 L50 66 L38 50 Z" fill={af(b.dark)} stroke={ak(b.core)} strokeWidth={aw(1.5)} />
-          <Circle cx={50} cy={50} r={8} fill={af(core)} />
+          <Path d="M50 34 L62 50 L50 66 L38 50 Z" fill={ef(b.dark)} stroke={ak(b.core)} strokeWidth={aw(1.5)} />
+          <Circle cx={50} cy={50} r={8} fill={ef(core)} />
         </G>
       );
     case 3: // Molten Hydra – three heads
@@ -77,54 +77,54 @@ function BossBody({ v }: { v: number }) {
           <Path d="M50 58 L50 18 M50 58 L18 34 M50 58 L82 34" stroke={ak(b.light)} strokeWidth={aw(2)} strokeLinecap="round" opacity={0.6} />
           {[[50, 14], [16, 32], [84, 32]].map(([x, y], i) => (
             <G key={i}>
-              <Ellipse cx={x} cy={y} rx={11} ry={10} fill={af(hull)} stroke={ak(b.light)} strokeWidth={aw(1.5)} />
-              <Circle cx={x} cy={y - 1} r={3.5} fill={af(b.core)} />
+              <Ellipse cx={x} cy={y} rx={11} ry={10} fill={ef(hull)} stroke={ak(b.light)} strokeWidth={aw(1.5)} />
+              <Circle cx={x} cy={y - 1} r={3.5} fill={ef(b.core)} />
             </G>
           ))}
-          <Circle cx={50} cy={62} r={24} fill={af(hull)} stroke={ak(b.light)} strokeWidth={aw(2)} />
-          <Circle cx={50} cy={62} r={11} fill={af(core)} />
+          <Circle cx={50} cy={62} r={24} fill={ef(hull)} stroke={ak(b.light)} strokeWidth={aw(2)} />
+          <Circle cx={50} cy={62} r={11} fill={ef(core)} />
         </G>
       );
     case 4: // Obsidian Herald – crystal shard
       return (
         <G>
-          <Path d="M28 42 L4 58 L34 66 Z M72 42 L96 58 L66 66 Z" fill={af(b.mid)} stroke={ak(b.light)} strokeWidth={aw(1.2)} />
-          <Path d="M50 2 L72 40 L62 98 L38 98 L28 40 Z" fill={af(hull)} stroke={ak(b.light)} strokeWidth={aw(1.8)} />
+          <Path d="M28 42 L4 58 L34 66 Z M72 42 L96 58 L66 66 Z" fill={ef(b.mid)} stroke={ak(b.light)} strokeWidth={aw(1.2)} />
+          <Path d="M50 2 L72 40 L62 98 L38 98 L28 40 Z" fill={ef(hull)} stroke={ak(b.light)} strokeWidth={aw(1.8)} />
           <Path d="M50 2 L50 98 M28 40 L50 54 L72 40 M38 98 L50 54 L62 98" stroke={ak(b.light)} strokeWidth={aw(0.8)} opacity={0.6} />
-          <Circle cx={50} cy={50} r={11} fill={af(core)} />
-          <Circle cx={50} cy={50} r={4} fill={af(b.core)} />
+          <Circle cx={50} cy={50} r={11} fill={ef(core)} />
+          <Circle cx={50} cy={50} r={4} fill={ef(b.core)} />
         </G>
       );
     case 5: // Ember Tyrant – crowned flagship
       return (
         <G>
-          <Path d="M50 8 L62 30 L96 44 L84 72 L62 66 L56 94 L44 94 L38 66 L16 72 L4 44 L38 30 Z" fill={af(hull)} stroke={ak(b.light)} strokeWidth={aw(1.8)} />
-          <Path d="M38 30 L42 12 L50 24 L58 12 L62 30" fill={af(b.core)} stroke={ak(b.light)} strokeWidth={aw(1)} />
+          <Path d="M50 8 L62 30 L96 44 L84 72 L62 66 L56 94 L44 94 L38 66 L16 72 L4 44 L38 30 Z" fill={ef(hull)} stroke={ak(b.light)} strokeWidth={aw(1.8)} />
+          <Path d="M38 30 L42 12 L50 24 L58 12 L62 30" fill={ef(b.core)} stroke={ak(b.light)} strokeWidth={aw(1)} />
           <Path d="M14 48 L40 46 M86 48 L60 46" stroke={ak(b.light)} strokeWidth={aw(2)} strokeLinecap="round" />
-          <Path d="M50 34 L60 52 L50 72 L40 52 Z" fill={af(b.dark)} />
-          <Circle cx={50} cy={52} r={9} fill={af(core)} />
+          <Path d="M50 34 L60 52 L50 72 L40 52 Z" fill={ef(b.dark)} />
+          <Circle cx={50} cy={52} r={9} fill={ef(core)} />
         </G>
       );
     case 6: // Slag King – armoured hexagon
       return (
         <G>
-          <Path d="M50 4 L90 27 L90 73 L50 96 L10 73 L10 27 Z" fill={af(hull)} stroke={ak(b.light)} strokeWidth={aw(2)} />
-          <Path d="M50 20 L76 35 L76 65 L50 80 L24 65 L24 35 Z" fill={af(b.dark)} stroke={ak(b.light)} strokeWidth={aw(1.2)} />
+          <Path d="M50 4 L90 27 L90 73 L50 96 L10 73 L10 27 Z" fill={ef(hull)} stroke={ak(b.light)} strokeWidth={aw(2)} />
+          <Path d="M50 20 L76 35 L76 65 L50 80 L24 65 L24 35 Z" fill={ef(b.dark)} stroke={ak(b.light)} strokeWidth={aw(1.2)} />
           {[[50, 11], [83, 31], [83, 69], [50, 89], [17, 69], [17, 31]].map(([x, y], i) => (
-            <Circle key={i} cx={x} cy={y} r={3} fill={af(b.core)} />
+            <Circle key={i} cx={x} cy={y} r={3} fill={ef(b.core)} />
           ))}
-          <Circle cx={50} cy={50} r={14} fill={af(core)} />
-          <Circle cx={50} cy={50} r={5} fill={af(b.core)} />
+          <Circle cx={50} cy={50} r={14} fill={ef(core)} />
+          <Circle cx={50} cy={50} r={5} fill={ef(b.core)} />
         </G>
       );
     case 7: // Furnace Queen – rosette
       return (
         <G>
           {[0, 60, 120, 180, 240, 300].map((d) => (
-            <Ellipse key={d} cx={50} cy={24} rx={10} ry={22} fill={af(hull)} stroke={ak(b.light)} strokeWidth={aw(1.2)} transform={`rotate(${d} 50 50)`} />
+            <Ellipse key={d} cx={50} cy={24} rx={10} ry={22} fill={ef(hull)} stroke={ak(b.light)} strokeWidth={aw(1.2)} transform={`rotate(${d} 50 50)`} />
           ))}
-          <Circle cx={50} cy={50} r={20} fill={af(b.dark)} stroke={ak(b.light)} strokeWidth={aw(2)} />
-          <Circle cx={50} cy={50} r={14} fill={af(core)} />
+          <Circle cx={50} cy={50} r={20} fill={ef(b.dark)} stroke={ak(b.light)} strokeWidth={aw(2)} />
+          <Circle cx={50} cy={50} r={14} fill={ef(core)} />
           <Path d="M44 8 L50 0 L56 8" stroke={ak(b.core)} strokeWidth={aw(2)} fill="none" />
         </G>
       );
@@ -132,13 +132,13 @@ function BossBody({ v }: { v: number }) {
       const spikes = Array.from({ length: 10 }, (_, i) => (i * 360) / 10);
       return (
         <G>
-          {spikes.map((deg) => <Path key={deg} d="M46 14 L50 2 L54 14 Z" fill={af(b.light)} transform={`rotate(${deg} 50 50)`} />)}
-          <Circle cx={50} cy={50} r={38} fill={af(hull)} stroke={ak(b.light)} strokeWidth={aw(2)} />
+          {spikes.map((deg) => <Path key={deg} d="M46 14 L50 2 L54 14 Z" fill={ef(b.light)} transform={`rotate(${deg} 50 50)`} />)}
+          <Circle cx={50} cy={50} r={38} fill={ef(hull)} stroke={ak(b.light)} strokeWidth={aw(2)} />
           <Circle cx={50} cy={50} r={29} fill="none" stroke={ak(b.mid)} strokeWidth={aw(1.5)} strokeDasharray="6 4" />
-          <Path d="M36 22 L42 6 L46 24 Z M64 22 L58 6 L54 24 Z" fill={af(b.light)} />
-          <Path d="M30 50 L50 30 L70 50 L50 70 Z" fill={af(b.dark)} stroke={ak(b.mid)} strokeWidth={aw(1.5)} />
-          <Circle cx={50} cy={50} r={16} fill={af(core)} />
-          <Circle cx={50} cy={50} r={6} fill={af(b.core)} />
+          <Path d="M36 22 L42 6 L46 24 Z M64 22 L58 6 L54 24 Z" fill={ef(b.light)} />
+          <Path d="M30 50 L50 30 L70 50 L50 70 Z" fill={ef(b.dark)} stroke={ak(b.mid)} strokeWidth={aw(1.5)} />
+          <Circle cx={50} cy={50} r={16} fill={ef(core)} />
+          <Circle cx={50} cy={50} r={6} fill={ef(b.core)} />
         </G>
       );
     }
@@ -151,13 +151,13 @@ export const BossSprite = memo(function BossSprite({ size, variant }: { size: nu
     <Svg width={size} height={size} viewBox="0 0 100 100">
       <Defs>
         <RadialGradient id={`bHull${variant}`} cx="50%" cy="45%" r="60%">
-          <Stop offset="0" stopColor={af(b.mid)} />
-          <Stop offset="1" stopColor={af(b.dark)} />
+          <Stop offset="0" stopColor={ef(b.mid)} />
+          <Stop offset="1" stopColor={ef(b.dark)} />
         </RadialGradient>
         <RadialGradient id={`bCore${variant}`} cx="50%" cy="50%" r="50%">
-          <Stop offset="0" stopColor={af(b.core)} />
-          <Stop offset="0.6" stopColor={af(b.light)} />
-          <Stop offset="1" stopColor={af(b.mid)} stopOpacity={0} />
+          <Stop offset="0" stopColor={ef(b.core)} />
+          <Stop offset="0.6" stopColor={ef(b.light)} />
+          <Stop offset="1" stopColor={ef(b.mid)} stopOpacity={0} />
         </RadialGradient>
       </Defs>
       <BossBody v={variant} />

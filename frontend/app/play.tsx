@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { t } from "@/src/i18n";
 import { AppState, BackHandler, GestureResponderEvent, LayoutChangeEvent, Text, useWindowDimensions, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -7,7 +8,7 @@ import { StatusBar } from "expo-status-bar";
 import { fonts, makeStyles, radius, spacing, pop, ink } from "@/src/theme";
 import { createGame, GameState, setRng, step, StepEvents, Vec } from "@/src/game/sim";
 import { activateAbility, applyChoice, boardKey, levelChoices, retryWave, setupLoadout } from "@/src/game/arsenal-sim";
-import { EVOLUTIONS, MODES, SPEEDS, WEAPON_EVOS, WEAPONS } from "@/src/game/arsenal";
+import { CLASSES, EVOLUTIONS, MODES, SPEEDS, WEAPON_EVOS, WEAPONS } from "@/src/game/arsenal";
 import { ACHIEVEMENTS, applyRun, isGold, modBonus, RunReport, weeklyRule } from "@/src/game/retention";
 import { CardInfo, ShareCard, shareCard } from "@/src/components/ShareCard";
 import { clearRun, loadRun, saveRun } from "@/src/game/save";
@@ -27,13 +28,14 @@ type Mode = "play" | "levelup" | "paused" | "over";
 // Post-run summary lines: missions, achievements, streak/mastery rewards
 function newsLines(r: RunReport, modCoins: number): string[] {
   const out: string[] = [];
-  if (modCoins > 0) out.push(`Modifier bonus +${modCoins} coins`);
-  r.missionsDone.forEach((m) => out.push(`Mission complete: ${m}`));
-  if (r.coinsFromMissions) out.push(`Mission rewards +${r.coinsFromMissions} coins`);
-  r.newAchievements.forEach((id) => out.push(`Achievement: ${ACHIEVEMENTS.find((a) => a.id === id)?.name}`));
-  if (r.styleUnlocked) out.push("New UI style unlocked!");
-  if (r.streakReward) out.push(`Streak reward: ${r.streakReward}`);
-  if (r.masteryUp) out.push(`Weapon mastery level ${r.masteryUp}${r.masteryUp >= 5 ? " · Gold shots!" : ""}`);
+  if (modCoins > 0) out.push(t("Modifier bonus +{n} coins", { n: modCoins }));
+  r.missionsDone.forEach((m) => out.push(t("Mission complete: {m}", { m })));
+  if (r.coinsFromMissions) out.push(t("Mission rewards +{n} coins", { n: r.coinsFromMissions }));
+  r.newAchievements.forEach((id) => out.push(t("Achievement: {n}", { n: ACHIEVEMENTS.find((a) => a.id === id)?.name ?? id })));
+  if (r.styleUnlocked) out.push(t("New UI style unlocked!"));
+  if (r.streakReward) out.push(t("Streak reward: {n}", { n: r.streakReward }));
+  if (r.masteryUp) out.push(t("Weapon mastery level {n}", { n: r.masteryUp }) + (r.masteryUp >= 5 ? ` · ${t("Gold shots!")}` : ""));
+  if (r.prestigeReady) out.push(t("{ship} can now be prestiged!", { ship: CLASSES.find((c) => c.id === r.prestigeReady)?.name ?? "" }));
   return out;
 }
 
@@ -80,7 +82,7 @@ export default function Play() {
     const base = { ...p, coins: p.coins + earned, kills: p.kills + g.kills, runs: p.runs + 1, bestWave: Math.max(p.bestWave, g.wave), bossRecords: records };
     const { profile: next, report } = applyRun(base, {
       wave: g.wave, kills: g.kills, level: g.level, bosses: g.bossesDown, coins: earned, mode: g.mode, difficulty: g.mods.id,
-      weapon: g.weapon, cls: g.cls.id, mods, livesLeft: g.lives, combos: g.evolved.length,
+      weapon: g.weapon, cls: g.cls.id, mods, livesLeft: g.lives, combos: g.evolved.length, time: g.time,
     });
     setNews(newsLines(report, earned - Math.floor(g.coins)));
     setCard({ wave: g.wave, kills: g.kills, bosses: g.bossesDown, level: g.level, label: runLabel(g), pilot: p.name, skin: skinById(p.skin),
@@ -117,7 +119,7 @@ export default function Play() {
     // Special modes use Normal; Daily also ignores Armoury upgrades so it is the same for everyone
     const ups = p.mode === "daily" ? { cannon: 1, deflector: 1, hull: 1 } : p.upgrades;
     game.current = createGame(baseStats(ups), size.current.w, size.current.h, difficulty(p.mode === "standard" ? p.difficulty : "normal"));
-    setupLoadout(game.current, { mode: p.mode, weapon: p.weapon, ability: p.ability, cls: p.shipClass, runMods: p.mode === "daily" ? [] : p.runMods, gold: isGold(p, p.mode === "weekly" && weeklyRule().id === "blades" ? "blades" : p.weapon) });
+    setupLoadout(game.current, { mode: p.mode, weapon: p.weapon, ability: p.ability, cls: p.shipClass, runMods: p.mode === "daily" ? [] : p.runMods, gold: isGold(p, p.mode === "weekly" && weeklyRule().id === "blades" ? "blades" : p.weapon), bonuses: p.bonuses?.[p.shipClass] });
     setMode("play");
     setFrame((f) => f + 1);
   }, []);
@@ -258,10 +260,10 @@ export default function Play() {
             <View style={[s.knob, { transform: [{ translateX: j.x * STICK }, { translateY: j.y * STICK }] }]} />
           </View>
         ) : null}
-        {g && g.wave <= 2 ? <Text style={s.hint} pointerEvents="none">Drag to thrust · Automatically attacks</Text> : null}
+        {g && g.wave <= 2 ? <Text style={s.hint} pointerEvents="none">{t("Drag to thrust · Automatically attacks")}</Text> : null}
       </View>
 
-      {g && mode === "levelup" ? <LevelUpOverlay key={`${g.level}-${g.pendingLevelUps}-${g.merchant}`} wide={wide} level={g.level - g.pendingLevelUps + 1} options={choices} onPick={pick} title={g.merchant ? "Mystery Merchant" : undefined} /> : null}
+      {g && mode === "levelup" ? <LevelUpOverlay key={`${g.level}-${g.pendingLevelUps}-${g.merchant}`} wide={wide} level={g.level - g.pendingLevelUps + 1} options={choices} onPick={pick} title={g.merchant ? t("Mystery Merchant") : undefined} /> : null}
       {mode === "paused" ? (
         <PauseOverlay
           onResume={() => setMode("play")}
@@ -284,7 +286,7 @@ export default function Play() {
           onReturn={leave}
           news={news}
           card={card ? <ShareCard ref={cardRef} info={card} /> : null}
-          onShare={() => shareCard(cardRef.current, `I reached wave ${g.wave} on ${runLabel(g)} with ${g.kills} kills and ${g.bossesDown} bosses down in Stooopid Space Shooter Game. Think you can beat that?`)}
+          onShare={() => shareCard(cardRef.current, t("I reached wave {w} on {m} with {k} kills and {b} bosses down in Stooopid Space Shooter Game. Think you can beat that?", { w: g.wave, m: runLabel(g), k: g.kills, b: g.bossesDown }))}
         />
       ) : null}
     </View>

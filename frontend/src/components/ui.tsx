@@ -1,4 +1,5 @@
 import React from "react";
+import { t } from "@/src/i18n";
 import { Pressable, StyleProp, Text, TextStyle, View, ViewStyle } from "react-native";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import * as Haptics from "expo-haptics";
@@ -15,7 +16,7 @@ export function MuteButton({ testID }: { testID: string }) {
     <Pressable
       testID={testID}
       hitSlop={6}
-      accessibilityLabel={muted ? "Unmute sound" : "Mute sound"}
+      accessibilityLabel={muted ? t("Unmute sound") : t("Mute sound")}
       onPress={() => {
         const m = !muted;
         setMuted(m);
@@ -54,7 +55,7 @@ export function PrimaryButton({ title, onPress, testID, disabled }: { title: str
       onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); onPress(); }}
       style={({ pressed }) => [s.primary, pressed && s.pressed, disabled && s.disabled]}
     >
-      <Text style={s.primaryText}>{title}</Text>
+      <Text style={s.primaryText} numberOfLines={1} adjustsFontSizeToFit>{title}</Text>
     </Pressable>
   );
 }
@@ -65,7 +66,7 @@ export function OutlineButton({ title, icon, onPress, testID, style }: { title: 
   return (
     <Pressable testID={testID} onPress={onPress} style={({ pressed }) => [s.outline, pressed && s.pressed, style]}>
       {icon ? <Lucide name={icon} size={15} color={colors.onSurfaceSecondary} /> : null}
-      <Text style={s.outlineText}>{title}</Text>
+      <Text style={s.outlineText} numberOfLines={1} adjustsFontSizeToFit>{title}</Text>
     </Pressable>
   );
 }
@@ -78,12 +79,12 @@ const useStyles = makeStyles((c) => ({
   },
   coinText: { fontFamily: fonts.display, fontSize: 16, color: c.onSurface, paddingTop: 3 },
   primary: {
-    height: 58, borderRadius: radius.md, backgroundColor: c.brandPrimary, alignItems: "center", justifyContent: "center", ...pop(c), transform: fx.primaryTransform,
+    height: 58, borderRadius: radius.md, backgroundColor: c.brandPrimary, alignItems: "center", justifyContent: "center", paddingHorizontal: spacing.md, ...pop(c), transform: fx.primaryTransform,
   },
   primaryText: { fontFamily: fonts.display, fontSize: 22, letterSpacing: 1, color: c.onBrandPrimary, textTransform: "uppercase", paddingTop: 4 },
   outline: {
     height: 50, borderRadius: radius.md, ...pop(c), flexDirection: "row",
-    alignItems: "center", justifyContent: "center", gap: spacing.sm, backgroundColor: c.surface,
+    alignItems: "center", justifyContent: "center", gap: spacing.sm, paddingHorizontal: spacing.md, backgroundColor: c.surface,
   },
   outlineText: { fontFamily: fonts.bold, fontSize: 14, letterSpacing: 0.8, color: c.onSurface, textTransform: "uppercase" },
   pressed: fx.pressed,

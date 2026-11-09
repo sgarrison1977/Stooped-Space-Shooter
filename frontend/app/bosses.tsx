@@ -1,4 +1,5 @@
 import React from "react";
+import { t } from "@/src/i18n";
 import { Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
 import { Backdrop } from "@/src/components/Backdrop";
 import { StatusBar } from "expo-status-bar";
@@ -34,12 +35,12 @@ export default function BossGallery() {
           <Lucide name="arrow-left" size={18} color={colors.onSurface} />
         </Pressable>
         <View style={{ flex: 1 }}>
-          <Label>Trophies of the deep</Label>
-          <Text style={s.title}>Boss Gallery</Text>
+          <Label>{t("Trophies of the deep")}</Label>
+          <Text style={s.title}>{t("Boss Gallery")}</Text>
         </View>
         <View style={s.progress}>
           <Text style={s.progressText} testID="boss-gallery-progress">{beaten}/{BOSSES.length}</Text>
-          <Text style={s.progressLabel}>Defeated</Text>
+          <Text style={s.progressLabel}>{t("Defeated")}</Text>
         </View>
       </View>
       <ScrollView
@@ -61,19 +62,19 @@ export default function BossGallery() {
                 </View>
                 {!r ? <View style={s.lock}><Lucide name="lock" size={18} color={colors.muted} /></View> : null}
               </View>
-              <Text style={s.name} numberOfLines={1} testID={`boss-name-${i}`}>{r ? b.name : "Unknown Threat"}</Text>
-              <Text style={s.tag} numberOfLines={2}>{r ? b.tagline : `First appears around wave ${(i + 1) * BOSS_EVERY}`}</Text>
+              <Text style={s.name} numberOfLines={1} testID={`boss-name-${i}`}>{r ? b.name : t("Unknown Threat")}</Text>
+              <Text style={s.tag} numberOfLines={2}>{r ? b.tagline : t("First appears around wave {n}", { n: (i + 1) * BOSS_EVERY })}</Text>
               {r ? (
                 <View style={s.stats}>
                   <View style={s.statRow}>
-                    <Text style={s.statLabel}>Fastest</Text>
+                    <Text style={s.statLabel}>{t("Fastest")}</Text>
                     <Text style={s.statValue} testID={`boss-fastest-${i}`}>{formatSecs(r.fastest)}</Text>
                   </View>
                   <View style={s.statRow}>
-                    <Text style={s.statLabel}>Defeated</Text>
+                    <Text style={s.statLabel}>{t("Defeated")}</Text>
                     <Text style={s.statValue} testID={`boss-kills-${i}`}>×{r.kills}</Text>
                   </View>
-                  <Text style={s.diff}>Record on {difficulty(r.fastestDifficulty).name}</Text>
+                  <Text style={s.diff}>{t("Record on {d}", { d: difficulty(r.fastestDifficulty).name })}</Text>
                 </View>
               ) : null}
             </Animated.View>

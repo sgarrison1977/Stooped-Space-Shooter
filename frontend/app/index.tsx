@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { LANGS, t } from "@/src/i18n";
+import { applyLanguage } from "@/src/i18n/data";
 import { ActivityIndicator, Text, useWindowDimensions, View, Pressable } from "react-native";
 import { Backdrop } from "@/src/components/Backdrop";
 import { useRouter } from "expo-router";
@@ -41,7 +43,7 @@ export default function Home() {
           <Text style={[s.title, { fontSize: titleSize }]} numberOfLines={1} testID="home-title">STOOOPID</Text>
           <Text style={s.titleSub} testID="home-game-title">Space Shooter Game</Text>
           <Text testID="home-subtitle" style={s.subtitle} numberOfLines={1}>
-            {(profile?.name || "New pilot").toUpperCase()} · BEST WAVE {profile?.bestWave ?? 0}
+            {(profile?.name || t("New pilot")).toUpperCase()} · {t("Best wave").toUpperCase()} {profile?.bestWave ?? 0}
           </Text>
         </View>
         <View style={s.headRight}>
@@ -52,7 +54,7 @@ export default function Home() {
       {!profile ? (
         <View style={s.loading}>
           <ActivityIndicator color={colors.brandPrimary} />
-          <Text style={s.subtitle}>IGNITING DEEP...</Text>
+          <Text style={s.subtitle}>{t("Igniting the deep...").toUpperCase()}</Text>
         </View>
       ) : (
         <KeyboardAwareScrollView
@@ -68,12 +70,12 @@ export default function Home() {
           <View style={wide ? s.col : s.stack}>
           {saved && profile.name ? (
             <Pressable testID="continue-banner" onPress={() => { startMusic(); router.push("/play?resume=1"); }} style={({ pressed }) => [s.continueBanner, pressed && { opacity: 0.85 }]}>
-              <Text style={s.continueTitle}>▶ CONTINUE RUN</Text>
-              <Text style={s.continueSub}>Wave {saved.wave} · Level {saved.level} · {"♥".repeat(saved.lives)}</Text>
+              <Text style={s.continueTitle}>▶ {t("Continue run").toUpperCase()}</Text>
+              <Text style={s.continueSub}>{t("Wave {w} · Level {l}", { w: saved.wave, l: saved.level })} · {"♥".repeat(saved.lives)}</Text>
             </Pressable>
           ) : null}
           <View style={s.styleCard} testID="ui-style-card">
-            <Label>UI Style</Label>
+            <Label>{t("UI Style")}</Label>
             <DifficultyChips
               options={UI_STYLES}
               value={profile.uiStyle}
@@ -85,7 +87,14 @@ export default function Home() {
                 await update((p) => ({ ...p, uiStyle: uiStyle as typeof p.uiStyle })); setUiStyle(uiStyle); setSoundPack(uiStyle);
               }}
             />
-            {lockMsg ? <Text style={s.lockMsg} testID="ui-style-locked-msg">Locked · every 3 achievements unlocks the next style</Text> : null}
+            <Label>{t("Language")}</Label>
+            <DifficultyChips
+              options={LANGS.map((l) => (l.id === "auto" ? { ...l, name: t("Match phone") } : l))}
+              value={profile.lang ?? "auto"}
+              testPrefix="lang-chip"
+              onChange={async (lang: string) => { await update((p) => ({ ...p, lang })); applyLanguage(lang); }}
+            />
+            {lockMsg ? <Text style={s.lockMsg} testID="ui-style-locked-msg">{t("Locked · every 3 achievements unlocks the next style")}</Text> : null}
           </View>
           <MusterCard
             profile={profile}
@@ -107,6 +116,8 @@ export default function Home() {
             onLeaderboard={() => router.push("/leaderboard")}
             onHangar={() => router.push("/hangar")}
             onBosses={() => router.push("/bosses")}
+            onPrestige={() => router.push("/prestige")}
+            onStats={() => router.push("/stats")}
           />
           </View>
         </KeyboardAwareScrollView>

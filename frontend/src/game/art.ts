@@ -1,5 +1,6 @@
 // Recolours ship/enemy/boss art so it matches the selected UI style
 import { currentUiStyle } from "@/src/theme";
+import { activeSeason } from "./seasons";
 
 type Look = { fill?: (hex: string) => string; stroke?: (hex: string) => string; width: number };
 
@@ -26,5 +27,7 @@ const look = () => LOOKS[currentUiStyle()] ?? LOOKS.ember;
 export const af = (c: string) => { const f = look().fill; return f && isHex(c) ? f(c) : c; };
 /** stroke colour */
 export const ak = (c: string) => { const f = look().stroke; return f && isHex(c) ? f(c) : c; };
+/** enemy fill colour: UI style look + seasonal event skin */
+export const ef = (c: string) => { const s = activeSeason(); const f = af(c); return s && isHex(f) ? mix(f, s.enemy, 0.4) : f; };
 /** stroke width */
 export const aw = (w: number) => w * look().width;

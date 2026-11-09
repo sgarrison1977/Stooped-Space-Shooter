@@ -1,5 +1,7 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { t } from "@/src/i18n";
+import { StyleSheet, Text, View } from "react-native";
+import { activeSeason } from "@/src/game/seasons";
 import { LinearGradient } from "expo-linear-gradient";
 import { fonts, makeStyles, radius, spacing, useTheme, pop, fx } from "@/src/theme";
 import { Enemy, GameState } from "@/src/game/sim";
@@ -49,9 +51,11 @@ export function ArenaView({ g, skin, trail }: { g: GameState; skin: Skin; trail:
   const tone = { ember: colors.engineGlow, spark: colors.bullet, exhaust: trail.color };
   const blink = p.invuln > 0 && Math.floor(p.invuln * 20) % 2 === 0;
   const boss = g.boss;
+  const season = activeSeason();
   return (
     <View style={s.fill} pointerEvents="none">
       <Starfield w={g.w} h={g.h} px={p.x} py={p.y} />
+      {season ? <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: season.arena, opacity: 0.14 }]} testID="season-tint" /> : null}
       <View style={[s.fill, { transform: [{ translateX: shakeX }, { translateY: shakeY }] }]}>
         {g.gems.map((gm) => {
           const z = gm.value > 1 ? 11 : 7;
@@ -102,9 +106,9 @@ export function ArenaView({ g, skin, trail }: { g: GameState; skin: Skin; trail:
       </View>
       {g.intro && !g.bossBanner ? (
         <View style={[s.intro, { top: boss ? 44 : 10, opacity: Math.min(1, g.intro.t * 2) }]} testID="enemy-intro">
-          <Text style={s.introLabel}>{g.intro.label ?? "New threat"}</Text>
-          <Text style={s.introName}>{g.intro.name}</Text>
-          <Text style={s.introDesc}>{g.intro.desc}</Text>
+          <Text style={s.introLabel}>{t(g.intro.label ?? "New threat")}</Text>
+          <Text style={s.introName}>{t(g.intro.name, g.intro.vars)}</Text>
+          <Text style={s.introDesc}>{t(g.intro.desc, g.intro.vars)}</Text>
         </View>
       ) : null}
       {boss ? (
@@ -118,14 +122,14 @@ export function ArenaView({ g, skin, trail }: { g: GameState; skin: Skin; trail:
       <ArenaOverlays g={g} />
       {g.breakT > 0 ? (
         <View style={s.banner} testID="wave-break-banner">
-          <Text style={s.bannerLabel}>Wave {g.wave} cleared</Text>
-          <Text style={s.bannerName}>Wave {g.wave + 1} in {Math.ceil(g.breakT)}</Text>
-          <Text style={s.bannerTag}>Hull repaired · catch your breath</Text>
+          <Text style={s.bannerLabel}>{t("Wave {n} cleared", { n: g.wave })}</Text>
+          <Text style={s.bannerName}>{t("Wave {n} in {s}", { n: g.wave + 1, s: Math.ceil(g.breakT) })}</Text>
+          <Text style={s.bannerTag}>{t("Hull repaired · catch your breath")}</Text>
         </View>
       ) : null}
       {g.bossBanner > 0 && boss ? (
         <View style={s.banner} testID="boss-banner">
-          <Text style={[s.bannerLabel, { opacity: Math.min(1, g.bossBanner) }]}>Boss Incoming</Text>
+          <Text style={[s.bannerLabel, { opacity: Math.min(1, g.bossBanner) }]}>{t("Boss Incoming")}</Text>
           <Text style={[s.bannerName, { opacity: Math.min(1, g.bossBanner) }]}>{g.bossName}</Text>
           <Text style={[s.bannerTag, { opacity: Math.min(1, g.bossBanner) }]}>{BOSSES[boss.variant].tagline}</Text>
         </View>

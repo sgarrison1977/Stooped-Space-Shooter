@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { t } from "@/src/i18n";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import * as Haptics from "expo-haptics";
@@ -49,14 +50,14 @@ export function MusterCard({ profile, onRename, onEnter, onDifficulty, saved, on
   };
   return (
     <Animated.View entering={FadeInDown.duration(450)} style={s.card} testID="muster-card">
-      <Label>The Muster</Label>
+      <Label>{t("The Muster")}</Label>
       {editing ? (
         <View style={s.nameEdit}>
           <TextInput
             testID="pilot-name-input"
             value={draft}
             onChangeText={setDraft}
-            placeholder="Name your pilot"
+            placeholder={t("Name your pilot")}
             placeholderTextColor={colors.muted}
             maxLength={20}
             autoFocus={!profile.name}
@@ -75,39 +76,39 @@ export function MusterCard({ profile, onRename, onEnter, onDifficulty, saved, on
         </Pressable>
       )}
       <View style={s.grid}>
-        <StatTile icon="trophy" label="Best Wave" value={profile.bestWave} testID="stat-best-wave" />
-        <StatTile icon="skull" label="Kills" value={profile.kills} testID="stat-kills" />
-        <StatTile icon="repeat" label="Runs" value={profile.runs} testID="stat-runs" />
-        <StatTile icon="coins" label="Coins" value={profile.coins} testID="stat-coins" />
+        <StatTile icon="trophy" label={t("Best Wave")} value={profile.bestWave} testID="stat-best-wave" />
+        <StatTile icon="skull" label={t("Kills")} value={profile.kills} testID="stat-kills" />
+        <StatTile icon="repeat" label={t("Runs")} value={profile.runs} testID="stat-runs" />
+        <StatTile icon="coins" label={t("Coins")} value={profile.coins} testID="stat-coins" />
       </View>
       <View style={s.divider} />
-      <Row label="Damage" value={String(st.damage)} testID="stat-damage" />
-      <Row label="Resistance" value={`${Math.round(st.resist * 100)}%`} testID="stat-resistance" />
-      <Row label="Max Health" value={String(st.maxHp)} testID="stat-max-health" />
+      <Row label={t("Damage")} value={String(st.damage)} testID="stat-damage" />
+      <Row label={t("Resistance")} value={`${Math.round(st.resist * 100)}%`} testID="stat-resistance" />
+      <Row label={t("Max Health")} value={String(st.maxHp)} testID="stat-max-health" />
       <View style={{ height: spacing.sm }} />
-      <Label>Difficulty</Label>
+      <Label>{t("Difficulty")}</Label>
       <DifficultyChips value={profile.difficulty} onChange={onDifficulty} testPrefix="difficulty-chip" />
       <Text style={s.diffDesc} testID="difficulty-desc">{difficulty(profile.difficulty).desc}</Text>
       {saved && profile.name ? (
-        <PrimaryButton title={`Continue · Wave ${saved.wave} · Lv ${saved.level} · ${"♥".repeat(saved.lives)}`} testID="continue-run-button" onPress={onContinue} />
+        <PrimaryButton title={`${t("Continue · Wave {w} · Lv {l}", { w: saved.wave, l: saved.level })} · ${"♥".repeat(saved.lives)}`} testID="continue-run-button" onPress={onContinue} />
       ) : null}
       {saved && profile.name ? (
-        <OutlineButton title="New Run" testID="enter-the-deep-button" onPress={onEnter} />
+        <OutlineButton title={t("New Run")} testID="enter-the-deep-button" onPress={onEnter} />
       ) : (
-        <PrimaryButton title="Enter the Deep" testID="enter-the-deep-button" onPress={onEnter} disabled={!profile.name} />
+        <PrimaryButton title={t("Enter the Deep")} testID="enter-the-deep-button" onPress={onEnter} disabled={!profile.name} />
       )}
-      <Text style={s.hint}>{!profile.name ? "Name your pilot to dive" : saved ? "Starting a new run replaces your saved run" : "Drag to thrust · Automatically attacks"}</Text>
+      <Text style={s.hint}>{!profile.name ? t("Name your pilot to dive") : saved ? t("Starting a new run replaces your saved run") : t("Drag to thrust · Automatically attacks")}</Text>
     </Animated.View>
   );
 }
 
-export function ArmouryCard({ profile, onBuy, onLeaderboard, onHangar, onBosses }: { profile: Profile; onBuy: (k: UpgradeKey, cost: number) => void; onLeaderboard: () => void; onHangar: () => void; onBosses: () => void }) {
+export function ArmouryCard({ profile, onBuy, onLeaderboard, onHangar, onBosses, onPrestige, onStats }: { profile: Profile; onBuy: (k: UpgradeKey, cost: number) => void; onLeaderboard: () => void; onHangar: () => void; onBosses: () => void; onPrestige: () => void; onStats: () => void }) {
   const s = useStyles();
   const { colors } = useTheme();
   return (
     <Animated.View entering={FadeInDown.duration(450).delay(120)} style={s.card} testID="armoury-card">
       <View style={s.armouryHead}>
-        <Text style={s.cardTitle}>Armoury</Text>
+        <Text style={s.cardTitle}>{t("Armoury")}</Text>
         <View style={s.inlineCoins}>
           <Lucide name="coins" size={13} color={colors.brandSecondary} />
           <Text testID="armoury-coins" style={s.inlineCoinText}>{profile.coins}</Text>
@@ -122,7 +123,7 @@ export function ArmouryCard({ profile, onBuy, onLeaderboard, onHangar, onBosses 
           <View key={u.key} style={s.upRow} testID={`upgrade-row-${u.key}`}>
             <View style={{ flex: 1 }}>
               <Text style={s.upName} numberOfLines={1}>
-                {u.name} <Text style={s.upLv}>· Lv {roman(lv)}</Text>
+                {u.name} <Text style={s.upLv}>· {t("Lv")} {roman(lv)}</Text>
               </Text>
               <Text style={s.upDesc}>{u.desc}</Text>
             </View>
@@ -133,16 +134,20 @@ export function ArmouryCard({ profile, onBuy, onLeaderboard, onHangar, onBosses 
               style={({ pressed }) => [s.buy, !afford && s.buyDisabled, pressed && { opacity: 0.7 }]}
             >
               <Lucide name="coins" size={12} color={colors.brandSecondary} />
-              <Text style={s.buyText}>{maxed ? "MAX" : cost}</Text>
+              <Text style={s.buyText}>{maxed ? t("MAX") : cost}</Text>
             </Pressable>
           </View>
         );
       })}
       <View style={s.btnRow}>
-        <OutlineButton title="Hangar" icon="rocket" testID="hangar-button" onPress={onHangar} style={{ flex: 1 }} />
-        <OutlineButton title="Bosses" icon="skull" testID="boss-gallery-button" onPress={onBosses} style={{ flex: 1 }} />
+        <OutlineButton title={t("Hangar")} icon="rocket" testID="hangar-button" onPress={onHangar} style={{ flex: 1 }} />
+        <OutlineButton title={t("Bosses")} icon="skull" testID="boss-gallery-button" onPress={onBosses} style={{ flex: 1 }} />
       </View>
-      <OutlineButton title="Leaderboard" icon="trophy" testID="leaderboard-button" onPress={onLeaderboard} />
+      <View style={s.btnRow}>
+        <OutlineButton title={t("Prestige")} icon="star" testID="prestige-button-home" onPress={onPrestige} style={{ flex: 1 }} />
+        <OutlineButton title={t("Stats")} icon="chart-column" testID="stats-button" onPress={onStats} style={{ flex: 1 }} />
+      </View>
+      <OutlineButton title={t("Leaderboard")} icon="trophy" testID="leaderboard-button" onPress={onLeaderboard} />
     </Animated.View>
   );
 }

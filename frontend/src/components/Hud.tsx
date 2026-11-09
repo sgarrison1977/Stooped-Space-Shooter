@@ -1,4 +1,5 @@
 import React from "react";
+import { t } from "@/src/i18n";
 import { Pressable, Text, View } from "react-native";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import { fonts, makeStyles, radius, spacing, useTheme, pop } from "@/src/theme";
@@ -31,16 +32,16 @@ export function Hud({ g, onPause, wide }: { g: GameState; onPause: () => void; w
       </View>
       <View style={s.barText}>
         <Text testID="hud-hp" style={s.small}>{Math.ceil(g.player.hp)}/{g.stats.maxHp}</Text>
-        <Text testID="hud-level" style={s.small}>Lv {g.level}</Text>
+        <Text testID="hud-level" style={s.small}>{t("Lv")} {g.level}</Text>
         <Text testID="hud-lives" style={s.small}>{"♥".repeat(Math.max(0, g.lives))}</Text>
       </View>
     </View>
   );
   const pills = (
     <View style={s.pills}>
-      <Pill icon="waves" label="Wave" value={g.wave} testID="hud-wave" />
-      <Pill icon="skull" label="Kills" value={g.kills} testID="hud-kills" />
-      <Pill icon="coins" label="Coins" value={Math.floor(g.coins)} testID="hud-coins" />
+      <Pill icon="waves" label={t("Wave")} value={g.wave} testID="hud-wave" />
+      <Pill icon="skull" label={t("Kills")} value={g.kills} testID="hud-kills" />
+      <Pill icon="coins" label={t("Coins")} value={Math.floor(g.coins)} testID="hud-coins" />
     </View>
   );
   const pause = (

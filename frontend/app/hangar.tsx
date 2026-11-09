@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { t } from "@/src/i18n";
 import { Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
 import { Backdrop } from "@/src/components/Backdrop";
 import { StatusBar } from "expo-status-bar";
@@ -20,13 +21,13 @@ function ItemButton({ owned, equipped, cost, coins, onPress, testID }: { owned: 
   const s = useStyles();
   const { colors } = useTheme();
   const afford = cost >= 0 && coins >= cost;
-  if (equipped) return <View style={[s.btn, s.btnEquipped]} testID={testID}><Lucide name="check" size={12} color={colors.onBrandTertiary} /><Text style={s.btnTextOn}>Equipped</Text></View>;
+  if (equipped) return <View style={[s.btn, s.btnEquipped]} testID={testID}><Lucide name="check" size={12} color={colors.onBrandTertiary} /><Text style={s.btnTextOn}>{t("Equipped")}</Text></View>;
   return (
     <Pressable testID={testID} disabled={!owned && !afford} onPress={onPress} style={({ pressed }) => [s.btn, !owned && !afford && s.btnDisabled, pressed && { opacity: 0.7 }]}>
-      {owned ? <Text style={s.btnText}>Equip</Text> : (
+      {owned ? <Text style={s.btnText}>{t("Equip")}</Text> : (
         <>
           <Lucide name={afford ? "coins" : "lock"} size={12} color={colors.brandSecondary} />
-          <Text style={s.btnText}>{cost < 0 ? "Streak" : cost}</Text>
+          <Text style={s.btnText}>{cost < 0 ? t("Streak") : cost}</Text>
         </>
       )}
     </Pressable>
@@ -72,8 +73,8 @@ export default function Hangar() {
           <Lucide name="arrow-left" size={18} color={colors.onSurface} />
         </Pressable>
         <View style={{ flex: 1 }}>
-          <Label>Outfit your fighter</Label>
-          <Text style={s.title}>Hangar</Text>
+          <Label>{t("Outfit your fighter")}</Label>
+          <Text style={s.title}>{t("Hangar")}</Text>
         </View>
         <CoinPill value={profile.coins} testID="hangar-coins" />
       </View>
@@ -84,10 +85,10 @@ export default function Hangar() {
             <PlayerSprite size={112} skin={skin} />
           </View>
           <Text style={s.previewName} testID="hangar-preview-name">{skin.name}</Text>
-          <Text style={s.previewSub}>{trail.name}{preview.skin || preview.trail ? " · Preview" : ""}</Text>
+          <Text style={s.previewSub}>{trail.name}{preview.skin || preview.trail ? ` · ${t("Preview")}` : ""}</Text>
         </Animated.View>
 
-        <Text style={s.section}>Hulls</Text>
+        <Text style={s.section}>{t("Hulls")}</Text>
         <View style={s.grid}>
           {SKINS.map((k) => {
             const owned = profile.ownedSkins.includes(k.id);
@@ -101,7 +102,7 @@ export default function Hangar() {
           })}
         </View>
 
-        <Text style={s.section}>Engine Trails</Text>
+        <Text style={s.section}>{t("Engine Trails")}</Text>
         <View style={s.grid}>
           {TRAILS.map((t) => {
             const owned = profile.ownedTrails.includes(t.id);
@@ -114,7 +115,7 @@ export default function Hangar() {
             );
           })}
         </View>
-        <Text style={s.note}>Everything here is earned with in-game coins.</Text>
+        <Text style={s.note}>{t("Everything here is earned with in-game coins.")}</Text>
       </ScrollView>
     </View>
   );

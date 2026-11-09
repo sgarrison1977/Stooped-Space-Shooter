@@ -131,3 +131,11 @@ User built "Hypershift" (in-game title EMBERDEEP) on Base44 and wants it rebuilt
 - Home: Continue banner on top, TodayCard (streak, missions, weekly, achievements link), style chips show locks. New /achievements screen. Loadout: run modifiers row, mastery line.
 - Game over: news lines (missions, achievements, unlocks) + image share card (react-native-view-shot + expo-sharing; web falls back to text share).
 - Backend: leaderboard pattern accepts weekly-\d{4,6}.
+
+## Update: Prestige, Seasonal events, Lifetime stats, Localization (Jun 2026)
+- Game-over button renamed "Return to Hangar"
+- Ship prestige (/prestige, src/game/prestige.ts): reach wave 30 with a ship -> prestige (badge Bronze/Silver/Gold/Platinum/Diamond ★N, resets that ship's wave progress). 12 coin-bought bonuses per ship, 12 levels each; each prestige opens 3 more levels. Applied in setupLoadout (not in Daily Run). Achievements: Born Again, Ace of Aces
+- Seasonal events (src/game/seasons.ts) on the real calendar: Lunar (Jan21-Feb10), Valentine (Feb11-16), Spring (Mar20-Apr20), Summer (Jul1-Aug15), Halloween (Oct15-Nov2), Winter (Dec10-Jan6). Arena tint, enemy colour skin (art.ts ef()), home banner, limited achievement (1500 kills during event)
+- Lifetime stats screen (/stats); profile.life tracked in applyRun
+- Localization (src/i18n): English, Spanish, Portuguese, German, Japanese; matches phone (expo-localization) with picker on home. Content tables translated in place (i18n/data.ts); proper names (bosses, skins, trails, enemies) stay English
+- ⚠️ REMINDER FOR USER: right before the store build, remind the user to check whether to add more languages

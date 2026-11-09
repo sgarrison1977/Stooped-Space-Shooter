@@ -1,4 +1,5 @@
 import React from "react";
+import { t } from "@/src/i18n";
 import { Text, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { fonts, makeStyles, radius, spacing, pop } from "@/src/theme";
@@ -7,6 +8,7 @@ import { ABILITIES, ABILITY_UPGRADES, CLASS_UPGRADES, CLASSES, dailyLoadout, MOD
 import { DifficultyChips } from "./DifficultyChips";
 import { MASTERY, masteryLevel, RUN_MODS, weeklyRule } from "@/src/game/retention";
 import { Label } from "./ui";
+import { badgeName, PRESTIGE_WAVE, prestigeCount, shipBest } from "@/src/game/prestige";
 
 type Upd = (fn: (p: Profile) => Profile) => void;
 
@@ -25,7 +27,12 @@ function Row({ label, options, value, onChange, prefix, ups }: { label: string; 
 const names = (l: { name: string }[]) => l.map((x) => x.name).join(" · ");
 const weaponUps = (w: WeaponId, kills: number) => {
   const lv = masteryLevel(kills);
-  return `Level-up upgrades: ${names(WEAPON_UPGRADES[w])}\nCombo: ${WEAPON_EVOS[w].name}\nMastery: ${lv >= MASTERY.length ? "GOLD (gold shots)" : `Lv ${lv} · ${kills}/${MASTERY[lv]} kills`}`;
+  return `${t("Level-up upgrades: {x}", { x: names(WEAPON_UPGRADES[w]) })}\n${t("Combo: {x}", { x: WEAPON_EVOS[w].name })}\n${t("Mastery: {x}", { x: lv >= MASTERY.length ? t("GOLD (gold shots)") : t("Lv {lv} · {k}/{g} kills", { lv, k: kills, g: MASTERY[lv] }) })}`;
+};
+
+const prestigeLine = (p: Profile) => {
+  const n = prestigeCount(p, p.shipClass);
+  return `${t("Prestige")}: ${n ? `${t(badgeName(n))} ★${n}` : "—"} · ${t("Wave {a}/{b} to next prestige", { a: Math.min(shipBest(p, p.shipClass), PRESTIGE_WAVE), b: PRESTIGE_WAVE })}`;
 };
 
 export function LoadoutCard({ profile, update }: { profile: Profile; update: Upd }) {
@@ -35,12 +42,12 @@ export function LoadoutCard({ profile, update }: { profile: Profile; update: Upd
   const nm = (list: { id: string; name: string }[], id: string) => list.find((x) => x.id === id)?.name;
   return (
     <Animated.View entering={FadeInDown.duration(450).delay(60)} style={s.card} testID="loadout-card">
-      <Text style={s.title}>Loadout</Text>
-      <Row label="Mode" options={MODES} value={profile.mode} onChange={(mode) => update((p) => ({ ...p, mode: mode as Profile["mode"] }))} prefix="mode-chip" />
-          <Row label="Game Speed" options={SPEEDS} value={profile.speed} onChange={(speed) => update((p) => ({ ...p, speed: speed as Profile["speed"] }))} prefix="speed-chip" />
+      <Text style={s.title}>{t("Loadout")}</Text>
+      <Row label={t("Mode")} options={MODES} value={profile.mode} onChange={(mode) => update((p) => ({ ...p, mode: mode as Profile["mode"] }))} prefix="mode-chip" />
+          <Row label={t("Game Speed")} options={SPEEDS} value={profile.speed} onChange={(speed) => update((p) => ({ ...p, speed: speed as Profile["speed"] }))} prefix="speed-chip" />
       {!daily ? (
         <View style={s.row}>
-          <Label>Run Modifiers · bonus coins</Label>
+          <Label>{t("Run Modifiers · bonus coins")}</Label>
           <DifficultyChips
             options={RUN_MODS.map((m) => ({ id: m.id, name: `${m.name} +${Math.round(m.bonus * 100)}%` }))}
             value=""
@@ -48,17 +55,17 @@ export function LoadoutCard({ profile, update }: { profile: Profile; update: Upd
             onChange={(id: string) => update((p) => ({ ...p, runMods: p.runMods.includes(id) ? p.runMods.filter((x) => x !== id) : [...p.runMods, id] }))}
             testPrefix="run-mod-chip"
           />
-          <Text style={s.desc}>{profile.runMods.length ? RUN_MODS.filter((m) => profile.runMods.includes(m.id)).map((m) => m.desc).join(" · ") : "Optional risks; stack them for more coins"}</Text>
+          <Text style={s.desc}>{profile.runMods.length ? RUN_MODS.filter((m) => profile.runMods.includes(m.id)).map((m) => m.desc).join(" · ") : t("Optional risks; stack them for more coins")}</Text>
         </View>
       ) : null}
-      {profile.mode === "weekly" ? <Text style={s.daily} testID="weekly-rule">This week: {weeklyRule().name} · {weeklyRule().desc}</Text> : null}
+      {profile.mode === "weekly" ? <Text style={s.daily} testID="weekly-rule">{t("This week: {n} · {d}", { n: weeklyRule().name, d: weeklyRule().desc })}</Text> : null}
       {daily ? (
-        <Text style={s.daily} testID="daily-loadout">Today: {nm(WEAPONS, d.weapon)} · {nm(ABILITIES, d.ability)} · {nm(CLASSES, d.cls)}</Text>
+        <Text style={s.daily} testID="daily-loadout">{t("Today: {x}", { x: `${nm(WEAPONS, d.weapon)} · ${nm(ABILITIES, d.ability)} · ${nm(CLASSES, d.cls)}` })}</Text>
       ) : (
         <>
-          <Row label="Weapon" options={WEAPONS} value={profile.weapon} onChange={(weapon) => update((p) => ({ ...p, weapon: weapon as Profile["weapon"] }))} prefix="weapon-chip" ups={weaponUps(profile.weapon, profile.mastery[profile.weapon] ?? 0)} />
-          <Row label="Ability" options={ABILITIES} value={profile.ability} onChange={(ability) => update((p) => ({ ...p, ability: ability as Profile["ability"] }))} prefix="ability-chip" ups={`Level-up upgrades: ${names(ABILITY_UPGRADES[profile.ability])}`} />
-          <Row label="Ship Class" options={CLASSES} value={profile.shipClass} onChange={(shipClass) => update((p) => ({ ...p, shipClass: shipClass as Profile["shipClass"] }))} prefix="class-chip" ups={`Level-up perks: ${names(CLASS_UPGRADES[profile.shipClass])}`} />
+          <Row label={t("Weapon")} options={WEAPONS} value={profile.weapon} onChange={(weapon) => update((p) => ({ ...p, weapon: weapon as Profile["weapon"] }))} prefix="weapon-chip" ups={weaponUps(profile.weapon, profile.mastery[profile.weapon] ?? 0)} />
+          <Row label={t("Ability")} options={ABILITIES} value={profile.ability} onChange={(ability) => update((p) => ({ ...p, ability: ability as Profile["ability"] }))} prefix="ability-chip" ups={t("Level-up upgrades: {x}", { x: names(ABILITY_UPGRADES[profile.ability]) })} />
+          <Row label={t("Ship Class")} options={CLASSES} value={profile.shipClass} onChange={(shipClass) => update((p) => ({ ...p, shipClass: shipClass as Profile["shipClass"] }))} prefix="class-chip" ups={`${t("Level-up perks: {x}", { x: names(CLASS_UPGRADES[profile.shipClass]) })}\n${prestigeLine(profile)}`} />
         </>
       )}
     </Animated.View>

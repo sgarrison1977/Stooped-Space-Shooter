@@ -18,6 +18,8 @@ export interface ArsenalState {
   picks: Record<string, number>; evolved: string[]; lives: number;
   // retention: run modifiers / weekly rule / rare events
   bossHp: number; noHeal: boolean; merchant: boolean; meteorT: number; gold: boolean;
+  // prestige bonuses (optional: older saved runs lack them)
+  xpMul?: number; moveBonus?: number; waveHeal?: number;
 }
 
 export const arsenalDefaults = (): ArsenalState => ({
@@ -31,7 +33,7 @@ function mulberry(seed: number) {
   return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
 
-export function setupLoadout(s: GameState, lo: { mode: ModeId; weapon: WeaponId; ability: AbilityId; cls: ClassId; runMods?: string[]; gold?: boolean }) {
+export function setupLoadout(s: GameState, lo: { mode: ModeId; weapon: WeaponId; ability: AbilityId; cls: ClassId; runMods?: string[]; gold?: boolean; bonuses?: Record<string, number> }) {
   const daily = lo.mode === "daily" ? dailyLoadout() : null;
   setRng(daily ? mulberry(todaySeed()) : Math.random);
   s.mode = lo.mode;
@@ -44,16 +46,30 @@ export function setupLoadout(s: GameState, lo: { mode: ModeId; weapon: WeaponId;
   if (s.cls.drone) s.drone = { a: 0, cd: 1 };
   s.lives = lo.mode === "hardcore" ? 1 : 3;
   s.gold = !!lo.gold;
+  s.mods = { ...s.mods };
+  // ship prestige bonuses (never in the Daily Run, so it stays fair)
+  const b = daily ? {} : lo.bonuses ?? {}, L = (k: string) => b[k] ?? 0;
+  st.damage *= 1 + 0.02 * L("dmg");
+  st.maxHp = Math.round(st.maxHp * (1 + 0.03 * L("hull"))); s.player.hp = st.maxHp;
+  st.fireRate *= 1 + 0.015 * L("fire");
+  st.crit += 0.01 * L("crit");
+  st.resist = Math.min(0.75, st.resist + 0.01 * L("resist"));
+  st.pickup *= 1 + 0.04 * L("magnet");
+  st.repairPerKill += 0.2 * L("repair");
+  s.moveBonus = 1 + 0.015 * L("thrust");
+  s.mods.coins *= 1 + 0.03 * L("coins");
+  s.xpMul = 1 + 0.03 * L("xp");
+  s.bossHp *= 1 - 0.02 * L("boss");
+  s.waveHeal = 0.02 * L("heal");
   // opt-in run modifiers + this week's challenge rule
   const rules = [...(lo.runMods ?? []), ...(lo.mode === "weekly" ? [weeklyRule().id] : [])];
-  s.mods = { ...s.mods };
   for (const r of rules) {
     if (r === "glass") { st.damage *= 2; st.maxHp = Math.round(st.maxHp / 2); s.player.hp = st.maxHp; }
     if (r === "swarm") { s.mods.spawn *= 1.3; s.mods.cap = Math.round(s.mods.cap * 1.3); }
     if (r === "ironman" || r === "noheal") s.noHeal = true;
     if (r === "fastfoes") s.mods.speed *= 1.25;
     if (r === "speedy") s.mods.speed *= 1.35;
-    if (r === "bigboss") s.bossHp = 2;
+    if (r === "bigboss") s.bossHp *= 2;
     if (r === "blades") s.weapon = "blades";
   }
 }
@@ -100,14 +116,14 @@ export function retryWave(s: GameState) {
   p.hp = s.stats.maxHp; p.x = s.w / 2; p.y = s.h / 2; p.vx = 0; p.vy = 0; p.invuln = 2.5;
   s.enemies = []; s.eBullets = []; s.bullets = []; s.boss = null; s.bossSpawned = false; s.bossBanner = 0;
   s.waveTime = 0; s.breakT = 0; s.spawnTimer = 1.5; s.grav = null;
-  s.intro = { label: "Life lost", name: `Wave ${s.wave} restarts`, desc: `${s.lives} ${s.lives === 1 ? "life" : "lives"} left`, t: 2.6 };
+  s.intro = { label: "Life lost", name: "Wave {n} restarts", desc: s.lives === 1 ? "{l} life left" : "{l} lives left", vars: { n: s.wave, l: s.lives }, t: 2.6 };
 }
 
 // Pick count of a weapon upgrade, only while the loadout weapon is the one firing
 const L = (s: GameState, id: string) => (s.tempWeapon ? 0 : s.picks[id] ?? 0);
 const P = (s: GameState, id: string) => s.picks[id] ?? 0; // ability / class perks
 export const evolvedW = (s: GameState, id: string) => !s.tempWeapon && s.evolved.includes(id);
-export const moveMul = (s: GameState) => s.cls.move * (1 + 0.12 * P(s, "cl_burn"));
+export const moveMul = (s: GameState) => s.cls.move * (1 + 0.12 * P(s, "cl_burn")) * (s.moveBonus ?? 1);
 export const droneCount = (s: GameState) => (s.drone ? 1 + P(s, "cl_drone") : 0);
 export const bladeCount = (s: GameState) => 2 + s.stats.projectiles + L(s, "bl_extra");
 export const bladeReach = (s: GameState) => 54 * (1 + 0.2 * L(s, "bl_tether"));

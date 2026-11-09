@@ -13,6 +13,8 @@ import { stylesUnlocked } from "@/src/game/retention";
 import { Scanlines } from "@/src/components/Backdrop";
 import { initAudio, setMuted, setSoundPack, startMusic } from "@/src/game/audio";
 import { loadProfile } from "@/src/game/profile";
+import { applyLanguage } from "@/src/i18n/data";
+import { useLang } from "@/src/i18n";
 
 // Disable logbox errors etc so that users can see the app
 // and agent works as expected.
@@ -41,13 +43,14 @@ export default function RootLayout() {
   });
   const [ready, setReady] = useState(false);
   const style = useUiStyle();
+  const lang = useLang();
   const styles = useStyles();
   useEffect(() => {
     initAudio();
     loadProfile().then((p) => {
       // styles unlock in on-screen order; fall back to Ember if the saved one is still locked
       const st = UI_STYLES.findIndex((x) => x.id === p.uiStyle) < stylesUnlocked(p) ? p.uiStyle : "ember";
-      setUiStyle(st); setSoundPack(st); setReady(true); setMuted(p.muted); startMusic(); });
+      applyLanguage(p.lang ?? "auto"); setUiStyle(st); setSoundPack(st); setReady(true); setMuted(p.muted); startMusic(); });
   }, []);
   // One app level ErrorBoundary; a render crash shows a reload screen
   // instead of a blank app. GestureHandlerRootView must wrap the whole tree
@@ -58,8 +61,8 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <KeyboardProvider>
             {(loaded || err) && ready ? (
-              // keyed on the UI style so the whole tree remounts with the new look
-              <View key={style} style={styles.root}>
+              // keyed on the UI style + language so the whole tree remounts with the new look
+              <View key={`${style}-${lang}`} style={styles.root}>
                 <Stack screenOptions={{ headerShown: false, contentStyle: styles.root, animation: "fade" }}>
                   <Stack.Screen name="play" options={{ gestureEnabled: false }} />
                 </Stack>

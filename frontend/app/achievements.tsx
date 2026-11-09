@@ -1,4 +1,5 @@
 import React from "react";
+import { currentLang, t } from "@/src/i18n";
 import { ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -10,6 +11,10 @@ import { fonts, fx, makeStyles, pop, radius, spacing, UI_STYLES, useTheme } from
 import { useProfile } from "@/src/game/profile";
 import { WEAPONS } from "@/src/game/arsenal";
 import { ACHIEVEMENTS, MASTERY, masteryLevel, stylesUnlocked } from "@/src/game/retention";
+import { SEASONS } from "@/src/game/seasons";
+
+const fmtMd = (v: number) => new Date(2000, Math.floor(v / 100) - 1, v % 100).toLocaleDateString(currentLang(), { month: "short", day: "numeric" });
+const seasonDates = (id: string) => { const se = SEASONS.find((x) => x.id === id)!; return `${t("Limited-time event")} · ${fmtMd(se.from)} – ${fmtMd(se.to)}`; };
 
 export default function Achievements() {
   const s = useStyles();
@@ -24,19 +29,19 @@ export default function Achievements() {
       <Backdrop />
       <StatusBar style={fx.statusBar} />
       <ScrollView contentContainerStyle={[s.content, { paddingTop: insets.top + spacing.lg, paddingBottom: insets.bottom + spacing.xxl }]}>
-        <OutlineButton title="Back" icon="arrow-left" testID="achievements-back-button" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} />
-        <Text style={s.title}>Achievements</Text>
+        <OutlineButton title={t("Back")} icon="arrow-left" testID="achievements-back-button" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} />
+        <Text style={s.title}>{t("Achievements")}</Text>
         <Text style={s.sub} testID="style-unlock-progress">
-          {nextStyle ? `${3 - (profile.achievements.length % 3)} more to unlock the ${nextStyle.name} UI style` : "Every UI style unlocked!"}
+          {nextStyle ? t("{n} more to unlock the {s} UI style", { n: 3 - (profile.achievements.length % 3), s: nextStyle.name }) : t("Every UI style unlocked!")}
         </Text>
         <View style={s.card}>
-          <Label>Weapon mastery</Label>
+          <Label>{t("Weapon mastery")}</Label>
           {WEAPONS.map((w) => {
             const k = profile.mastery[w.id] ?? 0, lv = masteryLevel(k), goal = MASTERY[lv];
             return (
               <View key={w.id} style={s.row} testID={`mastery-${w.id}`}>
                 <Text style={s.name}>{w.name}</Text>
-                <Text style={s.meta}>{lv >= MASTERY.length ? "GOLD · maxed" : `Lv ${lv} · ${k}/${goal} kills`}</Text>
+                <Text style={s.meta}>{lv >= MASTERY.length ? t("GOLD · maxed") : t("Lv {lv} · {k}/{g} kills", { lv, k, g: goal })}</Text>
               </View>
             );
           })}
@@ -50,6 +55,7 @@ export default function Achievements() {
                 <View style={{ flex: 1 }}>
                   <Text style={s.name}>{a.name}</Text>
                   <Text style={s.meta}>{a.desc}</Text>
+                  {a.season ? <Text style={s.limited}>{seasonDates(a.season)}</Text> : null}
                 </View>
               </View>
             );
@@ -69,4 +75,5 @@ const useStyles = makeStyles((c) => ({
   row: { flexDirection: "row", alignItems: "center", gap: spacing.md, justifyContent: "space-between" },
   name: { fontFamily: fonts.bold, fontSize: 15, color: c.onSurface },
   meta: { fontFamily: fonts.text, fontSize: 13, color: c.muted },
+  limited: { fontFamily: fonts.bold, fontSize: 12, color: c.brandSecondary },
 }));

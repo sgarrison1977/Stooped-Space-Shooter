@@ -229,7 +229,7 @@ export default function Play() {
             <View style={[s.knob, { transform: [{ translateX: j.x * STICK }, { translateY: j.y * STICK }] }]} />
           </View>
         ) : null}
-        <Text style={s.hint} pointerEvents="none">Drag to thrust · Automatically attacks</Text>
+        {g && g.wave <= 2 ? <Text style={s.hint} pointerEvents="none">Drag to thrust · Automatically attacks</Text> : null}
       </View>
 
       {g && mode === "levelup" ? <LevelUpOverlay key={`${g.level}-${g.pendingLevelUps}`} wide={wide} level={g.level - g.pendingLevelUps + 1} options={choices} onPick={pick} /> : null}

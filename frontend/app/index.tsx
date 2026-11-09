@@ -12,7 +12,7 @@ import { useProfile } from "@/src/game/profile";
 import { useSavedRun } from "@/src/game/save";
 import { CoinPill, MuteButton } from "@/src/components/ui";
 import { ArmouryCard, MusterCard } from "@/src/components/HomeCards";
-import { startMusic } from "@/src/game/audio";
+import { setSoundPack, startMusic } from "@/src/game/audio";
 import { LoadoutCard } from "@/src/components/Loadout";
 
 export default function Home() {
@@ -69,7 +69,7 @@ export default function Home() {
               options={UI_STYLES}
               value={profile.uiStyle}
               testPrefix="ui-style-chip"
-              onChange={(uiStyle) => { setUiStyle(uiStyle); update((p) => ({ ...p, uiStyle })); }}
+              onChange={(uiStyle) => { setUiStyle(uiStyle); setSoundPack(uiStyle); update((p) => ({ ...p, uiStyle })); }}
             />
           </View>
           <MusterCard

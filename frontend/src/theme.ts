@@ -240,6 +240,7 @@ export const radius = { ...UI_STYLES[0].radius, pill: 999 };
 export const fx: UiStyle["fx"] = { ...UI_STYLES[0].fx };
 let current: UiStyle = UI_STYLES[0];
 export const pop = (c: ThemeColors) => current.pop(c);
+export const currentUiStyle = (): UiStyleId => current.id;
 export const ink = (c: ThemeColors) => current.ink(c);
 
 const listeners = new Set<() => void>();

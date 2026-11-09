@@ -10,7 +10,7 @@ import { ErrorBoundary } from "@/src/components/error-boundary";
 import { queryClient } from "@/src/query-client";
 import { makeStyles, setUiStyle, useUiStyle } from "@/src/theme";
 import { Scanlines } from "@/src/components/Backdrop";
-import { initAudio, setMuted, startMusic } from "@/src/game/audio";
+import { initAudio, setMuted, setSoundPack, startMusic } from "@/src/game/audio";
 import { loadProfile } from "@/src/game/profile";
 
 // Disable logbox errors etc so that users can see the app
@@ -43,7 +43,7 @@ export default function RootLayout() {
   const styles = useStyles();
   useEffect(() => {
     initAudio();
-    loadProfile().then((p) => { setUiStyle(p.uiStyle); setReady(true); setMuted(p.muted); startMusic(); });
+    loadProfile().then((p) => { setUiStyle(p.uiStyle); setSoundPack(p.uiStyle); setReady(true); setMuted(p.muted); startMusic(); });
   }, []);
   // One app level ErrorBoundary; a render crash shows a reload screen
   // instead of a blank app. GestureHandlerRootView must wrap the whole tree

@@ -1,18 +1,12 @@
 import { AppState } from "react-native";
 import { AudioPlayer, createAudioPlayer, setAudioModeAsync } from "expo-audio";
 
-const SOURCES = {
-  laser: require("../../assets/sounds/laser.wav"),
-  explosion: require("../../assets/sounds/explosion.wav"),
-  boss_explosion: require("../../assets/sounds/boss_explosion.wav"),
-  hit: require("../../assets/sounds/hit.wav"),
-  boss_warning: require("../../assets/sounds/boss_warning.wav"),
-  levelup: require("../../assets/sounds/levelup.wav"),
-  pickup: require("../../assets/sounds/pickup.wav"),
-};
-const MUSIC = require("../../assets/sounds/music.wav");
+import { SOUND_PACKS } from "./soundPacks";
 
-export type Sfx = keyof typeof SOURCES;
+// Active sound pack follows the UI style (see setSoundPack)
+let pack: (typeof SOUND_PACKS)[keyof typeof SOUND_PACKS] = SOUND_PACKS.ember;
+
+export type Sfx = Exclude<keyof typeof SOUND_PACKS.ember, "music">;
 
 const POOL: Partial<Record<Sfx, number>> = { laser: 4, explosion: 4, pickup: 3, hit: 2 };
 const VOLUME: Record<Sfx, number> = { laser: 0.22, explosion: 0.45, boss_explosion: 0.9, hit: 0.6, boss_warning: 0.7, levelup: 0.6, pickup: 0.25 };
@@ -43,7 +37,7 @@ function pool(name: Sfx) {
   let p = pools[name];
   if (!p) {
     const n = POOL[name] ?? 1;
-    p = { players: Array.from({ length: n }, () => { const pl = createAudioPlayer(SOURCES[name]); pl.volume = VOLUME[name]; return pl; }), i: 0 };
+    p = { players: Array.from({ length: n }, () => { const pl = createAudioPlayer(pack[name]); pl.volume = VOLUME[name]; return pl; }), i: 0 };
     pools[name] = p;
   }
   return p;
@@ -68,7 +62,7 @@ export function startMusic() {
   musicWanted = true;
   if (muted) return;
   safe(() => {
-    if (!music) { music = createAudioPlayer(MUSIC); music.loop = true; music.volume = 0.35; }
+    if (!music) { music = createAudioPlayer(pack.music); music.loop = true; music.volume = 0.35; }
     if (!music.playing) music.play();
   });
 }
@@ -77,4 +71,14 @@ export function setMuted(m: boolean) {
   muted = m;
   if (m) safe(() => music?.pause());
   else if (musicWanted) startMusic();
+}
+
+// Swap to the sound pack matching a UI style; drops cached players and restarts the music loop
+export function setSoundPack(id: string) {
+  const next = SOUND_PACKS[id as keyof typeof SOUND_PACKS] ?? SOUND_PACKS.ember;
+  if (next === pack) return;
+  pack = next;
+  for (const k of Object.keys(pools) as Sfx[]) { pools[k]?.players.forEach((pl) => safe(() => pl.remove())); delete pools[k]; }
+  if (music) { const m = music; music = null; safe(() => { m.pause(); m.remove(); }); }
+  if (musicWanted && !muted) startMusic();
 }

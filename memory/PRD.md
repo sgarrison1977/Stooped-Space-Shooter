@@ -119,3 +119,7 @@ User built "Hypershift" (in-game title EMBERDEEP) on Base44 and wants it rebuilt
 - Backdrop.tsx: per-style screen backdrop (ember glow / ruled paper / grid / halftone dots) + Scanlines (retro only, global).
 - Home: 'UI Style' chip card at top; home title STOOOPID font size computed from screen width per style font (fx.titleEm) so it never truncates.
 - All style fonts bundled in assets/fonts (~1.8 MB).
+
+## Update: Per-style sound packs + art
+- scripts/gen_sound_packs.py generates 7 sfx + music per non-ember style into assets/sounds/<style>/ and writes src/game/soundPacks.ts. audio.ts setSoundPack(id) swaps packs (called at boot and when UI style changes).
+- src/game/art.ts af/ak/aw recolour fills/strokes/stroke widths of ShipArt/MobArt/Sprites per style (cartoon/comic black outlines, blueprint white wireframe, notebook ink on pastel, retro neon on dark, military olive, racing lime).

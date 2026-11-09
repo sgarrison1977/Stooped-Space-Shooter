@@ -3,7 +3,7 @@ import { Pressable, Text, View } from "react-native";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { fonts, makeStyles, radius, spacing, useTheme, pop, ink } from "@/src/theme";
+import { fonts, makeStyles, radius, spacing, useTheme, pop, ink, fx } from "@/src/theme";
 import { SystemDef } from "@/src/game/config";
 import { Label, MuteButton, OutlineButton, PrimaryButton } from "./ui";
 
@@ -104,7 +104,7 @@ const useStyles = makeStyles((c) => ({
     position: "absolute", left: 0, top: 0, right: 0, bottom: 0, backgroundColor: c.scrim,
     justifyContent: "center", paddingHorizontal: spacing.xl, gap: spacing.sm,
   },
-  title: { fontFamily: fonts.display, fontSize: 38, color: c.onArena, textAlign: "center", letterSpacing: 1, marginBottom: spacing.lg },
+  title: { fontFamily: fonts.display, fontSize: 38, color: c[fx.overlayTitle], ...fx.overlayShadow, textAlign: "center", letterSpacing: 1, marginBottom: spacing.lg },
   titleWide: { fontSize: 22, marginBottom: spacing.sm },
   list: { gap: spacing.md, width: "100%", maxWidth: 760, alignSelf: "center" },
   listRow: { flexDirection: "row" },
@@ -113,7 +113,7 @@ const useStyles = makeStyles((c) => ({
     flexDirection: "row", alignItems: "center", gap: spacing.md, padding: spacing.lg, borderRadius: radius.md,
     ...pop(c), backgroundColor: c.surfaceSecondary, minHeight: 76,
   },
-  optionActive: { backgroundColor: c.brandTertiary, transform: [{ rotate: "-1deg" }] },
+  optionActive: { backgroundColor: c.brandTertiary, transform: [{ rotate: fx.tilt }] },
   iconBox: {
     width: 44, height: 44, borderRadius: radius.pill, ...ink(c),
     alignItems: "center", justifyContent: "center", backgroundColor: c.brandPrimary,

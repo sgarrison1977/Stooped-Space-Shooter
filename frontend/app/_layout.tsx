@@ -1,14 +1,15 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { useFonts } from "expo-font";
-import { LogBox, StyleSheet, View } from "react-native";
+import { LogBox, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 
 import { ErrorBoundary } from "@/src/components/error-boundary";
 import { queryClient } from "@/src/query-client";
-import { colors } from "@/src/theme";
+import { makeStyles, setUiStyle, useUiStyle } from "@/src/theme";
+import { Scanlines } from "@/src/components/Backdrop";
 import { initAudio, setMuted, startMusic } from "@/src/game/audio";
 import { loadProfile } from "@/src/game/profile";
 
@@ -18,12 +19,31 @@ LogBox.ignoreAllLogs(true)
 
 export default function RootLayout() {
   const [loaded, err] = useFonts({
+    // every selectable UI style's fonts
+    Cinzel: require("../assets/fonts/Cinzel.ttf"),
+    DMSans: require("../assets/fonts/DMSans.ttf"),
+    LuckiestGuy: require("../assets/fonts/LuckiestGuy.ttf"),
+    Sniglet: require("../assets/fonts/Sniglet.ttf"),
+    SnigletBold: require("../assets/fonts/SnigletBold.ttf"),
+    PixelifySans: require("../assets/fonts/PixelifySans.ttf"),
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    "BarlowCondensed-BoldItalic": require("../assets/fonts/BarlowCondensed-BoldItalic.ttf"),
+    "Barlow-Medium": require("../assets/fonts/Barlow-Medium.ttf"),
+    "Barlow-SemiBold": require("../assets/fonts/Barlow-SemiBold.ttf"),
     PermanentMarker: require("../assets/fonts/PermanentMarker.ttf"),
     PatrickHand: require("../assets/fonts/PatrickHand.ttf"),
+    BlackOpsOne: require("../assets/fonts/BlackOpsOne.ttf"),
+    ShareTechMono: require("../assets/fonts/ShareTechMono.ttf"),
+    Bangers: require("../assets/fonts/Bangers.ttf"),
+    ComicNeueBold: require("../assets/fonts/ComicNeueBold.ttf"),
+    ArchitectsDaughter: require("../assets/fonts/ArchitectsDaughter.ttf"),
   });
+  const [ready, setReady] = useState(false);
+  const style = useUiStyle();
+  const styles = useStyles();
   useEffect(() => {
     initAudio();
-    loadProfile().then((p) => { setMuted(p.muted); startMusic(); });
+    loadProfile().then((p) => { setUiStyle(p.uiStyle); setReady(true); setMuted(p.muted); startMusic(); });
   }, []);
   // One app level ErrorBoundary; a render crash shows a reload screen
   // instead of a blank app. GestureHandlerRootView must wrap the whole tree
@@ -33,10 +53,14 @@ export default function RootLayout() {
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <KeyboardProvider>
-            {loaded || err ? (
-              <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.surface }, animation: "fade" }}>
-                <Stack.Screen name="play" options={{ gestureEnabled: false }} />
-              </Stack>
+            {(loaded || err) && ready ? (
+              // keyed on the UI style so the whole tree remounts with the new look
+              <View key={style} style={styles.root}>
+                <Stack screenOptions={{ headerShown: false, contentStyle: styles.root, animation: "fade" }}>
+                  <Stack.Screen name="play" options={{ gestureEnabled: false }} />
+                </Stack>
+                <Scanlines />
+              </View>
             ) : (
               <View style={styles.boot} />
             )}
@@ -47,10 +71,7 @@ export default function RootLayout() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: colors.surface,
-  },
-  boot: { flex: 1, backgroundColor: colors.surface },
-});
+const useStyles = makeStyles((c) => ({
+  root: { flex: 1, backgroundColor: c.surface },
+  boot: { flex: 1, backgroundColor: c.surface },
+}));

@@ -1,15 +1,15 @@
 import React from "react";
 import { Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
-import { Paper } from "@/src/components/Paper";
+import { Backdrop } from "@/src/components/Backdrop";
+import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { fonts, makeStyles, radius, spacing, useTheme, pop } from "@/src/theme";
+import { fonts, makeStyles, radius, spacing, useTheme, pop, fx } from "@/src/theme";
 import { formatSecs, useProfile } from "@/src/game/profile";
 import { BOSSES, difficulty } from "@/src/game/content";
 import { BossSprite } from "@/src/components/ShipArt";
-import { EmberBackground } from "@/src/components/Ember";
 import { Label } from "@/src/components/ui";
 
 const BOSS_EVERY = 3;
@@ -27,8 +27,8 @@ export default function BossGallery() {
 
   return (
     <View style={s.root} testID="boss-gallery-screen">
-      <Paper />
-      <EmberBackground />
+      <Backdrop />
+      <StatusBar style={fx.statusBar} />
       <View style={[s.header, { paddingTop: insets.top + spacing.md, paddingLeft: insets.left + spacing.lg, paddingRight: insets.right + spacing.lg }]}>
         <Pressable testID="boss-gallery-back-button" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} style={s.back} hitSlop={8}>
           <Lucide name="arrow-left" size={18} color={colors.onSurface} />

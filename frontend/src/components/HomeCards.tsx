@@ -3,7 +3,7 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { fonts, makeStyles, radius, spacing, useTheme, pop } from "@/src/theme";
+import { fonts, makeStyles, radius, spacing, useTheme, pop, fx } from "@/src/theme";
 import { Label, PrimaryButton, OutlineButton } from "./ui";
 import { Profile } from "@/src/game/profile";
 import { RunSummary } from "@/src/game/save";
@@ -154,7 +154,7 @@ const useStyles = makeStyles((c) => ({
   },
   cardTitle: { fontFamily: fonts.display, fontSize: 26, color: c.onSurface, letterSpacing: 1 },
   nameRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm, minHeight: 44 },
-  name: { fontFamily: fonts.display, fontSize: 34, color: c.onSurface, flexShrink: 1 },
+  name: { fontFamily: fonts.display, fontSize: 34, color: c[fx.titleColor], flexShrink: 1, ...fx.titleShadow },
   nameEdit: { flexDirection: "row", gap: spacing.sm, alignItems: "center" },
   input: {
     flex: 1, minWidth: 0, height: 52, borderWidth: 1, borderColor: c.border, borderRadius: radius.md, paddingHorizontal: spacing.md,

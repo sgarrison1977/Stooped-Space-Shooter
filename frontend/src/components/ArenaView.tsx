@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { fonts, makeStyles, radius, spacing, useTheme, pop } from "@/src/theme";
+import { fonts, makeStyles, radius, spacing, useTheme, pop, fx } from "@/src/theme";
 import { Enemy, GameState } from "@/src/game/sim";
 import { BOSSES, MOBS, Skin, Trail } from "@/src/game/content";
 import { EliteSprite, RaiderSprite } from "./Sprites";
@@ -168,5 +168,5 @@ const useStyles = makeStyles((c) => ({
   bossFill: { height: "100%", backgroundColor: c.brandPrimary },
   banner: { position: "absolute", top: "38%", left: 0, right: 0, alignItems: "center" },
   bannerLabel: { fontFamily: fonts.bold, fontSize: 14, letterSpacing: 2, color: c.brandPrimary, textTransform: "uppercase" },
-  bannerName: { fontFamily: fonts.display, fontSize: 36, color: c.onArena, letterSpacing: 1, marginTop: 4 },
+  bannerName: { fontFamily: fonts.display, fontSize: 36, color: c.onArena, letterSpacing: 1, marginTop: 4, ...fx.overlayShadow },
 }));

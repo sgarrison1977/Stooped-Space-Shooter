@@ -1,14 +1,15 @@
 import React from "react";
 import { ActivityIndicator, Text, useWindowDimensions, View } from "react-native";
-import { Paper } from "@/src/components/Paper";
+import { Backdrop } from "@/src/components/Backdrop";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { StatusBar } from "expo-status-bar";
-import { fonts, makeStyles, spacing, useTheme } from "@/src/theme";
+import { fonts, fx, makeStyles, pop, radius, setUiStyle, spacing, UI_STYLES, useTheme } from "@/src/theme";
+import { Label } from "@/src/components/ui";
+import { DifficultyChips } from "@/src/components/DifficultyChips";
 import { useProfile } from "@/src/game/profile";
 import { useSavedRun } from "@/src/game/save";
-import { EmberBackground } from "@/src/components/Ember";
 import { CoinPill, MuteButton } from "@/src/components/ui";
 import { ArmouryCard, MusterCard } from "@/src/components/HomeCards";
 import { startMusic } from "@/src/game/audio";
@@ -24,15 +25,17 @@ export default function Home() {
   const { width, height } = useWindowDimensions();
   const wide = width > height;
   const padH = { paddingLeft: insets.left + spacing.xl, paddingRight: insets.right + spacing.xl };
+  // Size the title from the screen width so the full word fits in every UI style's font
+  const headW = width - insets.left - insets.right - spacing.xl * 2 - (wide ? 0 : 150);
+  const titleSize = Math.max(18, Math.min(44, headW / (8 * fx.titleEm + 0.6)));
 
   return (
     <View style={s.root} testID="home-screen">
-      <Paper />
-      <StatusBar style="light" />
-      <EmberBackground />
+      <Backdrop />
+      <StatusBar style={fx.statusBar} />
       <View style={[s.header, padH, { paddingTop: insets.top + (wide ? spacing.md : spacing.lg) }]}>
         <View style={{ flex: 1 }}>
-          <Text style={s.title} numberOfLines={1} adjustsFontSizeToFit>STOOOPID</Text>
+          <Text style={[s.title, { fontSize: titleSize }]} numberOfLines={1} testID="home-title">STOOOPID</Text>
           <Text style={s.titleSub} testID="home-game-title">Space Shooter Game</Text>
           <Text testID="home-subtitle" style={s.subtitle} numberOfLines={1}>
             {(profile?.name || "New pilot").toUpperCase()} · BEST WAVE {profile?.bestWave ?? 0}
@@ -60,6 +63,15 @@ export default function Home() {
           showsVerticalScrollIndicator={false}
         >
           <View style={wide ? s.col : s.stack}>
+          <View style={s.styleCard} testID="ui-style-card">
+            <Label>UI Style</Label>
+            <DifficultyChips
+              options={UI_STYLES}
+              value={profile.uiStyle}
+              testPrefix="ui-style-chip"
+              onChange={(uiStyle) => { setUiStyle(uiStyle); update((p) => ({ ...p, uiStyle })); }}
+            />
+          </View>
           <MusterCard
             profile={profile}
             onRename={(name) => update((p) => ({ ...p, name }))}
@@ -90,7 +102,8 @@ export default function Home() {
 const useStyles = makeStyles((c) => ({
   root: { flex: 1, backgroundColor: c.surface },
   header: { flexDirection: "row", alignItems: "center", paddingBottom: spacing.lg },
-  title: { fontFamily: fonts.display, fontSize: 34, letterSpacing: 1, color: c.onSurface, transform: [{ rotate: "-2deg" }] },
+  title: { fontFamily: fonts.display, fontSize: 34, letterSpacing: 1, color: c[fx.titleColor], ...fx.titleShadow, transform: [{ rotate: fx.tilt }] },
+  styleCard: { backgroundColor: c.surfaceSecondary, ...pop(c), borderRadius: radius.md, padding: spacing.lg, gap: spacing.sm },
   titleSub: { fontFamily: fonts.display, fontSize: 14, letterSpacing: 1.5, color: c.onSurface, textTransform: "uppercase", marginTop: 2 },
   subtitle: { fontFamily: fonts.bold, fontSize: 15, letterSpacing: 1, color: c.muted, marginTop: spacing.xs },
   loading: { flex: 1, alignItems: "center", justifyContent: "center", gap: spacing.md },

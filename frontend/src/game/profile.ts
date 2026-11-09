@@ -3,6 +3,7 @@ import { storage } from "@/src/utils/storage";
 import { UpgradeKey } from "./config";
 import { DifficultyId } from "./content";
 import { AbilityId, ClassId, ModeId, SpeedId, WeaponId, WEAPONS } from "./arsenal";
+import type { UiStyleId } from "@/src/theme";
 
 export interface Profile {
   id: string;
@@ -18,6 +19,7 @@ export interface Profile {
   ownedSkins: string[];
   ownedTrails: string[];
   muted: boolean;
+  uiStyle: UiStyleId;
   mode: ModeId; weapon: WeaponId; ability: AbilityId; shipClass: ClassId; speed: SpeedId;
   // Boss gallery: keyed by boss index
   bossRecords: Record<string, BossRecord>;
@@ -56,7 +58,7 @@ function newId() {
 function fresh(): Profile {
   return {
     id: newId(), name: "", coins: 0, bestWave: 0, kills: 0, runs: 0, upgrades: { cannon: 1, deflector: 1, hull: 1 },
-    difficulty: "normal", skin: "vanguard", trail: "ion", ownedSkins: ["vanguard"], ownedTrails: ["ion"], muted: false, bossRecords: {}, mode: "standard", weapon: "cannon", ability: "dash", shipClass: "standard", speed: "normal",
+    difficulty: "normal", skin: "vanguard", trail: "ion", ownedSkins: ["vanguard"], ownedTrails: ["ion"], muted: false, bossRecords: {}, mode: "standard", weapon: "cannon", ability: "dash", shipClass: "standard", speed: "normal", uiStyle: "notebook",
   };
 }
 

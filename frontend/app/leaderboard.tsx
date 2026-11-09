@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from "react-native";
-import { Paper } from "@/src/components/Paper";
+import { Backdrop } from "@/src/components/Backdrop";
+import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Lucide } from "@react-native-vector-icons/lucide";
-import { fonts, makeStyles, radius, spacing, useTheme, pop } from "@/src/theme";
+import { fonts, makeStyles, radius, spacing, useTheme, pop, fx } from "@/src/theme";
 import { fetchLeaderboard, LeaderRow, loadProfile } from "@/src/game/profile";
 import { BOARDS } from "@/src/game/arsenal";
 import { DifficultyChips } from "@/src/components/DifficultyChips";
-import { EmberBackground } from "@/src/components/Ember";
 import { Label, OutlineButton } from "@/src/components/ui";
 
 export default function Leaderboard() {
@@ -39,8 +39,8 @@ export default function Leaderboard() {
 
   return (
     <View style={s.root} testID="leaderboard-screen">
-      <Paper />
-      <EmberBackground />
+      <Backdrop />
+      <StatusBar style={fx.statusBar} />
       <View style={[s.header, { paddingTop: insets.top + spacing.md, paddingLeft: insets.left + spacing.lg, paddingRight: insets.right + spacing.lg }]}>
         <Pressable testID="leaderboard-back-button" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} style={s.back} hitSlop={8}>
           <Lucide name="arrow-left" size={18} color={colors.onSurface} />

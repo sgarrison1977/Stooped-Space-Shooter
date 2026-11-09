@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import { Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
-import { Paper } from "@/src/components/Paper";
+import { Backdrop } from "@/src/components/Backdrop";
+import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeIn } from "react-native-reanimated";
-import { fonts, makeStyles, radius, spacing, useTheme, pop } from "@/src/theme";
+import { fonts, makeStyles, radius, spacing, useTheme, pop, fx } from "@/src/theme";
 import { Profile, useProfile } from "@/src/game/profile";
 import { SKINS, Skin, skinById, Trail, TRAILS, trailById } from "@/src/game/content";
 import { PlayerSprite } from "@/src/components/ShipArt";
-import { EmberBackground } from "@/src/components/Ember";
 import { CoinPill, Label } from "@/src/components/ui";
 
 type Kind = "skin" | "trail";
@@ -65,8 +65,8 @@ export default function Hangar() {
 
   return (
     <View style={s.root} testID="hangar-screen">
-      <Paper />
-      <EmberBackground />
+      <Backdrop />
+      <StatusBar style={fx.statusBar} />
       <View style={[s.header, { paddingTop: insets.top + spacing.md, paddingLeft: insets.left + spacing.lg, paddingRight: insets.right + spacing.lg }]}>
         <Pressable testID="hangar-back-button" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} style={s.back} hitSlop={8}>
           <Lucide name="arrow-left" size={18} color={colors.onSurface} />

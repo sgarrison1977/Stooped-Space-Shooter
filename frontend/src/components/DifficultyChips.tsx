@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable, ScrollView, Text } from "react-native";
 import * as Haptics from "expo-haptics";
-import { fonts, ink, makeStyles, pop, radius, spacing } from "@/src/theme";
+import { fonts, ink, makeStyles, pop, radius, spacing, fx } from "@/src/theme";
 import { DIFFICULTIES } from "@/src/game/content";
 
 // One horizontal chip row; selected chip changes colour/border only.
@@ -40,7 +40,7 @@ const useStyles = makeStyles((c) => ({
     height: 40, paddingHorizontal: spacing.md, borderRadius: radius.pill, ...ink(c),
     backgroundColor: c.surface, alignItems: "center", justifyContent: "center", flexShrink: 0,
   },
-  chipOn: { ...pop(c), backgroundColor: c.brandTertiary, transform: [{ rotate: "-2deg" }] },
+  chipOn: { ...pop(c), backgroundColor: c.brandTertiary, transform: [{ rotate: fx.tilt }] },
   text: { fontFamily: fonts.bold, fontSize: 13, color: c.muted, textTransform: "uppercase" },
   textOn: { color: c.onBrandTertiary },
 }));

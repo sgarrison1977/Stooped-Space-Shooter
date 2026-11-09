@@ -2,7 +2,7 @@ import React from "react";
 import { Pressable, StyleProp, Text, TextStyle, View, ViewStyle } from "react-native";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import * as Haptics from "expo-haptics";
-import { fonts, makeStyles, radius, spacing, useTheme, pop } from "@/src/theme";
+import { fonts, makeStyles, radius, spacing, useTheme, pop, fx } from "@/src/theme";
 import { useProfile } from "@/src/game/profile";
 import { setMuted, startMusic } from "@/src/game/audio";
 
@@ -78,7 +78,7 @@ const useStyles = makeStyles((c) => ({
   },
   coinText: { fontFamily: fonts.display, fontSize: 16, color: c.onSurface, paddingTop: 3 },
   primary: {
-    height: 58, borderRadius: radius.md, backgroundColor: c.brandPrimary, alignItems: "center", justifyContent: "center", ...pop(c), transform: [{ rotate: "-1deg" }],
+    height: 58, borderRadius: radius.md, backgroundColor: c.brandPrimary, alignItems: "center", justifyContent: "center", ...pop(c), transform: fx.primaryTransform,
   },
   primaryText: { fontFamily: fonts.display, fontSize: 22, letterSpacing: 1, color: c.onBrandPrimary, textTransform: "uppercase", paddingTop: 4 },
   outline: {
@@ -86,7 +86,7 @@ const useStyles = makeStyles((c) => ({
     alignItems: "center", justifyContent: "center", gap: spacing.sm, backgroundColor: c.surface,
   },
   outlineText: { fontFamily: fonts.bold, fontSize: 14, letterSpacing: 0.8, color: c.onSurface, textTransform: "uppercase" },
-  pressed: { transform: [{ rotate: "-1.5deg" }, { scale: 0.97 }] },
+  pressed: fx.pressed,
   iconBtn: {
     width: 40, height: 40, borderRadius: radius.sm, ...pop(c),
     alignItems: "center", justifyContent: "center", backgroundColor: c.surfaceSecondary,

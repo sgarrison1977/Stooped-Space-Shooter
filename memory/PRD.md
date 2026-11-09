@@ -113,3 +113,9 @@ User built "Hypershift" (in-game title EMBERDEEP) on Base44 and wants it rebuilt
 ## Update: Notebook doodle restyle (replaced racing HUD)
 - theme.ts: ruled-paper cream, ballpoint-blue ink, red pen accents, highlighter yellow buttons/selection; fonts Permanent Marker (display) + Patrick Hand (text); pop() = uneven hand-drawn corners with heavier bottom stroke; slight tilts on selected items.
 - Paper.tsx: ruled lines + red margin behind home/hangar/leaderboard/bosses. Arena stays dark slate.
+
+## Update: Selectable UI styles (8)
+- theme.ts UI_STYLES: Original Ember, Goofy Cartoon, Retro Arcade, Racing HUD, Notebook Doodle (default), Military Cockpit, Comic Book, Engineer Blueprint. Live mutable colors/fonts/radius/fx objects; setUiStyle() swaps them, makeStyles rebuilds, root layout remounts keyed on style. Saved as profile.uiStyle.
+- Backdrop.tsx: per-style screen backdrop (ember glow / ruled paper / grid / halftone dots) + Scanlines (retro only, global).
+- Home: 'UI Style' chip card at top; home title STOOOPID font size computed from screen width per style font (fx.titleEm) so it never truncates.
+- All style fonts bundled in assets/fonts (~1.8 MB).

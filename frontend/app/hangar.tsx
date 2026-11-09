@@ -135,7 +135,7 @@ const useStyles = makeStyles((c) => ({
     alignItems: "center", gap: spacing.sm, padding: spacing.md, borderRadius: radius.md, ...pop(c),
     backgroundColor: c.surfaceSecondary, marginBottom: spacing.xs,
   },
-  cardActive: { backgroundColor: c.brandTertiary, transform: [{ rotate: "-2deg" }] },
+  cardActive: { backgroundColor: c.brandTertiary },
   cardName: { fontFamily: fonts.display, fontSize: 13, color: c.onSurface },
   swatch: { width: "100%", height: 56, borderRadius: radius.sm },
   btn: {

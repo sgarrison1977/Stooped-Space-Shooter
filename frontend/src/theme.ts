@@ -1,4 +1,4 @@
-// Design tokens for Stooopid Space Shooter (goofy cartoon look). Dark theme only (from /app/design_guidelines.json).
+// Design tokens for Stooopid Space Shooter (retro arcade look). Dark theme only (from /app/design_guidelines.json).
 // Components import `useTheme()` / `makeStyles` from here; never write color literals.
 
 import { useMemo } from "react";
@@ -7,52 +7,52 @@ import { Appearance, StyleSheet } from "react-native";
 export type ColorScheme = "light" | "dark";
 
 const dark = {
-  // Goofy cartoon: cream paper, ink outlines, loud candy colours
-  surface: "#FFF1C9",
-  onSurface: "#1A1423",
-  surfaceSecondary: "#FFFFFF",
-  onSurfaceSecondary: "#2A2233",
-  surfaceTertiary: "#FFE08A",
-  onSurfaceTertiary: "#1A1423",
-  surfaceInverse: "#1A1423",
-  onSurfaceInverse: "#FFF1C9",
-  muted: "#6E6177",
+  // Retro arcade: black CRT, neon cyan / hot pink / yellow
+  surface: "#07060F",
+  onSurface: "#F4F1FF",
+  surfaceSecondary: "#120F24",
+  onSurfaceSecondary: "#D4CFF0",
+  surfaceTertiary: "#1E1838",
+  onSurfaceTertiary: "#F4F1FF",
+  surfaceInverse: "#F4F1FF",
+  onSurfaceInverse: "#07060F",
+  muted: "#8C84B8",
 
-  brand: "#FF3D7F",
-  onBrand: "#1A1423",
-  brandPrimary: "#FF3D7F",
-  onBrandPrimary: "#1A1423",
-  brandSecondary: "#FF6A00",
-  onBrandSecondary: "#1A1423",
-  brandTertiary: "#FFD60A",
-  onBrandTertiary: "#1A1423",
+  brand: "#FF2A6D",
+  onBrand: "#07060F",
+  brandPrimary: "#FF2A6D",
+  onBrandPrimary: "#07060F",
+  brandSecondary: "#05D9E8",
+  onBrandSecondary: "#07060F",
+  brandTertiary: "#FFE600",
+  onBrandTertiary: "#07060F",
 
-  success: "#8BE000",
-  onSuccess: "#1A1423",
-  warning: "#FFD60A",
-  onWarning: "#1A1423",
-  error: "#FF2E4D",
-  onError: "#FFFFFF",
-  info: "#29C5F6",
-  onInfo: "#1A1423",
+  success: "#39FF14",
+  onSuccess: "#07060F",
+  warning: "#FFE600",
+  onWarning: "#07060F",
+  error: "#FF2A6D",
+  onError: "#07060F",
+  info: "#05D9E8",
+  onInfo: "#07060F",
 
-  border: "#1A1423",
-  borderStrong: "#1A1423",
-  divider: "#1A1423",
+  border: "#05D9E8",
+  borderStrong: "#FF2A6D",
+  divider: "#2A2450",
 
   // Text drawn over the dark arena / overlay scrim
   onArena: "#FFFFFF",
-  onArenaMuted: "#D8CCE6",
+  onArenaMuted: "#B8B3D9",
 
   // Game-specific
-  arena: "#15102A",
+  arena: "#05040B",
   player: "#29C5F6",
   playerCore: "#E8FAFF",
   enemy: "#FF2E4D",
   enemyElite: "#FF6A00",
   bullet: "#FFF27A",
-  xp: "#9CFF2E",
-  hpTrack: "#4A1426",
+  xp: "#39FF14",
+  hpTrack: "#3A0A1E",
   shipLight: "#FFFFFF",
   shipDark: "#1E6FD9",
   cockpit: "#7FF6FF",
@@ -64,10 +64,10 @@ const dark = {
   bossLight: "#FFC27A",
   bossCore: "#FFE45C",
   nebulaEmber: "#FF3D7F",
-  nebulaBlue: "#2B1F6B",
+  nebulaBlue: "#1B1458",
   star: "#FFF7D6",
-  scrim: "rgba(21,16,42,0.86)",
-  scrimLight: "rgba(21,16,42,0.6)",
+  scrim: "rgba(5,4,11,0.88)",
+  scrimLight: "rgba(5,4,11,0.6)",
   transparent: "transparent",
 };
 
@@ -99,15 +99,17 @@ export function makeStyles<T extends StyleSheet.NamedStyles<T> | StyleSheet.Name
 }
 
 export const fonts = {
-  display: "LuckiestGuy",
-  text: "Sniglet",
-  bold: "SnigletBold",
+  display: "PixelifySans",
+  text: "SpaceMono",
+  bold: "PixelifySans",
 };
 
-// Cartoon "sticker" outline: thick ink border with a hard drop on the bottom/right edges
-export const pop = (c: ThemeColors) => ({ borderWidth: 3, borderBottomWidth: 6, borderRightWidth: 5, borderColor: c.border });
+// 8-bit block outline: neon border with a hard pink drop on the bottom/right edges
+export const pop = (c: ThemeColors) => ({
+  borderWidth: 3, borderBottomWidth: 6, borderRightWidth: 6, borderColor: c.border, borderBottomColor: c.borderStrong, borderRightColor: c.borderStrong,
+});
 // Flat outline (unselected chips, inputs)
 export const ink = (c: ThemeColors) => ({ borderWidth: 3, borderColor: c.border });
 
 export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32, xxxl: 48 };
-export const radius = { sm: 12, md: 20, lg: 28, pill: 999 };
+export const radius = { sm: 0, md: 2, lg: 4, pill: 999 };

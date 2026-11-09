@@ -154,7 +154,7 @@ const useStyles = makeStyles((c) => ({
   mobFill: { height: 3, backgroundColor: c.enemyElite },
   intro: {
     position: "absolute", alignSelf: "center", alignItems: "center", paddingHorizontal: spacing.md, paddingVertical: spacing.xs + 2,
-    borderRadius: radius.md, ...pop(c), backgroundColor: c.surfaceSecondary, transform: [{ rotate: "-2deg" }],
+    borderRadius: radius.md, ...pop(c), backgroundColor: c.surfaceSecondary,
   },
   introLabel: { fontFamily: fonts.bold, fontSize: 11, letterSpacing: 1, color: c.brandPrimary, textTransform: "uppercase" },
   introName: { fontFamily: fonts.display, fontSize: 18, color: c.onSurface, paddingTop: 2 },

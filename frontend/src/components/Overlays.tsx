@@ -113,7 +113,7 @@ const useStyles = makeStyles((c) => ({
     flexDirection: "row", alignItems: "center", gap: spacing.md, padding: spacing.lg, borderRadius: radius.md,
     ...pop(c), backgroundColor: c.surfaceSecondary, minHeight: 76,
   },
-  optionActive: { backgroundColor: c.brandTertiary, transform: [{ rotate: "-1.5deg" }, { scale: 1.02 }] },
+  optionActive: { backgroundColor: c.brandTertiary },
   iconBox: {
     width: 44, height: 44, borderRadius: radius.pill, ...pop(c),
     alignItems: "center", justifyContent: "center", backgroundColor: c.brandPrimary,

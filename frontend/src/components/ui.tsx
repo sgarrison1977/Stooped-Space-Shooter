@@ -86,7 +86,7 @@ const useStyles = makeStyles((c) => ({
     alignItems: "center", justifyContent: "center", gap: spacing.sm, backgroundColor: c.surface,
   },
   outlineText: { fontFamily: fonts.bold, fontSize: 14, letterSpacing: 0.8, color: c.onSurface, textTransform: "uppercase" },
-  pressed: { transform: [{ translateY: 2 }, { rotate: "-1deg" }], borderBottomWidth: 3, borderRightWidth: 3 },
+  pressed: { transform: [{ translateX: 3 }, { translateY: 3 }], borderBottomWidth: 3, borderRightWidth: 3 },
   iconBtn: {
     width: 40, height: 40, borderRadius: radius.sm, ...pop(c),
     alignItems: "center", justifyContent: "center", backgroundColor: c.surfaceSecondary,

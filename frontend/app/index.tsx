@@ -69,7 +69,8 @@ export default function Home() {
               options={UI_STYLES}
               value={profile.uiStyle}
               testPrefix="ui-style-chip"
-              onChange={(uiStyle) => { setUiStyle(uiStyle); setSoundPack(uiStyle); update((p) => ({ ...p, uiStyle })); }}
+              // save first so the remounted screen (new style) reads the new choice
+              onChange={async (uiStyle) => { await update((p) => ({ ...p, uiStyle })); setUiStyle(uiStyle); setSoundPack(uiStyle); }}
             />
           </View>
           <MusterCard

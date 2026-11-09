@@ -2,7 +2,7 @@ import React from "react";
 import { Pressable, StyleProp, Text, TextStyle, View, ViewStyle } from "react-native";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import * as Haptics from "expo-haptics";
-import { fonts, makeStyles, radius, spacing, useTheme } from "@/src/theme";
+import { fonts, makeStyles, radius, spacing, useTheme, pop } from "@/src/theme";
 import { useProfile } from "@/src/game/profile";
 import { setMuted, startMusic } from "@/src/game/audio";
 
@@ -71,24 +71,24 @@ export function OutlineButton({ title, icon, onPress, testID, style }: { title: 
 }
 
 const useStyles = makeStyles((c) => ({
-  label: { fontFamily: fonts.text, fontSize: 10, letterSpacing: 2.4, color: c.brandSecondary, textTransform: "uppercase" },
+  label: { fontFamily: fonts.bold, fontSize: 12, letterSpacing: 1.2, color: c.brandSecondary, textTransform: "uppercase" },
   coinPill: {
     flexDirection: "row", alignItems: "center", gap: spacing.xs + 2, paddingHorizontal: spacing.md, height: 34,
-    borderRadius: radius.sm, borderWidth: 1, borderColor: c.border, backgroundColor: c.surfaceSecondary,
+    borderRadius: radius.sm, ...pop(c), backgroundColor: c.surfaceSecondary,
   },
-  coinText: { fontFamily: fonts.display, fontSize: 14, color: c.brandSecondary },
+  coinText: { fontFamily: fonts.display, fontSize: 16, color: c.onSurface, paddingTop: 3 },
   primary: {
-    height: 52, borderRadius: radius.sm, backgroundColor: c.brandPrimary, alignItems: "center", justifyContent: "center",
+    height: 58, borderRadius: radius.md, backgroundColor: c.brandPrimary, alignItems: "center", justifyContent: "center", ...pop(c),
   },
-  primaryText: { fontFamily: fonts.display, fontSize: 15, letterSpacing: 3.5, color: c.onSurface, textTransform: "uppercase" },
+  primaryText: { fontFamily: fonts.display, fontSize: 20, letterSpacing: 1.5, color: c.onBrandPrimary, textTransform: "uppercase", paddingTop: 4 },
   outline: {
-    height: 46, borderRadius: radius.sm, borderWidth: 1, borderColor: c.border, flexDirection: "row",
+    height: 50, borderRadius: radius.md, ...pop(c), flexDirection: "row",
     alignItems: "center", justifyContent: "center", gap: spacing.sm, backgroundColor: c.surface,
   },
-  outlineText: { fontFamily: fonts.text, fontSize: 11, letterSpacing: 2.6, color: c.onSurfaceSecondary, textTransform: "uppercase" },
-  pressed: { opacity: 0.8, transform: [{ scale: 0.98 }] },
+  outlineText: { fontFamily: fonts.bold, fontSize: 14, letterSpacing: 0.8, color: c.onSurface, textTransform: "uppercase" },
+  pressed: { transform: [{ translateY: 2 }, { rotate: "-1deg" }], borderBottomWidth: 3, borderRightWidth: 3 },
   iconBtn: {
-    width: 40, height: 40, borderRadius: radius.sm, borderWidth: 1, borderColor: c.border,
+    width: 40, height: 40, borderRadius: radius.sm, ...pop(c),
     alignItems: "center", justifyContent: "center", backgroundColor: c.surfaceSecondary,
   },
   disabled: { opacity: 0.4 },

@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { fonts, makeStyles, radius, spacing, useTheme } from "@/src/theme";
+import { fonts, makeStyles, radius, spacing, useTheme, pop } from "@/src/theme";
 import { formatSecs, useProfile } from "@/src/game/profile";
 import { BOSSES, difficulty } from "@/src/game/content";
 import { BossSprite } from "@/src/components/ShipArt";
@@ -85,14 +85,14 @@ export default function BossGallery() {
 const useStyles = makeStyles((c) => ({
   root: { flex: 1, backgroundColor: c.surface },
   header: { flexDirection: "row", alignItems: "center", gap: spacing.md, paddingBottom: spacing.lg, width: "100%", maxWidth: 900, alignSelf: "center" },
-  back: { width: 44, height: 44, borderRadius: radius.sm, borderWidth: 1, borderColor: c.border, alignItems: "center", justifyContent: "center", backgroundColor: c.surfaceSecondary },
+  back: { width: 44, height: 44, borderRadius: radius.sm, ...pop(c), alignItems: "center", justifyContent: "center", backgroundColor: c.surfaceSecondary },
   title: { fontFamily: fonts.display, fontSize: 24, color: c.onSurface, letterSpacing: 1 },
   progress: { alignItems: "flex-end" },
   progressText: { fontFamily: fonts.display, fontSize: 20, color: c.brandSecondary },
   progressLabel: { fontFamily: fonts.text, fontSize: 9, letterSpacing: 1.6, color: c.muted, textTransform: "uppercase" },
   grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: spacing.sm, width: "100%", maxWidth: 900, alignSelf: "center" },
   card: {
-    padding: spacing.md, borderRadius: radius.md, borderWidth: 1, borderColor: c.border, backgroundColor: c.surfaceSecondary,
+    padding: spacing.md, borderRadius: radius.md, ...pop(c), backgroundColor: c.surfaceSecondary,
     alignItems: "center", gap: spacing.xs, marginBottom: spacing.xs,
   },
   cardBeaten: { borderColor: c.brandTertiary, backgroundColor: c.arena },

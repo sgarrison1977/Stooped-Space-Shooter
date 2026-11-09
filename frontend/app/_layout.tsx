@@ -18,8 +18,9 @@ LogBox.ignoreAllLogs(true)
 
 export default function RootLayout() {
   const [loaded, err] = useFonts({
-    Cinzel: require("../assets/fonts/Cinzel.ttf"),
-    DMSans: require("../assets/fonts/DMSans.ttf"),
+    LuckiestGuy: require("../assets/fonts/LuckiestGuy.ttf"),
+    Sniglet: require("../assets/fonts/Sniglet.ttf"),
+    SnigletBold: require("../assets/fonts/SnigletBold.ttf"),
   });
   useEffect(() => {
     initAudio();

@@ -56,7 +56,7 @@ export const EVOLUTIONS: { id: string; name: string; desc: string; icon: SystemI
 ];
 
 type WUp = { id: string; name: string; desc: string; icon: SystemIcon };
-// Weapon-specific level-up upgrades (max 3 picks each), offered only for the equipped weapon
+// Weapon-specific level-up upgrades, offered only for the equipped weapon
 export const WEAPON_UPGRADES: Record<WeaponId, WUp[]> = {
   cannon: [
     { id: "cn_heavy", name: "Heavy Shells", desc: "CANNON · +25% cannon damage", icon: "rocket" },

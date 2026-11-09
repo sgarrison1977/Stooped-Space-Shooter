@@ -6,7 +6,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeIn } from "react-native-reanimated";
-import { fonts, makeStyles, radius, spacing, useTheme } from "@/src/theme";
+import { fonts, makeStyles, radius, spacing, useTheme, pop } from "@/src/theme";
 import { Profile, useProfile } from "@/src/game/profile";
 import { SKINS, Skin, skinById, Trail, TRAILS, trailById } from "@/src/game/content";
 import { PlayerSprite } from "@/src/components/ShipArt";
@@ -121,26 +121,26 @@ export default function Hangar() {
 const useStyles = makeStyles((c) => ({
   root: { flex: 1, backgroundColor: c.surface },
   header: { flexDirection: "row", alignItems: "center", gap: spacing.md, paddingBottom: spacing.lg },
-  back: { width: 44, height: 44, borderRadius: radius.sm, borderWidth: 1, borderColor: c.border, alignItems: "center", justifyContent: "center", backgroundColor: c.surfaceSecondary },
+  back: { width: 44, height: 44, borderRadius: radius.sm, ...pop(c), alignItems: "center", justifyContent: "center", backgroundColor: c.surfaceSecondary },
   title: { fontFamily: fonts.display, fontSize: 24, color: c.onSurface, letterSpacing: 1 },
   content: { gap: spacing.md, width: "100%", maxWidth: 900, alignSelf: "center" },
-  preview: { alignItems: "center", padding: spacing.xl, borderRadius: radius.md, borderWidth: 1, borderColor: c.border, backgroundColor: c.arena },
+  preview: { alignItems: "center", padding: spacing.xl, borderRadius: radius.md, ...pop(c), backgroundColor: c.arena },
   previewShip: { width: 112, height: 150, alignItems: "center" },
   previewTrail: { position: "absolute", top: 92, width: 26, height: 58, borderRadius: 13 },
-  previewName: { fontFamily: fonts.display, fontSize: 20, color: c.onSurface, marginTop: spacing.sm },
-  previewSub: { fontFamily: fonts.text, fontSize: 12, color: c.muted, marginTop: 2 },
+  previewName: { fontFamily: fonts.display, fontSize: 22, color: c.onArena, marginTop: spacing.sm },
+  previewSub: { fontFamily: fonts.text, fontSize: 13, color: c.onArenaMuted, marginTop: 2 },
   section: { fontFamily: fonts.text, fontSize: 11, letterSpacing: 2.4, color: c.brandSecondary, textTransform: "uppercase", marginTop: spacing.sm },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, justifyContent: "space-between" },
   card: {
-    alignItems: "center", gap: spacing.sm, padding: spacing.md, borderRadius: radius.md, borderWidth: 1,
-    borderColor: c.border, backgroundColor: c.surfaceSecondary, marginBottom: spacing.xs,
+    alignItems: "center", gap: spacing.sm, padding: spacing.md, borderRadius: radius.md, ...pop(c),
+    backgroundColor: c.surfaceSecondary, marginBottom: spacing.xs,
   },
-  cardActive: { borderColor: c.borderStrong },
+  cardActive: { backgroundColor: c.brandTertiary, transform: [{ rotate: "-2deg" }] },
   cardName: { fontFamily: fonts.display, fontSize: 13, color: c.onSurface },
   swatch: { width: "100%", height: 56, borderRadius: radius.sm },
   btn: {
     flexDirection: "row", gap: 4, height: 36, minWidth: 96, paddingHorizontal: spacing.md, alignItems: "center", justifyContent: "center",
-    borderRadius: radius.sm, borderWidth: 1, borderColor: c.brandSecondary, backgroundColor: c.brandTertiary,
+    borderRadius: radius.sm, ...pop(c), backgroundColor: c.brandTertiary,
   },
   btnEquipped: { borderColor: c.border, backgroundColor: c.surfaceTertiary },
   btnDisabled: { opacity: 0.4 },

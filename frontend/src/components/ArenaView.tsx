@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { fonts, makeStyles, radius, spacing, useTheme } from "@/src/theme";
+import { fonts, makeStyles, radius, spacing, useTheme, pop } from "@/src/theme";
 import { Enemy, GameState } from "@/src/game/sim";
 import { BOSSES, MOBS, Skin, Trail } from "@/src/game/content";
 import { EliteSprite, RaiderSprite } from "./Sprites";
@@ -149,24 +149,24 @@ const useStyles = makeStyles((c) => ({
     backgroundColor: c.bossDark, alignItems: "center", justifyContent: "center",
   },
   mineCore: { width: 6, height: 6, borderRadius: 3, backgroundColor: c.warning },
-  bannerTag: { fontFamily: fonts.text, fontSize: 12, color: c.muted, marginTop: 4 },
+  bannerTag: { fontFamily: fonts.text, fontSize: 13, color: c.onArenaMuted, marginTop: 4 },
   mobBar: { position: "absolute", height: 3, borderRadius: 2, backgroundColor: c.hpTrack, overflow: "hidden" },
   mobFill: { height: 3, backgroundColor: c.enemyElite },
   intro: {
     position: "absolute", alignSelf: "center", alignItems: "center", paddingHorizontal: spacing.md, paddingVertical: spacing.xs + 2,
-    borderRadius: radius.sm, borderWidth: 1, borderColor: c.border, backgroundColor: c.scrimLight,
+    borderRadius: radius.md, ...pop(c), backgroundColor: c.surfaceSecondary, transform: [{ rotate: "-2deg" }],
   },
-  introLabel: { fontFamily: fonts.text, fontSize: 9, letterSpacing: 2, color: c.brandSecondary, textTransform: "uppercase" },
-  introName: { fontFamily: fonts.display, fontSize: 15, color: c.onSurface },
-  introDesc: { fontFamily: fonts.text, fontSize: 11, color: c.muted },
+  introLabel: { fontFamily: fonts.bold, fontSize: 11, letterSpacing: 1, color: c.brandPrimary, textTransform: "uppercase" },
+  introName: { fontFamily: fonts.display, fontSize: 18, color: c.onSurface, paddingTop: 2 },
+  introDesc: { fontFamily: fonts.text, fontSize: 12, color: c.onSurfaceSecondary },
   flame: { position: "absolute", left: 12, top: 30, width: 12, height: 16, borderRadius: 6 },
-  floater: { position: "absolute", width: 40, textAlign: "center", fontFamily: fonts.display, fontSize: 12, color: c.muted },
-  floaterCrit: { color: c.warning, fontSize: 15 },
+  floater: { position: "absolute", width: 40, textAlign: "center", fontFamily: fonts.display, fontSize: 13, color: c.onArena, textShadowColor: c.border, textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 1 },
+  floaterCrit: { color: c.brandTertiary, fontSize: 17 },
   bossBar: { position: "absolute", top: 10, left: "15%", right: "15%", alignItems: "center", gap: 4 },
-  bossName: { fontFamily: fonts.display, fontSize: 12, letterSpacing: 2, color: c.bossLight },
-  bossTrack: { width: "100%", height: 6, borderRadius: radius.pill, backgroundColor: c.hpTrack, overflow: "hidden", borderWidth: 1, borderColor: c.border },
+  bossName: { fontFamily: fonts.display, fontSize: 15, letterSpacing: 1, color: c.brandTertiary },
+  bossTrack: { width: "100%", height: 14, borderRadius: radius.pill, backgroundColor: c.hpTrack, overflow: "hidden", borderWidth: 3, borderColor: c.border },
   bossFill: { height: "100%", backgroundColor: c.brandPrimary },
   banner: { position: "absolute", top: "38%", left: 0, right: 0, alignItems: "center" },
-  bannerLabel: { fontFamily: fonts.text, fontSize: 11, letterSpacing: 4, color: c.brandSecondary, textTransform: "uppercase" },
-  bannerName: { fontFamily: fonts.display, fontSize: 26, color: c.onSurface, letterSpacing: 1.5, marginTop: 4 },
+  bannerLabel: { fontFamily: fonts.bold, fontSize: 14, letterSpacing: 2, color: c.brandTertiary, textTransform: "uppercase" },
+  bannerName: { fontFamily: fonts.display, fontSize: 36, color: c.onArena, letterSpacing: 1, marginTop: 4, textShadowColor: c.brandPrimary, textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 1 },
 }));

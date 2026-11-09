@@ -3,7 +3,7 @@ import { Pressable, Text, View } from "react-native";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { fonts, makeStyles, radius, spacing, useTheme } from "@/src/theme";
+import { fonts, makeStyles, radius, spacing, useTheme, pop } from "@/src/theme";
 import { SystemDef } from "@/src/game/config";
 import { Label, MuteButton, OutlineButton, PrimaryButton } from "./ui";
 
@@ -29,7 +29,7 @@ export function LevelUpOverlay({ level, options, onPick, wide }: { level: number
               style={({ pressed }) => [s.option, wide && s.optionWide, (pressed || chosen === o.id) && s.optionActive]}
             >
               <View style={s.iconBox}>
-                <Lucide name={o.icon} size={18} color={colors.brandSecondary} />
+                <Lucide name={o.icon} size={18} color={colors.onSurface} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={s.optName}>{o.name}</Text>
@@ -104,29 +104,29 @@ const useStyles = makeStyles((c) => ({
     position: "absolute", left: 0, top: 0, right: 0, bottom: 0, backgroundColor: c.scrim,
     justifyContent: "center", paddingHorizontal: spacing.xl, gap: spacing.sm,
   },
-  title: { fontFamily: fonts.display, fontSize: 28, color: c.onSurface, textAlign: "center", letterSpacing: 1, marginBottom: spacing.lg },
+  title: { fontFamily: fonts.display, fontSize: 38, color: c.brandTertiary, textShadowColor: c.brandPrimary, textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 1, textAlign: "center", letterSpacing: 1, marginBottom: spacing.lg },
   titleWide: { fontSize: 22, marginBottom: spacing.sm },
   list: { gap: spacing.md, width: "100%", maxWidth: 760, alignSelf: "center" },
   listRow: { flexDirection: "row" },
   optionWide: { minHeight: 110, flexDirection: "column", alignItems: "flex-start" },
   option: {
     flexDirection: "row", alignItems: "center", gap: spacing.md, padding: spacing.lg, borderRadius: radius.md,
-    borderWidth: 1, borderColor: c.border, backgroundColor: c.surfaceSecondary, minHeight: 76,
+    ...pop(c), backgroundColor: c.surfaceSecondary, minHeight: 76,
   },
-  optionActive: { borderColor: c.borderStrong, backgroundColor: c.brandTertiary },
+  optionActive: { backgroundColor: c.brandTertiary, transform: [{ rotate: "-1.5deg" }, { scale: 1.02 }] },
   iconBox: {
-    width: 38, height: 38, borderRadius: radius.sm, borderWidth: 1, borderColor: c.brandSecondary,
-    alignItems: "center", justifyContent: "center", backgroundColor: c.brandTertiary,
+    width: 44, height: 44, borderRadius: radius.pill, ...pop(c),
+    alignItems: "center", justifyContent: "center", backgroundColor: c.brandPrimary,
   },
-  optName: { fontFamily: fonts.display, fontSize: 16, color: c.onSurface },
-  optDesc: { fontFamily: fonts.text, fontSize: 12, color: c.muted, marginTop: 2 },
+  optName: { fontFamily: fonts.display, fontSize: 19, color: c.onSurface, paddingTop: 3 },
+  optDesc: { fontFamily: fonts.text, fontSize: 13, color: c.onSurfaceSecondary, marginTop: 2 },
   statsCard: {
-    padding: spacing.lg, borderRadius: radius.md, borderWidth: 1, borderColor: c.border, backgroundColor: c.surfaceSecondary,
+    padding: spacing.lg, borderRadius: radius.md, ...pop(c), backgroundColor: c.surfaceSecondary,
     marginBottom: spacing.lg,
   },
   statRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  muteRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: spacing.sm },
-  highlight: { fontFamily: fonts.display, fontSize: 13, color: c.brandSecondary, textAlign: "center" },
-  statLabel: { fontFamily: fonts.text, fontSize: 11, letterSpacing: 2, color: c.muted, textTransform: "uppercase" },
-  statValue: { fontFamily: fonts.display, fontSize: 18, color: c.onSurface },
+  muteRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: spacing.sm, padding: spacing.md, borderRadius: radius.md, backgroundColor: c.surfaceSecondary, ...pop(c) },
+  highlight: { fontFamily: fonts.display, fontSize: 15, color: c.brandPrimary, textAlign: "center" },
+  statLabel: { fontFamily: fonts.bold, fontSize: 13, color: c.muted, textTransform: "uppercase" },
+  statValue: { fontFamily: fonts.display, fontSize: 22, color: c.onSurface },
 }));

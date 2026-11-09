@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { Lucide } from "@react-native-vector-icons/lucide";
-import { fonts, makeStyles, radius, spacing, useTheme } from "@/src/theme";
+import { fonts, makeStyles, radius, spacing, useTheme, pop } from "@/src/theme";
 import { GameState } from "@/src/game/sim";
 
 function Pill({ icon, label, value, testID }: { icon: any; label: string; value: number; testID: string }) {
@@ -9,7 +9,7 @@ function Pill({ icon, label, value, testID }: { icon: any; label: string; value:
   const { colors } = useTheme();
   return (
     <View style={s.pill}>
-      <Lucide name={icon} size={10} color={colors.brandSecondary} />
+      <Lucide name={icon} size={13} color={colors.brandPrimary} />
       <Text style={s.pillLabel}>{label}</Text>
       <Text testID={testID} style={s.pillValue}>{value}</Text>
     </View>
@@ -74,21 +74,21 @@ const useStyles = makeStyles((c) => ({
   topRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
   bars: { flex: 1, gap: 4 },
   barsWide: { width: 240, gap: 4 },
-  hpTrack: { height: 7, borderRadius: radius.pill, backgroundColor: c.hpTrack, overflow: "hidden" },
-  hpFill: { height: 7, backgroundColor: c.error, borderRadius: radius.pill },
-  xpTrack: { height: 3, borderRadius: radius.pill, backgroundColor: c.surfaceTertiary, overflow: "hidden" },
-  xpFill: { height: 3, backgroundColor: c.xp },
+  hpTrack: { height: 16, borderRadius: radius.pill, backgroundColor: c.hpTrack, overflow: "hidden", borderWidth: 3, borderColor: c.border },
+  hpFill: { height: "100%", backgroundColor: c.error, borderRadius: radius.pill },
+  xpTrack: { height: 11, borderRadius: radius.pill, backgroundColor: c.surfaceSecondary, overflow: "hidden", borderWidth: 3, borderColor: c.border },
+  xpFill: { height: "100%", backgroundColor: c.xp },
   barText: { flexDirection: "row", justifyContent: "space-between" },
-  small: { fontFamily: fonts.text, fontSize: 10, color: c.muted, letterSpacing: 1 },
+  small: { fontFamily: fonts.bold, fontSize: 12, color: c.onSurface },
   pause: {
-    width: 44, height: 44, borderRadius: radius.sm, borderWidth: 1, borderColor: c.border,
+    width: 44, height: 44, borderRadius: radius.sm, ...pop(c),
     alignItems: "center", justifyContent: "center", backgroundColor: c.surfaceSecondary,
   },
   pills: { flexDirection: "row", gap: spacing.sm },
   pill: {
-    flexDirection: "row", alignItems: "center", gap: 5, height: 28, paddingHorizontal: spacing.sm + 2,
-    borderRadius: radius.sm, borderWidth: 1, borderColor: c.border, backgroundColor: c.surfaceSecondary,
+    flexDirection: "row", alignItems: "center", gap: 5, height: 34, paddingHorizontal: spacing.sm + 2,
+    borderRadius: radius.sm, ...pop(c), backgroundColor: c.surfaceSecondary,
   },
-  pillLabel: { fontFamily: fonts.text, fontSize: 9, letterSpacing: 1.6, color: c.muted, textTransform: "uppercase" },
-  pillValue: { fontFamily: fonts.display, fontSize: 12, color: c.onSurface },
+  pillLabel: { fontFamily: fonts.bold, fontSize: 11, color: c.muted, textTransform: "uppercase" },
+  pillValue: { fontFamily: fonts.display, fontSize: 15, color: c.onSurface, paddingTop: 2 },
 }));

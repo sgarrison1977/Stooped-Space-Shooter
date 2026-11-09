@@ -1,39 +1,65 @@
 {
-  "app_name": "EMBERDEEP",
-  "personality": "7 Dark-First Utility (with 3 Editorial typography for elegant Cinzel serif headers)",
-  "personality_one_liner": "A dark, ember-glowing sci-fi survival experience with elegant serif typography and high-contrast tactical utility.",
+  "app_name": "Stooopid Space Shooter Game",
+  "personality": "4 Tactile / Playful (Neo-Brutalist Cartoon Fusion)",
+  "personality_one_liner": "A goofy, high-energy cartoon style with thick black outlines, loud colors, and hard offset shadows that makes the UI feel like physical stickers.",
   "color": {
-    "surface": "#110A08",
-    "onSurface": "#FCEBE6",
-    "surfaceSecondary": "#1E130F",
-    "onSurfaceSecondary": "#E8D5CD",
-    "surfaceTertiary": "#2E1E17",
-    "onSurfaceTertiary": "#D9C3BA",
-    "surfaceInverse": "#EAEAEA",
-    "onSurfaceInverse": "#110A08",
-    "brand": "#FF5500",
-    "brandPrimary": "#FF5500",
+    "surface": "#FFFFFF",
+    "onSurface": "#141414",
+    "surfaceSecondary": "#F5F5F5",
+    "onSurfaceSecondary": "#141414",
+    "surfaceTertiary": "#EBEBEB",
+    "onSurfaceTertiary": "#141414",
+    "surfaceInverse": "#141414",
+    "onSurfaceInverse": "#FFFFFF",
+    "brand": "#FF3366",
+    "brandPrimary": "#FF3366",
     "onBrandPrimary": "#FFFFFF",
-    "brandSecondary": "#FF7B33",
-    "onBrandSecondary": "#FFFFFF",
-    "brandTertiary": "#4A1E0A",
-    "onBrandTertiary": "#FFB380",
-    "success": "#00E5FF",
-    "onSuccess": "#003333",
-    "warning": "#FFB300",
-    "onWarning": "#332400",
-    "error": "#FF1744",
+    "brandSecondary": "#CCFF00",
+    "onBrandSecondary": "#141414",
+    "brandTertiary": "#FFEA00",
+    "onBrandTertiary": "#141414",
+    "success": "#CCFF00",
+    "onSuccess": "#141414",
+    "warning": "#FFEA00",
+    "onWarning": "#141414",
+    "error": "#FF3366",
     "onError": "#FFFFFF",
-    "info": "#2979FF",
-    "onInfo": "#FFFFFF",
-    "border": "#3A231A",
-    "borderStrong": "#FF5500",
-    "divider": "#2D1A13",
-    "muted": "#A08B81"
+    "info": "#EBEBEB",
+    "onInfo": "#141414",
+    "border": "#141414",
+    "borderStrong": "#141414",
+    "divider": "#141414",
+    "muted": "#7A7A7A",
+    "onBrand": "#FFFFFF",
+    "arena": "#1C1C1C",
+    "player": "#FFEA00",
+    "playerCore": "#FFFFFF",
+    "enemy": "#CCFF00",
+    "enemyElite": "#FF3366",
+    "bullet": "#FFEA00",
+    "xp": "#CCFF00",
+    "hpTrack": "#FF3366",
+    "shipLight": "#FFFFFF",
+    "shipDark": "#D4C300",
+    "cockpit": "#141414",
+    "engineGlow": "#FF3366",
+    "enemyLight": "#E6FF66",
+    "enemyDark": "#99CC00",
+    "bossDark": "#4D001F",
+    "bossMid": "#FF3366",
+    "bossLight": "#FF99B3",
+    "bossCore": "#FFFFFF",
+    "nebulaEmber": "#FF3366",
+    "nebulaBlue": "#1C261C",
+    "star": "#FFFFFF",
+    "scrim": "rgba(20, 20, 20, 0.8)",
+    "scrimLight": "rgba(255, 255, 255, 0.2)"
   },
   "typography": {
-    "displayFontFamily": "Cinzel",
-    "textFontFamily": "DM Sans",
+    "displayFontFamily": "LuckiestGuy-Regular",
+    "displayFontUrl": "https://raw.githubusercontent.com/google/fonts/main/apache/luckiestguy/LuckiestGuy-Regular.ttf",
+    "textFontFamily": "Sniglet-Regular",
+    "textFontUrl": "https://raw.githubusercontent.com/google/fonts/main/ofl/sniglet/Sniglet-Regular.ttf",
     "scale": {
       "sm": 12,
       "base": 14,
@@ -43,7 +69,7 @@
     }
   },
   "spacing": {
-    "rule": "Use tight, utility-focused spacing for stats and upgrades, but allow the home card and arena to have breathing room. Avoid oversized padding in the Armoury list.",
+    "rule": "Maintain chunky, generous spacing to emphasize the cartoon aesthetics. Buttons and cards need padding to breathe within their heavy borders.",
     "xs": 4,
     "sm": 8,
     "md": 12,
@@ -53,27 +79,29 @@
     "3xl": 48
   },
   "radius_tokens": {
-    "sm": 6,
-    "md": 12,
-    "lg": 20,
+    "sm": 8,
+    "md": 16,
+    "lg": 24,
     "pill": 999
   },
-  "shadow_tier": "0",
+  "shadow_tier": "2",
   "navigation": "stack_only",
-  "icon_set": "MaterialCommunityIcons",
+  "icon_set": "Phosphor",
   "glassmorphism": {
-    "enabled": false,
+    "enabled": "false",
     "do's": [],
-    "dont's": ["Do not use blur or glassmorphism. Rely on solid dark surfaces, thin borders, and ember-glow textures for depth as per Dark-First Utility."]
+    "dont's": [
+      "Do not use glass or blur effects. This cartoon style relies entirely on solid colors, thick strokes, and hard offset shadows."
+    ]
   },
   "platform_libraries": {
     "glass": {
-      "ios": "expo-glass-effect",
-      "android": "expo-blur",
+      "ios": "solid surfaceSecondary",
+      "android": "solid surfaceSecondary",
       "low_end_android_fallback": "solid surfaceSecondary"
     },
     "image": "expo-image",
-    "blur": "expo-blur",
+    "blur": "none",
     "bottom_sheet": "@gorhom/bottom-sheet",
     "animation": "react-native-reanimated",
     "gesture": "react-native-gesture-handler"
@@ -81,58 +109,48 @@
   "screens": [
     {
       "name": "Home",
-      "purpose": "Player lobby providing a visual anchor (Muster card) and progression hub (Armoury).",
+      "purpose": "Main menu for starting a run, viewing loadout chips, and accessing the hangar.",
       "states": {
-        "loading": "Centered orange spinner with 'IGNITING DEEP...'",
-        "empty": "N/A",
-        "error": "Failed to load player data. Retry button."
+        "loading": "Centered bouncy ship animation",
+        "empty": "No saved run - show giant bright 'New Run' primary button",
+        "error": "Failed to load save data - show retry button"
       },
-      "layout": "Screen background must include the radial ember glow image. Top Right: Coin pill. Main content is a vertical scroll: 1. THE MUSTER card (tiny orange tracked label, large serif player name, 2x2 stat tiles with thin borders for Best Wave/Kills/Runs/Coins, stat rows for Damage/Resistance/Health, large solid orange 'ENTER THE DEEP' button, tiny 'DRAG TO MOVE' hint). 2. ARMOURY card (coin count header, vertical list of upgrade rows. Each row: Name & level in sans, muted description, and an outlined orange coin button on the right). Bottom: Outlined LEADERBOARD button."
+      "layout": "Use large prominent buttons, a chunky loadout card with heavily outlined chips for game parameters, and loud typography for the pilot name and run stats."
     },
     {
-      "name": "Gameplay",
-      "purpose": "The core auto-shooter arena.",
-      "states": {
-        "loading": "Dark screen, 'GENERATING ARENA...'",
-        "empty": "N/A",
-        "error": "N/A"
-      },
-      "layout": "Full screen bordered dark arena. Top Left: Red health bar (100/100) with thin cyan XP bar underneath and 'Lv 1' text. Top Right: Dark pills for WAVE, KILLS, COINS. Center: Blue player ship. Enemies are red/orange, XP gems are cyan diamonds, white bullets. Footer: Persistent hint 'DRAG TO MOVE · YOU ATTACK ON YOUR OWN'. Implement a floating virtual joystick area overlay for 'drag to move'."
-    },
-    {
-      "name": "LevelUp",
-      "purpose": "System choice overlay when XP bar fills.",
+      "name": "Gameplay HUD",
+      "purpose": "Live in-game UI overlaying the arena.",
       "states": {
         "loading": "N/A",
         "empty": "N/A",
         "error": "N/A"
       },
-      "layout": "Arena dims heavily (dark overlay). Top centered: 'LEVEL 2' tiny orange label and 'CHOOSE A SYSTEM' in large Cinzel serif. Center: 3 stacked option cards. Each card has an orange-outlined square icon on the left, serif name and muted sans description. When pressed, the card gets a solid orange borderStrong. Needs a confirmation or auto-select upon tap."
+      "layout": "Minimal but readable against the dark arena. Pill-shaped thick-bordered HP and XP bars. Big bold wave counter."
     },
     {
-      "name": "GameOver",
-      "purpose": "Post-run summary and return to Muster.",
+      "name": "Level-Up Overlay",
+      "purpose": "Pause game and present three upgrade cards.",
       "states": {
         "loading": "N/A",
         "empty": "N/A",
         "error": "N/A"
       },
-      "layout": "Dark overlay. Large serif 'HULL BREACHED'. Stats list: Wave Reached, Kills, Coins Gathered. Large orange 'RETURN TO MUSTER' button."
+      "layout": "Dark semi-transparent scrim. Three distinct, oversized cards side-by-side (or stacked vertically on narrow screens). Each card has a thick black border, bright solid background color, and large bouncy typography."
     }
   ],
   "images": {
-    "background_glow": {
-      "url": "https://images.unsplash.com/photo-1557951959-e3e30ee937e5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1OTN8MHwxfHNlYXJjaHwxfHxvcmFuZ2UlMjBnbG93aW5nJTIwZmlyZSUyMHNwYXJrcyUyMGRhcmt8ZW58MHx8fHwxNzkzNjM4ODM2fDA&ixlib=rb-4.1.0&q=85",
-      "dark": "https://images.unsplash.com/photo-1557951959-e3e30ee937e5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1OTN8MHwxfHNlYXJjaHwxfHxvcmFuZ2UlMjBnbG93aW5nJTIwZmlyZSUyMHNwYXJrcyUyMGRhcmt8ZW58MHx8fHwxNzkzNjM4ODM2fDA&ixlib=rb-4.1.0&q=85",
-      "alt": "Dark background with orange glowing fire sparks serving as an ember radial glow"
+    "hero_backdrop": {
+      "url": "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=2988&auto=format&fit=crop",
+      "alt": "Abstract textured dark background"
     }
   },
   "instructions_to_main_agent": [
-    "Strictly follow the UI replication of 'EMBERDEEP' as requested by the user, incorporating the 'MUSTER' card and 'ARMOURY' card on the Home screen.",
-    "Use Google Font 'Cinzel' for all major headings, player names, and system titles to give it the requested elegant serif small caps look.",
-    "Use 'DM Sans' for body text, stats, and utility numbers.",
-    "The Home screen background must use the 'background_glow' image behind the UI with a top-to-bottom dark gradient scrim so text remains highly readable.",
-    "Gameplay screen needs an arena layout with thin `border` (#3A231A). Use the specified colors: Health=error (#FF1744), XP/Gems=success (#00E5FF), Player=info (#2979FF), Enemies=orange/red.",
-    "Buttons should follow Dark-First utility styling: sharp or sm radius, no heavy drop shadows, rely on solid orange for primary actions and orange borders for secondary actions."
+    "Design system MUST rely on hard offsets instead of soft drop shadows. Implement shadows by rendering a duplicate solid `#141414` background layer offset by X: 4px, Y: 4px underneath buttons and cards, or use React Native's shadow props strictly with 0 blur radius, 1 opacity, and {width: 4, height: 4} offsets.",
+    "ALL interactive elements (buttons, cards, chips) require a solid `borderWidth: 3` and `borderColor: '#141414'`.",
+    "Load custom TTF fonts via expo-font from the URLs provided in the guidelines. Apply 'LuckiestGuy' to all headers, level-up text, and scores. Apply 'Sniglet' to body text and smaller UI elements.",
+    "Selected loadout chips should have a shadow and bright background. Unselected chips should have a neutral background, retain the thick border, but NO shadow (giving a flat/pressed-in look).",
+    "Ensure the `arena` retains its dark tone (`#1C1C1C`) to allow the bright, loud gameplay entities (bullets, enemies, player) to visually pop.",
+    "Overlays (Level-Up, Pause) should utilize the `scrim` color for the background to darken the gameplay area while bringing the bright UI cards to the absolute foreground.",
+    "Do NOT use any blue, indigo, purple, or orange tones as they are strictly banned by the system rules. Rely entirely on Hot Pink, Electric Lime, Bright Yellow, and high-contrast Black/White."
   ]
 }

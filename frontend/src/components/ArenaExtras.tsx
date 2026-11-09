@@ -2,7 +2,7 @@ import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import * as Haptics from "expo-haptics";
-import { fonts, makeStyles, radius, spacing, useTheme } from "@/src/theme";
+import { fonts, makeStyles, radius, spacing, useTheme, pop } from "@/src/theme";
 import { GameState } from "@/src/game/sim";
 import { ABILITIES, WEAPONS } from "@/src/game/arsenal";
 import { activeWeapon, bladeCount, bladeReach, droneCount } from "@/src/game/arsenal-sim";
@@ -100,17 +100,17 @@ const useStyles = makeStyles((c) => ({
   grav: { position: "absolute", width: 80, height: 80, borderRadius: 40, borderWidth: 3, borderColor: c.info, backgroundColor: c.scrimLight },
   bubble: { position: "absolute", width: 52, height: 52, borderRadius: 26, borderWidth: 2, borderColor: c.xp, backgroundColor: c.transparent },
   slow: { position: "absolute", left: 0, top: 0, right: 0, bottom: 0, backgroundColor: c.nebulaBlue, opacity: 0.18 },
-  temp: { position: "absolute", bottom: 26, alignSelf: "center", fontFamily: fonts.display, fontSize: 13, color: c.brandSecondary },
+  temp: { position: "absolute", bottom: 26, alignSelf: "center", fontFamily: fonts.display, fontSize: 15, color: c.brandTertiary },
   ability: {
     position: "absolute", right: spacing.lg, bottom: spacing.lg, width: 72, height: 72, borderRadius: 36, backgroundColor: c.brandPrimary,
-    alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: c.brandSecondary,
+    alignItems: "center", justifyContent: "center", ...pop(c),
   },
   abilityCd: { backgroundColor: c.surfaceSecondary, borderColor: c.border },
-  abilityText: { fontFamily: fonts.text, fontSize: 10, letterSpacing: 1, color: c.onSurface, marginTop: 2 },
+  abilityText: { fontFamily: fonts.bold, fontSize: 11, color: c.onSurface, marginTop: 2 },
   scrim: { position: "absolute", left: 0, top: 0, right: 0, bottom: 0, backgroundColor: c.scrim, justifyContent: "center", paddingHorizontal: spacing.xl, gap: spacing.sm },
   title: { fontFamily: fonts.display, fontSize: 26, color: c.onSurface, textAlign: "center", marginBottom: spacing.md },
   list: { gap: spacing.md, width: "100%", maxWidth: 640, alignSelf: "center" },
-  option: { padding: spacing.lg, borderRadius: radius.md, borderWidth: 1, borderColor: c.border, backgroundColor: c.surfaceSecondary, minHeight: 72 },
+  option: { padding: spacing.lg, borderRadius: radius.md, ...pop(c), backgroundColor: c.surfaceSecondary, minHeight: 72 },
   optionOn: { borderColor: c.borderStrong, backgroundColor: c.brandTertiary },
   optName: { fontFamily: fonts.display, fontSize: 17, color: c.onSurface },
   optDesc: { fontFamily: fonts.text, fontSize: 12, color: c.muted, marginTop: 2 },

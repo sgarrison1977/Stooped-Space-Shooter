@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { fonts, makeStyles, radius, spacing } from "@/src/theme";
+import { fonts, makeStyles, radius, spacing, pop } from "@/src/theme";
 import { Profile } from "@/src/game/profile";
 import { ABILITIES, ABILITY_UPGRADES, CLASS_UPGRADES, CLASSES, dailyLoadout, MODES, SPEEDS, WEAPON_EVOS, WEAPON_UPGRADES, WeaponId, WEAPONS } from "@/src/game/arsenal";
 import { DifficultyChips } from "./DifficultyChips";
@@ -48,7 +48,7 @@ export function LoadoutCard({ profile, update }: { profile: Profile; update: Upd
 }
 
 const useStyles = makeStyles((c) => ({
-  card: { backgroundColor: c.surfaceSecondary, borderWidth: 1, borderColor: c.border, borderRadius: radius.md, padding: spacing.xl, gap: spacing.md },
+  card: { backgroundColor: c.surfaceSecondary, ...pop(c), borderRadius: radius.md, padding: spacing.xl, gap: spacing.md },
   title: { fontFamily: fonts.display, fontSize: 20, color: c.onSurface, letterSpacing: 1 },
   row: { gap: spacing.xs },
   desc: { fontFamily: fonts.text, fontSize: 11, color: c.muted },

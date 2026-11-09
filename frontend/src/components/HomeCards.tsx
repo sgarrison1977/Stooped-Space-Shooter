@@ -3,7 +3,7 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { fonts, makeStyles, radius, spacing, useTheme } from "@/src/theme";
+import { fonts, makeStyles, radius, spacing, useTheme, pop } from "@/src/theme";
 import { Label, PrimaryButton, OutlineButton } from "./ui";
 import { Profile } from "@/src/game/profile";
 import { RunSummary } from "@/src/game/save";
@@ -149,47 +149,47 @@ export function ArmouryCard({ profile, onBuy, onLeaderboard, onHangar, onBosses 
 
 const useStyles = makeStyles((c) => ({
   card: {
-    backgroundColor: c.surfaceSecondary, borderWidth: 1, borderColor: c.border, borderRadius: radius.md,
+    backgroundColor: c.surfaceSecondary, ...pop(c), borderRadius: radius.md,
     padding: spacing.xl, gap: spacing.md,
   },
-  cardTitle: { fontFamily: fonts.display, fontSize: 20, color: c.onSurface, letterSpacing: 1 },
+  cardTitle: { fontFamily: fonts.display, fontSize: 26, color: c.onSurface, letterSpacing: 1 },
   nameRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm, minHeight: 44 },
-  name: { fontFamily: fonts.display, fontSize: 30, color: c.onSurface, flexShrink: 1 },
+  name: { fontFamily: fonts.display, fontSize: 34, color: c.brandPrimary, flexShrink: 1, textShadowColor: c.border, textShadowOffset: { width: 2, height: 2 }, textShadowRadius: 1 },
   nameEdit: { flexDirection: "row", gap: spacing.sm, alignItems: "center" },
   input: {
-    flex: 1, minWidth: 0, height: 48, borderWidth: 1, borderColor: c.borderStrong, borderRadius: radius.sm, paddingHorizontal: spacing.md,
+    flex: 1, minWidth: 0, height: 52, borderWidth: 3, borderColor: c.border, borderRadius: radius.md, paddingHorizontal: spacing.md,
     color: c.onSurface, fontFamily: fonts.display, fontSize: 18, backgroundColor: c.surface,
   },
-  saveBtn: { width: 48, height: 48, borderRadius: radius.sm, backgroundColor: c.brandPrimary, alignItems: "center", justifyContent: "center" },
+  saveBtn: { width: 52, height: 52, borderRadius: radius.md, ...pop(c), backgroundColor: c.success, alignItems: "center", justifyContent: "center" },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   tile: {
-    flexBasis: "48%", flexGrow: 1, borderWidth: 1, borderColor: c.border, borderRadius: radius.sm,
-    padding: spacing.md, backgroundColor: c.surface, gap: spacing.xs,
+    flexBasis: "48%", flexGrow: 1, ...pop(c), borderRadius: radius.sm,
+    padding: spacing.md, backgroundColor: c.surfaceTertiary, gap: spacing.xs,
   },
   tileHead: { flexDirection: "row", alignItems: "center", gap: 5 },
-  tileLabel: { fontFamily: fonts.text, fontSize: 9, letterSpacing: 1.8, color: c.muted, textTransform: "uppercase" },
-  tileValue: { fontFamily: fonts.display, fontSize: 20, color: c.onSurface },
-  divider: { height: 1, backgroundColor: c.divider, marginVertical: spacing.xs },
+  tileLabel: { fontFamily: fonts.bold, fontSize: 11, color: c.onSurfaceSecondary, textTransform: "uppercase" },
+  tileValue: { fontFamily: fonts.display, fontSize: 26, color: c.onSurface },
+  divider: { height: 3, borderRadius: 2, backgroundColor: c.divider, marginVertical: spacing.xs },
   row: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  rowLabel: { fontFamily: fonts.text, fontSize: 10, letterSpacing: 2, color: c.muted, textTransform: "uppercase" },
-  rowValue: { fontFamily: fonts.text, fontSize: 13, color: c.onSurfaceSecondary },
-  hint: { fontFamily: fonts.text, fontSize: 9, letterSpacing: 2, color: c.muted, textAlign: "center", textTransform: "uppercase" },
+  rowLabel: { fontFamily: fonts.bold, fontSize: 12, color: c.muted, textTransform: "uppercase" },
+  rowValue: { fontFamily: fonts.display, fontSize: 16, color: c.onSurface },
+  hint: { fontFamily: fonts.bold, fontSize: 11, letterSpacing: 0.5, color: c.muted, textAlign: "center", textTransform: "uppercase" },
   armouryHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   inlineCoins: { flexDirection: "row", alignItems: "center", gap: 5 },
-  inlineCoinText: { fontFamily: fonts.display, fontSize: 14, color: c.brandSecondary },
+  inlineCoinText: { fontFamily: fonts.display, fontSize: 17, color: c.onSurface },
   upRow: {
-    flexDirection: "row", alignItems: "center", gap: spacing.md, borderWidth: 1, borderColor: c.border,
+    flexDirection: "row", alignItems: "center", gap: spacing.md, ...pop(c),
     borderRadius: radius.sm, padding: spacing.md, backgroundColor: c.surface,
   },
-  upName: { fontFamily: fonts.display, fontSize: 14, color: c.onSurface },
+  upName: { fontFamily: fonts.display, fontSize: 17, color: c.onSurface },
   upLv: { fontFamily: fonts.display, fontSize: 12, color: c.muted },
   upDesc: { fontFamily: fonts.text, fontSize: 11, color: c.muted, marginTop: 2 },
   buy: {
     flexDirection: "row", alignItems: "center", gap: 4, minWidth: 68, height: 44, justifyContent: "center",
-    borderRadius: radius.sm, borderWidth: 1, borderColor: c.brandSecondary, backgroundColor: c.brandTertiary,
+    borderRadius: radius.md, ...pop(c), backgroundColor: c.brandTertiary,
   },
   buyDisabled: { opacity: 0.4 },
-  buyText: { fontFamily: fonts.display, fontSize: 13, color: c.brandSecondary },
+  buyText: { fontFamily: fonts.display, fontSize: 15, color: c.onSurface, paddingTop: 2 },
   btnRow: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.xs },
   diffDesc: { fontFamily: fonts.text, fontSize: 11, color: c.muted, marginTop: -spacing.xs, marginBottom: spacing.xs },
 }));

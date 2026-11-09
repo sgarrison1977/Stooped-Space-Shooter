@@ -88,9 +88,9 @@ export default function Home() {
 const useStyles = makeStyles((c) => ({
   root: { flex: 1, backgroundColor: c.surface },
   header: { flexDirection: "row", alignItems: "center", paddingBottom: spacing.lg },
-  title: { fontFamily: fonts.display, fontSize: 26, letterSpacing: 9, color: c.onSurface },
-  titleSub: { fontFamily: fonts.display, fontSize: 11, letterSpacing: 4, color: c.brandSecondary, textTransform: "uppercase", marginTop: 2 },
-  subtitle: { fontFamily: fonts.text, fontSize: 10, letterSpacing: 2.4, color: c.muted, marginTop: spacing.xs },
+  title: { fontFamily: fonts.display, fontSize: 34, letterSpacing: 2, color: c.brandPrimary, textShadowColor: c.border, textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 1, transform: [{ rotate: "-3deg" }] },
+  titleSub: { fontFamily: fonts.display, fontSize: 14, letterSpacing: 1.5, color: c.onSurface, textTransform: "uppercase", marginTop: 2 },
+  subtitle: { fontFamily: fonts.bold, fontSize: 12, letterSpacing: 1, color: c.muted, marginTop: spacing.xs },
   loading: { flex: 1, alignItems: "center", justifyContent: "center", gap: spacing.md },
   content: { gap: spacing.lg },
   contentWide: { flexDirection: "row", alignItems: "flex-start", maxWidth: 1000, width: "100%", alignSelf: "center" },

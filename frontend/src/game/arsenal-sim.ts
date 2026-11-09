@@ -195,7 +195,7 @@ export function updateArsenal(s: GameState, dt: number, nearest: Enemy | null, a
   s.slowT = Math.max(0, s.slowT - dt); s.buffShieldT = Math.max(0, s.buffShieldT - dt);
   if (s.tempWeapon && (s.tempWeapon.t -= dt) <= 0) s.tempWeapon = null;
   for (const a of s.arcs) a.life -= dt;
-  s.arcs = s.arcs.filter((a) => a.life > 0);
+  s.arcs = s.arcs.filter((a) => a.life > 0).slice(-10);
   const w = activeWeapon(s);
   fire(s, w, nearest, aimError, ev);
 
@@ -258,14 +258,18 @@ export function updateArsenal(s: GameState, dt: number, nearest: Enemy | null, a
   s.pickups = s.pickups.filter((k) => k.life > 0);
 }
 
-// Level-up: up to 3 picks per upgrade; a combo appears once both parts have 2+ picks.
+// Level-up: upgrades stack without limit, except a few that would stop doing anything or flood the screen.
+// A combo appears once both parts have 2+ picks.
+const PICK_LIMIT: Record<string, number> = {
+  twin: 4, targeting: 8, deflector: 14, sp_choke: 5, hm_pod: 5, ar_fork: 5, bl_extra: 5, cl_drone: 3, ab_cd: 6,
+};
 // Offers only upgrades that matter for the loadout; at least one is weapon-specific.
 export function levelChoices(s: GameState): SystemDef[] {
   const skip = SYSTEM_EXCLUDE[s.weapon] ?? [];
   const ready = (from: string[]) => from.every((f) => (s.picks[f] ?? 0) >= 2);
   const we = WEAPON_EVOS[s.weapon];
   const evo = [...(!s.evolved.includes(we.id) && ready(we.from) ? [we] : []), ...EVOLUTIONS.filter((e) => !s.evolved.includes(e.id) && ready(e.from))].slice(0, 1);
-  const open = (x: SystemDef) => (s.picks[x.id] ?? 0) < 3;
+  const open = (x: SystemDef) => (s.picks[x.id] ?? 0) < (PICK_LIMIT[x.id] ?? Infinity);
   const wpool = WEAPON_UPGRADES[s.weapon].filter(open);
   const pool = [
     ...SYSTEMS.filter((x) => !skip.includes(x.id) && open(x)),

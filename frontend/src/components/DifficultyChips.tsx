@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable, ScrollView, Text } from "react-native";
 import * as Haptics from "expo-haptics";
-import { fonts, makeStyles, radius, spacing } from "@/src/theme";
+import { fonts, ink, makeStyles, pop, radius, spacing } from "@/src/theme";
 import { DIFFICULTIES } from "@/src/game/content";
 
 // One horizontal chip row; selected chip changes colour/border only.
@@ -34,13 +34,13 @@ export function DifficultyChips({ value, onChange, testPrefix, padded, options =
 }
 
 const useStyles = makeStyles((c) => ({
-  row: { flexGrow: 0, height: 44 },
+  row: { flexGrow: 0, height: 50 },
   content: { gap: spacing.sm, alignItems: "center" },
   chip: {
-    height: 36, paddingHorizontal: spacing.md, borderRadius: radius.sm, borderWidth: 1, borderColor: c.border,
+    height: 40, paddingHorizontal: spacing.md, borderRadius: radius.pill, ...ink(c),
     backgroundColor: c.surface, alignItems: "center", justifyContent: "center", flexShrink: 0,
   },
-  chipOn: { borderColor: c.borderStrong, backgroundColor: c.brandTertiary },
-  text: { fontFamily: fonts.text, fontSize: 11, letterSpacing: 1.2, color: c.muted, textTransform: "uppercase" },
+  chipOn: { ...pop(c), backgroundColor: c.brandTertiary, transform: [{ rotate: "-2deg" }] },
+  text: { fontFamily: fonts.bold, fontSize: 13, color: c.muted, textTransform: "uppercase" },
   textOn: { color: c.onBrandTertiary },
 }));

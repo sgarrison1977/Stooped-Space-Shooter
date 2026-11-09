@@ -3,7 +3,7 @@ import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } fr
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Lucide } from "@react-native-vector-icons/lucide";
-import { fonts, makeStyles, radius, spacing, useTheme } from "@/src/theme";
+import { fonts, makeStyles, radius, spacing, useTheme, pop } from "@/src/theme";
 import { fetchLeaderboard, LeaderRow, loadProfile } from "@/src/game/profile";
 import { BOARDS } from "@/src/game/arsenal";
 import { DifficultyChips } from "@/src/components/DifficultyChips";
@@ -88,13 +88,13 @@ const useStyles = makeStyles((c) => ({
   root: { flex: 1, backgroundColor: c.surface },
   chips: { height: 56, justifyContent: "center", width: "100%", maxWidth: 720, alignSelf: "center" },
   header: { flexDirection: "row", alignItems: "center", gap: spacing.md, paddingBottom: spacing.lg, width: "100%", maxWidth: 720, alignSelf: "center" },
-  back: { width: 44, height: 44, borderRadius: radius.sm, borderWidth: 1, borderColor: c.border, alignItems: "center", justifyContent: "center", backgroundColor: c.surfaceSecondary },
+  back: { width: 44, height: 44, borderRadius: radius.sm, ...pop(c), alignItems: "center", justifyContent: "center", backgroundColor: c.surfaceSecondary },
   title: { fontFamily: fonts.display, fontSize: 24, color: c.onSurface, letterSpacing: 1 },
   center: { flex: 1, alignItems: "center", justifyContent: "center", gap: spacing.lg, padding: spacing.xl },
   list: { gap: spacing.sm, width: "100%", maxWidth: 720, alignSelf: "center" },
   row: {
     flexDirection: "row", alignItems: "center", gap: spacing.md, padding: spacing.md, borderRadius: radius.sm,
-    borderWidth: 1, borderColor: c.border, backgroundColor: c.surfaceSecondary,
+    ...pop(c), backgroundColor: c.surfaceSecondary,
   },
   rowYou: { borderColor: c.borderStrong, backgroundColor: c.brandTertiary },
   rank: { width: 28, fontFamily: fonts.display, fontSize: 16, color: c.muted, textAlign: "center" },

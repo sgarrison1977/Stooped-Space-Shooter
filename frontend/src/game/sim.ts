@@ -41,9 +41,15 @@ export const PLAYER_R = 13;
 const BOSS_AT = 10; // seconds into a boss wave
 const BOSS_EVERY = 3; // boss on waves 3, 6, 9...
 const MAX_ENEMIES = 70;
-const MAX_PARTICLES = 220;
+const MAX_PARTICLES = 150;
 // Hard caps keep late-game render load bounded on phones (oldest dropped first)
-const MAX_BULLETS = 160, MAX_EBULLETS = 90, MAX_FLOATERS = 30;
+const MAX_BULLETS = 120, MAX_EBULLETS = 80, MAX_FLOATERS = 24;
+const MAX_GEMS = 120;
+// Drop a gem; past the cap its XP merges into an existing gem so the field never floods
+function dropGem(s: GameState, g: GameState["gems"][number]) {
+  if (s.gems.length < MAX_GEMS) s.gems.push(g);
+  else s.gems[g.id % MAX_GEMS].value += g.value;
+}
 // "On ice" handling: thrust accelerates, very little friction, walls bounce.
 const ACCEL = 1050;
 const MAX_SPEED = 330;
@@ -441,7 +447,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
     onEnemyDeath(s, e);
     if (e.kind === "boss") {
       s.coins += (10 + s.wave * 3) * s.mods.coins;
-      s.gems.push({ id: s.nextId++, x: e.x, y: e.y, value: 5 + s.wave, pulled: true });
+      dropGem(s, { id: s.nextId++, x: e.x, y: e.y, value: 5 + s.wave, pulled: true });
       burst(s, e.x, e.y, 46, "ember", 260, 6);
       s.shake = 16;
       s.boss = null;
@@ -452,7 +458,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
     } else {
       const mob = MOBS[e.kind];
       s.coins += mob.coins * s.mods.coins;
-      s.gems.push({ id: s.nextId++, x: e.x, y: e.y, value: mob.xp, pulled: false });
+      dropGem(s, { id: s.nextId++, x: e.x, y: e.y, value: mob.xp, pulled: false });
       burst(s, e.x, e.y, Math.min(24, Math.round(e.r * 0.8)), "ember", 160, e.r > 15 ? 5 : 4);
       if (e.kind === "splitter") {
         for (const off of [-1, 1]) spawnEnemy(s, "shard", { x: e.x + off * 12, y: e.y - off * 6 });

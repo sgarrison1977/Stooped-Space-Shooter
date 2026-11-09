@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { StatusBar } from "expo-status-bar";
-import { fonts, makeStyles, radius, spacing } from "@/src/theme";
+import { fonts, makeStyles, radius, spacing, pop } from "@/src/theme";
 import { createGame, GameState, setRng, step, StepEvents, Vec } from "@/src/game/sim";
 import { activateAbility, applyChoice, boardKey, levelChoices, retryWave, setupLoadout } from "@/src/game/arsenal-sim";
 import { MODES, SPEEDS } from "@/src/game/arsenal";
@@ -263,16 +263,16 @@ export default function Play() {
 const useStyles = makeStyles((c) => ({
   root: { flex: 1, backgroundColor: c.surface, userSelect: "none" } as any,
   arena: {
-    flex: 1, marginHorizontal: spacing.md, borderRadius: radius.md, borderWidth: 1, borderColor: c.border,
+    flex: 1, marginHorizontal: spacing.md, borderRadius: radius.lg, ...pop(c),
     backgroundColor: c.arena, overflow: "hidden",
   },
   hint: {
     position: "absolute", bottom: spacing.sm, left: 0, right: 0, textAlign: "center",
-    fontFamily: fonts.text, fontSize: 9, letterSpacing: 1.8, color: c.onSurfaceSecondary, opacity: 0.85, textTransform: "uppercase",
+    fontFamily: fonts.bold, fontSize: 11, letterSpacing: 1, color: c.onArenaMuted, opacity: 0.9, textTransform: "uppercase",
   },
   stick: {
-    position: "absolute", width: 100, height: 100, borderRadius: 50, borderWidth: 1, borderColor: c.border,
+    position: "absolute", width: 100, height: 100, borderRadius: 50, ...pop(c),
     backgroundColor: c.scrimLight, alignItems: "center", justifyContent: "center",
   },
-  knob: { width: 40, height: 40, borderRadius: 20, backgroundColor: c.brandTertiary, borderWidth: 1.5, borderColor: c.brandSecondary },
+  knob: { width: 40, height: 40, borderRadius: 20, backgroundColor: c.brandTertiary, ...pop(c) },
 }));

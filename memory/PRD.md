@@ -97,3 +97,8 @@ User built "Hypershift" (in-game title EMBERDEEP) on Base44 and wants it rebuilt
 - Game speed (profile.speed): Slow 0.75x / Normal 1x / Fast 1.5x / Lightning Fast 2x; whole sim runs faster via substeps (play.tsx). All speeds count on leaderboards.
 - 3 lives (Hardcore = 1): on death the current wave restarts with full hull, level/upgrades kept (retryWave in arsenal-sim.ts). Hearts in HUD.
 - Auto-save (src/game/save.ts, AsyncStorage key stooopid_run_v1): on pause, background, wave clear, level-up pick, every 10s, Save & Leave in pause menu. Home shows Continue button (resumes paused). Save cleared when run ends or a new run starts.
+- Upgrades no longer max out at 3: unlimited stacking except PICK_LIMIT (twin 4, targeting 8, deflector 14, count-type weapon ups 5, extra drone 3, quick recharge 6). Late-game crash hardening: gems capped 120 (XP merges), arcs 10, particles 150, bullets 120, enemy bullets 80, damage numbers 24. Stress test: tests_sim/wave80_stress_test.ts
+
+## Update: Goofy cartoon UI restyle
+- theme.ts: cream/ink/hot pink/yellow/tangerine palette, fonts LuckiestGuy (display) + Sniglet/SnigletBold (text), bigger radii, pop()/ink() sticker-outline helpers (3px ink border, thicker bottom/right edge as hard shadow). onArena/onArenaMuted for text over the dark arena/scrims.
+- Restyled buttons, chips (selected = yellow, tilted, popped), cards, HUD bars, overlays, home/hangar/leaderboard/bosses.

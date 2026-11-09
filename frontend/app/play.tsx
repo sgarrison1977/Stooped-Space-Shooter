@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { AppState, BackHandler, GestureResponderEvent, LayoutChangeEvent, Share, Text, useWindowDimensions, View } from "react-native";
+import { AppState, BackHandler, GestureResponderEvent, LayoutChangeEvent, Text, useWindowDimensions, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
@@ -7,7 +7,9 @@ import { StatusBar } from "expo-status-bar";
 import { fonts, makeStyles, radius, spacing, pop, ink } from "@/src/theme";
 import { createGame, GameState, setRng, step, StepEvents, Vec } from "@/src/game/sim";
 import { activateAbility, applyChoice, boardKey, levelChoices, retryWave, setupLoadout } from "@/src/game/arsenal-sim";
-import { MODES, SPEEDS } from "@/src/game/arsenal";
+import { EVOLUTIONS, MODES, SPEEDS, WEAPON_EVOS, WEAPONS } from "@/src/game/arsenal";
+import { ACHIEVEMENTS, applyRun, isGold, modBonus, RunReport, weeklyRule } from "@/src/game/retention";
+import { CardInfo, ShareCard, shareCard } from "@/src/components/ShareCard";
 import { clearRun, loadRun, saveRun } from "@/src/game/save";
 
 const runLabel = (g: GameState) => (g.mode === "standard" ? g.mods.name : MODES.find((m) => m.id === g.mode)!.name);
@@ -21,6 +23,19 @@ import { Hud } from "@/src/components/Hud";
 import { GameOverOverlay, LevelUpOverlay, PauseOverlay } from "@/src/components/Overlays";
 
 type Mode = "play" | "levelup" | "paused" | "over";
+
+// Post-run summary lines: missions, achievements, streak/mastery rewards
+function newsLines(r: RunReport, modCoins: number): string[] {
+  const out: string[] = [];
+  if (modCoins > 0) out.push(`Modifier bonus +${modCoins} coins`);
+  r.missionsDone.forEach((m) => out.push(`Mission complete: ${m}`));
+  if (r.coinsFromMissions) out.push(`Mission rewards +${r.coinsFromMissions} coins`);
+  r.newAchievements.forEach((id) => out.push(`Achievement: ${ACHIEVEMENTS.find((a) => a.id === id)?.name}`));
+  if (r.styleUnlocked) out.push("New UI style unlocked!");
+  if (r.streakReward) out.push(`Streak reward: ${r.streakReward}`);
+  if (r.masteryUp) out.push(`Weapon mastery level ${r.masteryUp}${r.masteryUp >= 5 ? " · Gold shots!" : ""}`);
+  return out;
+}
 
 export default function Play() {
   const s = useStyles();
@@ -48,16 +63,28 @@ export default function Play() {
   const params = useLocalSearchParams<{ resume?: string }>();
   const resume = useRef(params.resume === "1");
   const speed = useRef(1);
+  const runMods = useRef<string[]>([]);
+  const [news, setNews] = useState<string[]>([]);
+  const [card, setCard] = useState<CardInfo | null>(null);
+  const cardRef = useRef(null);
 
   useEffect(() => { startMusic(); }, []);
 
   const finishRun = useCallback(async (g: GameState) => {
     await clearRun();
     const p = await loadProfile();
-    const earned = Math.floor(g.coins);
+    const mods = g.mode === "daily" ? [] : runMods.current;
+    const earned = Math.floor(g.coins * modBonus(mods));
     const { records, highlight: hl } = mergeBossKills(p, g.bossKills, BOSSES.map((b) => b.name));
     setHighlight(hl);
-    const next = { ...p, coins: p.coins + earned, kills: p.kills + g.kills, runs: p.runs + 1, bestWave: Math.max(p.bestWave, g.wave), bossRecords: records };
+    const base = { ...p, coins: p.coins + earned, kills: p.kills + g.kills, runs: p.runs + 1, bestWave: Math.max(p.bestWave, g.wave), bossRecords: records };
+    const { profile: next, report } = applyRun(base, {
+      wave: g.wave, kills: g.kills, level: g.level, bosses: g.bossesDown, coins: earned, mode: g.mode, difficulty: g.mods.id,
+      weapon: g.weapon, cls: g.cls.id, mods, livesLeft: g.lives, combos: g.evolved.length,
+    });
+    setNews(newsLines(report, earned - Math.floor(g.coins)));
+    setCard({ wave: g.wave, kills: g.kills, bosses: g.bossesDown, level: g.level, label: runLabel(g), pilot: p.name, skin: skinById(p.skin),
+      weapon: WEAPONS.find((w) => w.id === g.weapon)?.name ?? "", combos: g.evolved.map((id) => [...EVOLUTIONS, ...Object.values(WEAPON_EVOS)].find((e) => e.id === id)?.name ?? id) });
     await saveProfile(next);
     try { setRank((await submitScore(next, g.wave, g.kills, boardKey(g))).rank); } catch { setRank(null); }
   }, []);
@@ -72,6 +99,8 @@ export default function Play() {
     drag.current = null;
     setRank(null);
     setHighlight(null);
+    setNews([]);
+    runMods.current = p.runMods ?? [];
     // Continue a saved run (once, when opened from the home screen's Continue button)
     const saved = resume.current ? await loadRun() : null;
     resume.current = false;
@@ -88,7 +117,7 @@ export default function Play() {
     // Special modes use Normal; Daily also ignores Armoury upgrades so it is the same for everyone
     const ups = p.mode === "daily" ? { cannon: 1, deflector: 1, hull: 1 } : p.upgrades;
     game.current = createGame(baseStats(ups), size.current.w, size.current.h, difficulty(p.mode === "standard" ? p.difficulty : "normal"));
-    setupLoadout(game.current, { mode: p.mode, weapon: p.weapon, ability: p.ability, cls: p.shipClass });
+    setupLoadout(game.current, { mode: p.mode, weapon: p.weapon, ability: p.ability, cls: p.shipClass, runMods: p.mode === "daily" ? [] : p.runMods, gold: isGold(p, p.mode === "weekly" && weeklyRule().id === "blades" ? "blades" : p.weapon) });
     setMode("play");
     setFrame((f) => f + 1);
   }, []);
@@ -232,7 +261,7 @@ export default function Play() {
         {g && g.wave <= 2 ? <Text style={s.hint} pointerEvents="none">Drag to thrust · Automatically attacks</Text> : null}
       </View>
 
-      {g && mode === "levelup" ? <LevelUpOverlay key={`${g.level}-${g.pendingLevelUps}`} wide={wide} level={g.level - g.pendingLevelUps + 1} options={choices} onPick={pick} /> : null}
+      {g && mode === "levelup" ? <LevelUpOverlay key={`${g.level}-${g.pendingLevelUps}-${g.merchant}`} wide={wide} level={g.level - g.pendingLevelUps + 1} options={choices} onPick={pick} title={g.merchant ? "Mystery Merchant" : undefined} /> : null}
       {mode === "paused" ? (
         <PauseOverlay
           onResume={() => setMode("play")}
@@ -253,7 +282,9 @@ export default function Play() {
           onAgain={() => setRunId((r) => r + 1)}
           abandoned={g.player.hp > 0}
           onReturn={leave}
-          onShare={() => Share.share({ message: `I reached wave ${g.wave} on ${runLabel(g)} with ${g.kills} kills and ${g.bossesDown} bosses down in Stooopid Space Shooter Game. Think you can beat that?` }).catch(() => {})}
+          news={news}
+          card={card ? <ShareCard ref={cardRef} info={card} /> : null}
+          onShare={() => shareCard(cardRef.current, `I reached wave ${g.wave} on ${runLabel(g)} with ${g.kills} kills and ${g.bossesDown} bosses down in Stooopid Space Shooter Game. Think you can beat that?`)}
         />
       ) : null}
     </View>

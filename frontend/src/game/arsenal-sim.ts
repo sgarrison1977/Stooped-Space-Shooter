@@ -1,8 +1,9 @@
 import { SYSTEMS, SystemDef } from "./config";
-import { applySystem, burst, Enemy, EBullet, GameState, rnd, setRng, StepEvents, Vec, Bullet } from "./sim";
+import { weeklyRule } from "./retention";
+import { applySystem, burst, spawnEnemy, Enemy, EBullet, GameState, rnd, setRng, StepEvents, Vec, Bullet } from "./sim";
 import {
   ABILITIES, ABILITY_UPGRADES, AbilityId, CLASS_UPGRADES, ClassDef, CLASSES, ClassId, dailyLoadout, EVOLUTIONS, ModeId, PickupKind,
-  SYSTEM_EXCLUDE, todaySeed, WEAPON_EVOS, WEAPON_UPGRADES, WeaponId, WEAPONS,
+  SYSTEM_EXCLUDE, todaySeed, weekKey, WEAPON_EVOS, WEAPON_UPGRADES, WeaponId, WEAPONS,
 } from "./arsenal";
 
 export interface ArsenalState {
@@ -15,12 +16,14 @@ export interface ArsenalState {
   pickups: { id: number; x: number; y: number; kind: PickupKind; life: number }[];
   tempWeapon: { id: WeaponId; t: number } | null;
   picks: Record<string, number>; evolved: string[]; lives: number;
+  // retention: run modifiers / weekly rule / rare events
+  bossHp: number; noHeal: boolean; merchant: boolean; meteorT: number; gold: boolean;
 }
 
 export const arsenalDefaults = (): ArsenalState => ({
   mode: "standard", weapon: "cannon", ability: "dash", cls: CLASSES[0],
   abilityCd: 0, shieldT: 0, overT: 0, slowT: 0, buffShieldT: 0, grav: null, arcs: [],
-  bladeA: 0, bladeCd: {}, shardT: 0, drone: null, pickups: [], tempWeapon: null, picks: {}, evolved: [], lives: 3,
+  bladeA: 0, bladeCd: {}, shardT: 0, drone: null, pickups: [], tempWeapon: null, picks: {}, evolved: [], lives: 3, bossHp: 1, noHeal: false, merchant: false, meteorT: 0, gold: false,
 });
 
 function mulberry(seed: number) {
@@ -28,7 +31,7 @@ function mulberry(seed: number) {
   return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
 
-export function setupLoadout(s: GameState, lo: { mode: ModeId; weapon: WeaponId; ability: AbilityId; cls: ClassId }) {
+export function setupLoadout(s: GameState, lo: { mode: ModeId; weapon: WeaponId; ability: AbilityId; cls: ClassId; runMods?: string[]; gold?: boolean }) {
   const daily = lo.mode === "daily" ? dailyLoadout() : null;
   setRng(daily ? mulberry(todaySeed()) : Math.random);
   s.mode = lo.mode;
@@ -40,7 +43,54 @@ export function setupLoadout(s: GameState, lo: { mode: ModeId; weapon: WeaponId;
   st.damage *= s.cls.dmg; st.projectiles += s.cls.proj; st.resist = Math.min(0.75, st.resist + s.cls.resist);
   if (s.cls.drone) s.drone = { a: 0, cd: 1 };
   s.lives = lo.mode === "hardcore" ? 1 : 3;
+  s.gold = !!lo.gold;
+  // opt-in run modifiers + this week's challenge rule
+  const rules = [...(lo.runMods ?? []), ...(lo.mode === "weekly" ? [weeklyRule().id] : [])];
+  s.mods = { ...s.mods };
+  for (const r of rules) {
+    if (r === "glass") { st.damage *= 2; st.maxHp = Math.round(st.maxHp / 2); s.player.hp = st.maxHp; }
+    if (r === "swarm") { s.mods.spawn *= 1.3; s.mods.cap = Math.round(s.mods.cap * 1.3); }
+    if (r === "ironman" || r === "noheal") s.noHeal = true;
+    if (r === "fastfoes") s.mods.speed *= 1.25;
+    if (r === "speedy") s.mods.speed *= 1.35;
+    if (r === "bigboss") s.bossHp = 2;
+    if (r === "blades") s.weapon = "blades";
+  }
 }
+
+// Rare events rolled at the start of a wave: treasure ship or meteor shower
+export function waveEvents(s: GameState) {
+  if (s.mode === "bossrush" || s.wave < 2) return;
+  const roll = rnd();
+  if (roll < 0.14) {
+    spawnEnemy(s, "elite");
+    const e = s.enemies[s.enemies.length - 1];
+    e.treasure = 12; e.hp *= 6; e.maxHp = e.hp; e.dmg = 0;
+    s.intro = { label: "Rare event", name: "Treasure ship!", desc: "Catch it before it escapes for big coins", t: 2.6 };
+  } else if (roll < 0.24) {
+    s.meteorT = 6;
+    s.intro = { label: "Rare event", name: "Meteor shower", desc: "Dodge the falling rocks", t: 2.6 };
+  }
+}
+
+export function tickEvents(s: GameState, dt: number) {
+  for (const e of s.enemies) if (e.treasure !== undefined) { e.treasure -= dt; if (e.treasure <= 0) { e.hp = -1e9; e.treasure = -1; } }
+  s.enemies = s.enemies.filter((e) => !(e.treasure !== undefined && e.treasure < 0));
+  if (s.meteorT > 0) {
+    const before = Math.floor(s.meteorT * 5);
+    s.meteorT -= dt;
+    if (Math.floor(s.meteorT * 5) !== before) {
+      const x = rnd() * s.w, a = Math.PI / 2 + (rnd() - 0.5) * 0.5;
+      s.eBullets.push({ id: s.nextId++, x, y: -10, vx: Math.cos(a) * 230, vy: Math.sin(a) * 230, dmg: (6 + s.wave) * s.mods.dmg, life: 4 });
+    }
+  }
+}
+
+const MERCHANT: SystemDef[] = [
+  { id: "m_power", name: "Shady Power Core", desc: "MERCHANT · +40% damage, costs 25% max hull", icon: "rocket" },
+  { id: "m_haste", name: "Bootleg Thrusters", desc: "MERCHANT · +30% fire rate, costs 20% max hull", icon: "zap" },
+  { id: "m_skip", name: "No thanks", desc: "Keep your hull, leave the merchant", icon: "shield" },
+];
 
 // Lose a life: the current wave starts over with full hull; level and upgrades are kept
 export function retryWave(s: GameState) {
@@ -64,7 +114,7 @@ export const bladeReach = (s: GameState) => 54 * (1 + 0.2 * L(s, "bl_tether"));
 
 export const activeWeapon = (s: GameState): WeaponId => s.tempWeapon?.id ?? s.weapon;
 export const waveDone = (s: GameState) => (s.mode === "bossrush" ? s.bossSpawned && !s.boss : s.waveTime >= 30 && !s.boss);
-export const boardKey = (s: GameState) => (s.mode === "standard" ? s.mods.id : s.mode === "daily" ? `daily-${todaySeed()}` : s.mode);
+export const boardKey = (s: GameState) => (s.mode === "standard" ? s.mods.id : s.mode === "daily" ? `daily-${todaySeed()}` : s.mode === "weekly" ? `weekly-${weekKey()}` : s.mode);
 
 
 function hit(s: GameState, e: Enemy, dmg: number, crit = false) {
@@ -102,6 +152,11 @@ export function reflect(s: GameState, b: EBullet) {
 
 export function onEnemyDeath(s: GameState, e: Enemy) {
   delete s.bladeCd[e.id];
+  if (e.treasure !== undefined && e.treasure > 0) {
+    s.coins += (40 + s.wave * 3) * s.mods.coins;
+    for (let i = 0; i < 8; i++) s.gems.push({ id: s.nextId++, x: e.x + (rnd() - 0.5) * 60, y: e.y + (rnd() - 0.5) * 60, value: 6 + s.wave, pulled: true });
+    s.intro = { label: "Treasure", name: "Jackpot!", desc: "Bonus coins and XP", t: 1.8 };
+  }
   if (rnd() < (e.kind === "boss" ? 1 : 0.03)) {
     const kinds: PickupKind[] = ["shield", "magnet", "repair", "weapon"];
     s.pickups.push({ id: s.nextId++, x: e.x, y: e.y, kind: kinds[Math.floor(rnd() * 4)], life: 12 });
@@ -265,6 +320,7 @@ const PICK_LIMIT: Record<string, number> = {
 };
 // Offers only upgrades that matter for the loadout; at least one is weapon-specific.
 export function levelChoices(s: GameState): SystemDef[] {
+  if (s.merchant) return MERCHANT;
   const skip = SYSTEM_EXCLUDE[s.weapon] ?? [];
   const ready = (from: string[]) => from.every((f) => (s.picks[f] ?? 0) >= 2);
   const we = WEAPON_EVOS[s.weapon];
@@ -285,6 +341,14 @@ export function levelChoices(s: GameState): SystemDef[] {
 
 export function applyChoice(s: GameState, id: string) {
   const st = s.stats;
+  if (id.startsWith("m_")) {
+    s.merchant = false;
+    const cost = id === "m_power" ? 0.25 : id === "m_haste" ? 0.2 : 0;
+    if (cost) { st.maxHp = Math.max(20, Math.round(st.maxHp * (1 - cost))); s.player.hp = Math.min(s.player.hp, st.maxHp); }
+    if (id === "m_power") st.damage *= 1.4;
+    if (id === "m_haste") st.fireRate *= 1.3;
+    return;
+  }
   if (id === "field_repair") { s.player.hp = Math.min(st.maxHp, s.player.hp + 40); st.damage *= 1.05; return; }
   if (Object.values(WEAPON_EVOS).some((e) => e.id === id)) { s.evolved.push(id); return; }
   if (EVOLUTIONS.some((e) => e.id === id)) {

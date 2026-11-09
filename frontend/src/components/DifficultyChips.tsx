@@ -6,7 +6,7 @@ import { DIFFICULTIES } from "@/src/game/content";
 
 // One horizontal chip row; selected chip changes colour/border only.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function DifficultyChips({ value, onChange, testPrefix, padded, options = DIFFICULTIES }: { value: string; onChange: (d: any) => void; testPrefix: string; padded?: boolean; options?: { id: string; name: string }[] }) {
+export function DifficultyChips({ value, onChange, testPrefix, padded, options = DIFFICULTIES, isOn, locked }: { value: string; onChange: (d: any) => void; testPrefix: string; padded?: boolean; options?: { id: string; name: string }[]; isOn?: (id: string) => boolean; locked?: (id: string) => boolean }) {
   const s = useStyles();
   return (
     <ScrollView
@@ -16,16 +16,17 @@ export function DifficultyChips({ value, onChange, testPrefix, padded, options =
       contentContainerStyle={[s.content, padded && { paddingHorizontal: spacing.lg }]}
     >
       {options.map((d) => {
-        const on = d.id === value;
+        const on = isOn ? isOn(d.id) : d.id === value;
+        const lock = locked?.(d.id) ?? false;
         return (
           <Pressable
             key={d.id}
             testID={`${testPrefix}-${d.id}`}
             hitSlop={{ top: 6, bottom: 6 }}
             onPress={() => { Haptics.selectionAsync().catch(() => {}); onChange(d.id); }}
-            style={[s.chip, on && s.chipOn]}
+            style={[s.chip, on && s.chipOn, lock && { opacity: 0.45 }]}
           >
-            <Text style={[s.text, on && s.textOn]}>{d.name}</Text>
+            <Text style={[s.text, on && s.textOn]}>{lock ? "🔒 " : ""}{d.name}</Text>
           </Pressable>
         );
       })}

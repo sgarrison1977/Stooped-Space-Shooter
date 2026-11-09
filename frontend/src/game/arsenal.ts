@@ -3,7 +3,7 @@ import { SystemIcon } from "./config";
 export type WeaponId = "cannon" | "spread" | "flame" | "homing" | "arc" | "blades";
 export type AbilityId = "dash" | "shield" | "overdrive" | "gravity" | "timeslow";
 export type ClassId = "standard" | "interceptor" | "gunship" | "engineer";
-export type ModeId = "standard" | "bossrush" | "daily" | "hardcore";
+export type ModeId = "standard" | "bossrush" | "daily" | "hardcore" | "weekly";
 export type PickupKind = "shield" | "magnet" | "repair" | "weapon";
 
 type Item<T> = { id: T; name: string; desc: string };
@@ -46,6 +46,7 @@ export const MODES: Item<ModeId>[] = [
   { id: "bossrush", name: "Boss Rush", desc: "Endless bosses back to back · Normal difficulty" },
   { id: "daily", name: "Daily Run", desc: "Same seed, loadout + stats for everyone today" },
   { id: "hardcore", name: "Hardcore", desc: "One hit and you're done · Normal difficulty" },
+  { id: "weekly", name: "Weekly", desc: "This week's special rule · own leaderboard · resets Monday" },
 ];
 
 export const EVOLUTIONS: { id: string; name: string; desc: string; icon: SystemIcon; from: [string, string] }[] = [
@@ -123,6 +124,9 @@ export const SYSTEM_EXCLUDE: Partial<Record<WeaponId, string[]>> = {
   arc: ["twin"], blades: ["overclocked"],
 };
 
+// Week number (weeks start Monday), shared by the weekly challenge + its leaderboard
+export const weekKey = (d = new Date()) => String(Math.floor((Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5) + 3) / 7));
+
 export const todaySeed = () => { const d = new Date(); return d.getUTCFullYear() * 10000 + (d.getUTCMonth() + 1) * 100 + d.getUTCDate(); };
 
 export function dailyLoadout() {
@@ -133,4 +137,5 @@ export function dailyLoadout() {
 export const BOARDS = [
   { id: "casual", name: "Casual" }, { id: "normal", name: "Normal" }, { id: "hard", name: "Hard" }, { id: "extreme", name: "Extreme" },
   { id: "bossrush", name: "Boss Rush" }, { id: "hardcore", name: "Hardcore" }, { id: `daily-${todaySeed()}`, name: "Today" },
+  { id: `weekly-${weekKey()}`, name: "This Week" },
 ];

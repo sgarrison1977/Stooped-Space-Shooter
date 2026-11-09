@@ -8,7 +8,8 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 
 import { ErrorBoundary } from "@/src/components/error-boundary";
 import { queryClient } from "@/src/query-client";
-import { makeStyles, setUiStyle, useUiStyle } from "@/src/theme";
+import { makeStyles, setUiStyle, UI_STYLES, useUiStyle } from "@/src/theme";
+import { stylesUnlocked } from "@/src/game/retention";
 import { Scanlines } from "@/src/components/Backdrop";
 import { initAudio, setMuted, setSoundPack, startMusic } from "@/src/game/audio";
 import { loadProfile } from "@/src/game/profile";
@@ -43,7 +44,10 @@ export default function RootLayout() {
   const styles = useStyles();
   useEffect(() => {
     initAudio();
-    loadProfile().then((p) => { setUiStyle(p.uiStyle); setSoundPack(p.uiStyle); setReady(true); setMuted(p.muted); startMusic(); });
+    loadProfile().then((p) => {
+      // styles unlock in on-screen order; fall back to Ember if the saved one is still locked
+      const st = UI_STYLES.findIndex((x) => x.id === p.uiStyle) < stylesUnlocked(p) ? p.uiStyle : "ember";
+      setUiStyle(st); setSoundPack(st); setReady(true); setMuted(p.muted); startMusic(); });
   }, []);
   // One app level ErrorBoundary; a render crash shows a reload screen
   // instead of a blank app. GestureHandlerRootView must wrap the whole tree

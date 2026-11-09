@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
@@ -7,14 +7,14 @@ import { fonts, makeStyles, radius, spacing, useTheme, pop, ink, fx } from "@/sr
 import { SystemDef } from "@/src/game/config";
 import { Label, MuteButton, OutlineButton, PrimaryButton } from "./ui";
 
-export function LevelUpOverlay({ level, options, onPick, wide }: { level: number; options: SystemDef[]; onPick: (s: SystemDef) => void; wide: boolean }) {
+export function LevelUpOverlay({ level, options, onPick, wide, title }: { level: number; options: SystemDef[]; onPick: (s: SystemDef) => void; wide: boolean; title?: string }) {
   const s = useStyles();
   const { colors } = useTheme();
   const [chosen, setChosen] = useState<string | null>(null);
   return (
     <Animated.View entering={FadeIn.duration(200)} style={s.scrim} testID="level-up-overlay">
-      <Label style={{ textAlign: "center" }} testID="level-up-level">Level {level}</Label>
-      <Text style={[s.title, wide && s.titleWide]}>Choose a System</Text>
+      <Label style={{ textAlign: "center" }} testID="level-up-level">{title ? "Rare event" : `Level ${level}`}</Label>
+      <Text style={[s.title, wide && s.titleWide]}>{title ?? "Choose a System"}</Text>
       <View style={[s.list, wide && s.listRow]}>
         {options.map((o, i) => (
           <Animated.View key={o.id} entering={FadeInDown.delay(80 * i).duration(260)} style={wide ? { flex: 1 } : undefined}>
@@ -73,13 +73,19 @@ function Stat({ label, value, testID }: { label: string; value: string | number;
 }
 
 export function GameOverOverlay({
-  wave, kills, coins, rank, abandoned, wide, bosses, difficultyName, highlight, onReturn, onAgain, onShare,
-}: { wave: number; kills: number; coins: number; rank: number | null; abandoned: boolean; wide: boolean; bosses: number; difficultyName: string; highlight: string | null; onReturn: () => void; onAgain: () => void; onShare: () => void }) {
+  wave, kills, coins, rank, abandoned, wide, bosses, difficultyName, highlight, onReturn, onAgain, onShare, news, card,
+}: { wave: number; kills: number; coins: number; rank: number | null; abandoned: boolean; wide: boolean; bosses: number; difficultyName: string; highlight: string | null; onReturn: () => void; onAgain: () => void; onShare: () => void; news?: string[]; card?: React.ReactNode }) {
   const s = useStyles();
   return (
     <Animated.View entering={FadeIn.duration(300)} style={s.scrim} testID="game-over-overlay">
+      <ScrollView contentContainerStyle={s.overScroll} showsVerticalScrollIndicator={false}>
       <Label style={{ textAlign: "center" }}>Run Ended · {difficultyName}</Label>
       <Text style={[s.title, wide && s.titleWide]}>{abandoned ? "Run Abandoned" : "Hull Breached"}</Text>
+      {news?.length ? (
+        <View style={[s.list, s.statsCard]} testID="game-over-news">
+          {news.map((n, i) => <Text key={i} style={s.highlight}>{n}</Text>)}
+        </View>
+      ) : null}
       <View style={[s.list, wide && s.listRow]}>
         <View style={[s.list, s.statsCard, wide && { flex: 1, marginBottom: 0 }]}>
           <Stat label="Wave Reached" value={wave} testID="game-over-wave" />
@@ -95,11 +101,14 @@ export function GameOverOverlay({
           <OutlineButton title="Return to Muster" testID="game-over-return-button" onPress={onReturn} />
         </View>
       </View>
+      {card}
+      </ScrollView>
     </Animated.View>
   );
 }
 
 const useStyles = makeStyles((c) => ({
+  overScroll: { flexGrow: 1, justifyContent: "center", gap: spacing.sm, paddingVertical: spacing.xl },
   scrim: {
     position: "absolute", left: 0, top: 0, right: 0, bottom: 0, backgroundColor: c.scrim,
     justifyContent: "center", paddingHorizontal: spacing.xl, gap: spacing.sm,

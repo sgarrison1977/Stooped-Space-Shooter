@@ -124,3 +124,10 @@ User built "Hypershift" (in-game title EMBERDEEP) on Base44 and wants it rebuilt
 - scripts/gen_sound_packs.py generates 7 sfx + music per non-ember style into assets/sounds/<style>/ and writes src/game/soundPacks.ts. audio.ts setSoundPack(id) swaps packs (called at boot and when UI style changes).
 - src/game/art.ts af/ak/aw recolour fills/strokes/stroke widths of ShipArt/MobArt/Sprites per style (cartoon/comic black outlines, blueprint white wireframe, notebook ink on pastel, retro neon on dark, military olive, racing lime).
 - Arena backgrounds: Notebook = paper page (ruled lines + margin, ink-coloured arena text/bullets, light scrim); Blueprint = grid on blueprint blue (fx.arenaBg, Starfield.tsx ArenaSheet). Other styles keep space.
+
+## Update: Retention features
+- src/game/retention.ts: daily streak (+shield, 3/7/30-day cosmetics: Streak Flame trail, Streak Runner & Eternal skins, cost -1 = not for sale), 3 daily missions (coins), weekly challenge (mode 'weekly', rotating rule, board weekly-<week>), 26 achievements, weapon mastery (kills thresholds 250..10000; max = gold shots), opt-in run modifiers (Glass Cannon/Swarm/Ironman/Fast Foes, bonus coins), UI style unlocks (first 3 free; next unlocks in on-screen order every 3 achievements; locked saved style falls back to Ember).
+- Rare events (arsenal-sim waveEvents/tickEvents): treasure ship (flees, 12s, big coins), meteor shower, mystery merchant (trade hull for power, between waves).
+- Home: Continue banner on top, TodayCard (streak, missions, weekly, achievements link), style chips show locks. New /achievements screen. Loadout: run modifiers row, mastery line.
+- Game over: news lines (missions, achievements, unlocks) + image share card (react-native-view-shot + expo-sharing; web falls back to text share).
+- Backend: leaderboard pattern accepts weekly-\d{4,6}.

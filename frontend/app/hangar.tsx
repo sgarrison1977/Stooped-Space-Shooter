@@ -19,14 +19,14 @@ type Kind = "skin" | "trail";
 function ItemButton({ owned, equipped, cost, coins, onPress, testID }: { owned: boolean; equipped: boolean; cost: number; coins: number; onPress: () => void; testID: string }) {
   const s = useStyles();
   const { colors } = useTheme();
-  const afford = coins >= cost;
+  const afford = cost >= 0 && coins >= cost;
   if (equipped) return <View style={[s.btn, s.btnEquipped]} testID={testID}><Lucide name="check" size={12} color={colors.onBrandTertiary} /><Text style={s.btnTextOn}>Equipped</Text></View>;
   return (
     <Pressable testID={testID} disabled={!owned && !afford} onPress={onPress} style={({ pressed }) => [s.btn, !owned && !afford && s.btnDisabled, pressed && { opacity: 0.7 }]}>
       {owned ? <Text style={s.btnText}>Equip</Text> : (
         <>
           <Lucide name={afford ? "coins" : "lock"} size={12} color={colors.brandSecondary} />
-          <Text style={s.btnText}>{cost}</Text>
+          <Text style={s.btnText}>{cost < 0 ? "Streak" : cost}</Text>
         </>
       )}
     </Pressable>
@@ -52,7 +52,7 @@ export default function Hangar() {
     update((p: Profile) => {
       const owned = kind === "skin" ? p.ownedSkins : p.ownedTrails;
       const has = owned.includes(id);
-      if (!has && p.coins < cost) return p;
+      if (!has && (cost < 0 || p.coins < cost)) return p;
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       return kind === "skin"
         ? { ...p, coins: has ? p.coins : p.coins - cost, ownedSkins: has ? owned : [...owned, id], skin: id }

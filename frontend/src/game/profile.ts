@@ -20,6 +20,13 @@ export interface Profile {
   ownedTrails: string[];
   muted: boolean;
   uiStyle: UiStyleId;
+  // retention
+  streak: { count: number; last: string; shield: number };
+  missions: { day: string; progress: Record<string, number>; done: string[] };
+  achievements: string[];
+  mastery: Record<string, number>; // lifetime kills per weapon
+  classesUsed: string[];
+  runMods: string[];
   mode: ModeId; weapon: WeaponId; ability: AbilityId; shipClass: ClassId; speed: SpeedId;
   // Boss gallery: keyed by boss index
   bossRecords: Record<string, BossRecord>;
@@ -58,7 +65,8 @@ function newId() {
 function fresh(): Profile {
   return {
     id: newId(), name: "", coins: 0, bestWave: 0, kills: 0, runs: 0, upgrades: { cannon: 1, deflector: 1, hull: 1 },
-    difficulty: "normal", skin: "vanguard", trail: "ion", ownedSkins: ["vanguard"], ownedTrails: ["ion"], muted: false, bossRecords: {}, mode: "standard", weapon: "cannon", ability: "dash", shipClass: "standard", speed: "normal", uiStyle: "notebook",
+    difficulty: "normal", skin: "vanguard", trail: "ion", ownedSkins: ["vanguard"], ownedTrails: ["ion"], muted: false, bossRecords: {}, mode: "standard", weapon: "cannon", ability: "dash", shipClass: "standard", speed: "normal", uiStyle: "ember",
+    streak: { count: 0, last: "", shield: 0 }, missions: { day: "", progress: {}, done: [] }, achievements: [], mastery: {}, classesUsed: [], runMods: [],
   };
 }
 

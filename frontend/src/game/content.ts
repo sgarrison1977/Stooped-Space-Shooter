@@ -68,6 +68,9 @@ export const SKINS: Skin[] = [
   { id: "void", name: "Void Seraph", cost: 600, light: "#F0DDFF", mid: "#9B5CFF", dark: "#2A0F5A", cockpit: "#FF7BF2", accent: "#FF7BF2" },
   { id: "frost", name: "Frost Lancer", cost: 800, light: "#FFFFFF", mid: "#BFD9E8", dark: "#4A6273", cockpit: "#7FF6FF", accent: "#7FF6FF" },
   { id: "obsidian", name: "Obsidian Ghost", cost: 1200, light: "#8A8A9A", mid: "#2A2A36", dark: "#0A0A10", cockpit: "#FF5500", accent: "#FF5500" },
+  // streak rewards (cost -1 = not for sale)
+  { id: "streaker", name: "Streak Runner", cost: -1, light: "#FFF0D9", mid: "#FF8A1F", dark: "#6B2A00", cockpit: "#FFE45C", accent: "#FFE45C" },
+  { id: "eternal", name: "Eternal", cost: -1, light: "#FFFFFF", mid: "#E8C547", dark: "#5C4300", cockpit: "#FFFFFF", accent: "#FFF3B0" },
 ];
 
 export interface Trail { id: string; name: string; cost: number; color: string; flame: string }
@@ -79,6 +82,7 @@ export const TRAILS: Trail[] = [
   { id: "solar", name: "Solar Flare", cost: 300, color: "#FFD84D", flame: "#FFF3B0" },
   { id: "toxic", name: "Toxic Vent", cost: 300, color: "#9CFF3D", flame: "#E1FFB3" },
   { id: "blood", name: "Blood Comet", cost: 450, color: "#FF1744", flame: "#FF8A9E" },
+  { id: "streak", name: "Streak Flame", cost: -1, color: "#FF8A1F", flame: "#FFE45C" },
 ];
 
 export const skinById = (id: string) => SKINS.find((s) => s.id === id) ?? SKINS[0];

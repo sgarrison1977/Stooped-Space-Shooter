@@ -70,7 +70,7 @@ export function ArenaView({ g, skin, trail }: { g: GameState; skin: Skin; trail:
         {g.bullets.map((b) => (
           <View
             key={b.id}
-            style={[s.bullet, b.crit && s.bulletCrit, b.kind === "flame" && s.flameB, b.kind === "missile" && s.missileB, { left: b.x - 7, top: b.y - 1.5, transform: [{ rotate: `${Math.atan2(b.vy, b.vx)}rad` }] }]}
+            style={[s.bullet, g.gold && !g.tempWeapon && s.goldB, b.crit && s.bulletCrit, b.kind === "flame" && s.flameB, b.kind === "missile" && s.missileB, { left: b.x - 7, top: b.y - 1.5, transform: [{ rotate: `${Math.atan2(b.vy, b.vx)}rad` }] }]}
           />
         ))}
         {g.eBullets.map((b) =>
@@ -138,6 +138,7 @@ const useStyles = makeStyles((c) => ({
   fill: { position: "absolute", left: 0, top: 0, right: 0, bottom: 0, overflow: "hidden" },
   gem: { position: "absolute", backgroundColor: c.xp, borderWidth: 1, borderColor: c.shipLight, transform: [{ rotate: "45deg" }] },
   bullet: { position: "absolute", width: 14, height: 3, borderRadius: 2, backgroundColor: c.bullet },
+  goldB: { backgroundColor: "#FFD24A", height: 4 }, // mastered weapon: gold shots in every style
   flameB: { backgroundColor: c.engineGlow, width: 9, height: 7, borderRadius: 4, opacity: 0.85 },
   missileB: { backgroundColor: c.brandSecondary, width: 12, height: 4 },
   bulletCrit: { backgroundColor: c.warning, height: 4 },

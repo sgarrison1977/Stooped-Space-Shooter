@@ -1,5 +1,5 @@
-import React from "react";
-import { ActivityIndicator, Text, useWindowDimensions, View } from "react-native";
+import React, { useState } from "react";
+import { ActivityIndicator, Text, useWindowDimensions, View, Pressable } from "react-native";
 import { Backdrop } from "@/src/components/Backdrop";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -8,6 +8,8 @@ import { StatusBar } from "expo-status-bar";
 import { fonts, fx, makeStyles, pop, radius, setUiStyle, spacing, UI_STYLES, useTheme } from "@/src/theme";
 import { Label } from "@/src/components/ui";
 import { DifficultyChips } from "@/src/components/DifficultyChips";
+import { TodayCard } from "@/src/components/TodayCard";
+import { stylesUnlocked } from "@/src/game/retention";
 import { useProfile } from "@/src/game/profile";
 import { useSavedRun } from "@/src/game/save";
 import { CoinPill, MuteButton } from "@/src/components/ui";
@@ -22,6 +24,7 @@ export default function Home() {
   const router = useRouter();
   const { profile, update } = useProfile();
   const saved = useSavedRun();
+  const [lockMsg, setLockMsg] = useState(false);
   const { width, height } = useWindowDimensions();
   const wide = width > height;
   const padH = { paddingLeft: insets.left + spacing.xl, paddingRight: insets.right + spacing.xl };
@@ -63,24 +66,36 @@ export default function Home() {
           showsVerticalScrollIndicator={false}
         >
           <View style={wide ? s.col : s.stack}>
+          {saved && profile.name ? (
+            <Pressable testID="continue-banner" onPress={() => { startMusic(); router.push("/play?resume=1"); }} style={({ pressed }) => [s.continueBanner, pressed && { opacity: 0.85 }]}>
+              <Text style={s.continueTitle}>▶ CONTINUE RUN</Text>
+              <Text style={s.continueSub}>Wave {saved.wave} · Level {saved.level} · {"♥".repeat(saved.lives)}</Text>
+            </Pressable>
+          ) : null}
           <View style={s.styleCard} testID="ui-style-card">
             <Label>UI Style</Label>
             <DifficultyChips
               options={UI_STYLES}
               value={profile.uiStyle}
               testPrefix="ui-style-chip"
+              locked={(id) => UI_STYLES.findIndex((x) => x.id === id) >= stylesUnlocked(profile)}
               // save first so the remounted screen (new style) reads the new choice
-              onChange={async (uiStyle) => { await update((p) => ({ ...p, uiStyle })); setUiStyle(uiStyle); setSoundPack(uiStyle); }}
+              onChange={async (uiStyle: string) => {
+                if (UI_STYLES.findIndex((x) => x.id === uiStyle) >= stylesUnlocked(profile)) { setLockMsg(true); return; }
+                await update((p) => ({ ...p, uiStyle: uiStyle as typeof p.uiStyle })); setUiStyle(uiStyle); setSoundPack(uiStyle);
+              }}
             />
+            {lockMsg ? <Text style={s.lockMsg} testID="ui-style-locked-msg">Locked · every 3 achievements unlocks the next style</Text> : null}
           </View>
           <MusterCard
             profile={profile}
             onRename={(name) => update((p) => ({ ...p, name }))}
             onEnter={() => { startMusic(); router.push("/play"); }}
-            saved={saved}
+            saved={null}
             onContinue={() => { startMusic(); router.push("/play?resume=1"); }}
             onDifficulty={(difficulty) => update((p) => ({ ...p, difficulty }))}
           />
+          <TodayCard profile={profile} onWeekly={() => update((p) => ({ ...p, mode: "weekly" }))} onAchievements={() => router.push("/achievements")} />
           <LoadoutCard profile={profile} update={update} />
           </View>
           <View style={wide ? s.col : s.stack}>
@@ -104,6 +119,10 @@ const useStyles = makeStyles((c) => ({
   root: { flex: 1, backgroundColor: c.surface },
   header: { flexDirection: "row", alignItems: "center", paddingBottom: spacing.lg },
   title: { fontFamily: fonts.display, fontSize: 34, letterSpacing: 1, color: c[fx.titleColor], ...fx.titleShadow, transform: [{ rotate: fx.tilt }] },
+  continueBanner: { backgroundColor: c.brandPrimary, ...pop(c), borderRadius: radius.md, padding: spacing.lg, gap: 2 },
+  continueTitle: { fontFamily: fonts.display, fontSize: 24, color: c.onBrandPrimary },
+  continueSub: { fontFamily: fonts.bold, fontSize: 14, color: c.onBrandPrimary },
+  lockMsg: { fontFamily: fonts.text, fontSize: 13, color: c.muted },
   styleCard: { backgroundColor: c.surfaceSecondary, ...pop(c), borderRadius: radius.md, padding: spacing.lg, gap: spacing.sm },
   titleSub: { fontFamily: fonts.display, fontSize: 14, letterSpacing: 1.5, color: c.onSurface, textTransform: "uppercase", marginTop: 2 },
   subtitle: { fontFamily: fonts.bold, fontSize: 15, letterSpacing: 1, color: c.muted, marginTop: spacing.xs },

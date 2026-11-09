@@ -1,6 +1,6 @@
 import { RunStats } from "./config";
 import { BOSSES, DifficultyDef, MobKind, MOBS } from "./content";
-import { activeWeapon, ArsenalState, arsenalDefaults, bulletHit, evolvedW, moveMul, onEnemyDeath, reflect, updateArsenal, waveDone } from "./arsenal-sim";
+import { activeWeapon, ArsenalState, arsenalDefaults, bulletHit, evolvedW, moveMul, tickEvents, waveEvents, onEnemyDeath, reflect, updateArsenal, waveDone } from "./arsenal-sim";
 
 // Swappable RNG so the Daily Run is the same for everyone
 export let rnd: () => number = Math.random;
@@ -12,7 +12,7 @@ export type EnemyKind = MobKind | "boss";
 export interface Enemy {
   id: number; x: number; y: number; hp: number; maxHp: number; speed: number; r: number; dmg: number;
   kind: EnemyKind; angle: number; flash: number; fireTimer: number; ringTimer: number;
-  variant: number; spin: number; warn: number; dash: number; dvx: number; dvy: number; patT: number; spawnedAt: number;
+  variant: number; spin: number; warn: number; dash: number; dvx: number; dvy: number; patT: number; spawnedAt: number; treasure?: number;
 }
 export interface Bullet { id: number; x: number; y: number; vx: number; vy: number; dmg: number; crit: boolean; life: number; kind?: "flame" | "missile" | "shell" | "pierce"; hits?: number[] }
 export interface EBullet { id: number; x: number; y: number; vx: number; vy: number; dmg: number; life: number; homing?: boolean; fuse?: number }
@@ -80,7 +80,7 @@ function edgePoint(s: GameState, m: number): Vec {
   return { x: -m, y: rnd() * s.h };
 }
 
-function spawnEnemy(s: GameState, kind: EnemyKind, at?: Vec) {
+export function spawnEnemy(s: GameState, kind: EnemyKind, at?: Vec) {
   const w = s.wave;
   const m = s.mods;
   const cycle = Math.floor(s.bossCount / BOSSES.length);
@@ -95,6 +95,7 @@ function spawnEnemy(s: GameState, kind: EnemyKind, at?: Vec) {
     kind, angle: 0, flash: 0, fireTimer: 2, ringTimer: 2.5,
     variant: 0, spin: 0, warn: 0, dash: 0, dvx: 0, dvy: 0, patT: 0, spawnedAt: s.time,
   };
+  if (kind === "boss") { e.hp *= s.bossHp; e.maxHp = e.hp; }
   s.enemies.push(e);
   if (mob && kind !== "grunt" && kind !== "shard" && !s.seen.includes(kind)) {
     s.seen.push(kind);
@@ -233,13 +234,15 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
       s.waveTime = 0;
       s.bossSpawned = false;
       ev.waveUp = true;
+      waveEvents(s);
     }
   } else {
     s.waveTime += dt;
     // a living boss must be beaten before the wave can end
     if (waveDone(s)) {
       s.breakT = WAVE_BREAK;
-      p.hp = Math.min(st.maxHp, p.hp + st.maxHp * 0.25); // breather heal between waves
+      if (!s.noHeal) p.hp = Math.min(st.maxHp, p.hp + st.maxHp * 0.25); // breather heal between waves
+      if (s.wave >= 3 && rnd() < 0.18) { s.merchant = true; s.pendingLevelUps += 1; } // mystery merchant
       for (const e of s.enemies) burst(s, e.x, e.y, 6, "ember", 120, 3);
       s.enemies = [];
       s.eBullets = [];
@@ -247,7 +250,8 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
       ev.waveClear = true;
     }
   }
-  p.hp = Math.min(st.maxHp, p.hp + REGEN_PER_SEC * s.mods.regen * dt);
+  if (!s.noHeal) p.hp = Math.min(st.maxHp, p.hp + REGEN_PER_SEC * s.mods.regen * dt);
+  tickEvents(s, dt);
   if (!s.breakT && !s.bossSpawned && (s.mode === "bossrush" ? s.waveTime >= 2 : s.wave % BOSS_EVERY === 0 && s.waveTime >= BOSS_AT) && !s.boss) {
     s.bossSpawned = true;
     spawnEnemy(s, "boss");
@@ -354,7 +358,7 @@ export function step(s: GameState, dt: number, joy: Vec | null): StepEvents {
     const dx = p.x - e.x, dy = p.y - e.y;
     const d = Math.hypot(dx, dy) || 1;
     e.angle = Math.atan2(dy, dx);
-    const keepAway = e.kind === "boss" && d < 140 ? -0.4 : 1;
+    const keepAway = e.treasure ? -0.9 : e.kind === "boss" && d < 140 ? -0.4 : 1;
     let mx = dx / d, my = dy / d, sp = e.speed * keepAway;
     if (e.kind === "dart") { const wob = Math.sin(s.time * 8 + e.id) * 0.7; mx += (-dy / d) * wob; my += (dx / d) * wob; }
     if (e.kind === "gunner") {

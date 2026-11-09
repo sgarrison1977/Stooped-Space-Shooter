@@ -29,7 +29,7 @@ export function LevelUpOverlay({ level, options, onPick, wide }: { level: number
               style={({ pressed }) => [s.option, wide && s.optionWide, (pressed || chosen === o.id) && s.optionActive]}
             >
               <View style={s.iconBox}>
-                <Lucide name={o.icon} size={18} color={colors.onSurface} />
+                <Lucide name={o.icon} size={18} color={colors.onBrandPrimary} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={s.optName}>{o.name}</Text>
@@ -104,7 +104,7 @@ const useStyles = makeStyles((c) => ({
     position: "absolute", left: 0, top: 0, right: 0, bottom: 0, backgroundColor: c.scrim,
     justifyContent: "center", paddingHorizontal: spacing.xl, gap: spacing.sm,
   },
-  title: { fontFamily: fonts.display, fontSize: 38, color: c.brandTertiary, textShadowColor: c.brandPrimary, textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 1, textAlign: "center", letterSpacing: 1, marginBottom: spacing.lg },
+  title: { fontFamily: fonts.display, fontSize: 38, color: c.onArena, textAlign: "center", letterSpacing: 1, marginBottom: spacing.lg },
   titleWide: { fontSize: 22, marginBottom: spacing.sm },
   list: { gap: spacing.md, width: "100%", maxWidth: 760, alignSelf: "center" },
   listRow: { flexDirection: "row" },

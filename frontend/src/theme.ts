@@ -1,4 +1,4 @@
-// Design tokens for Stooopid Space Shooter (retro arcade look). Dark theme only (from /app/design_guidelines.json).
+// Design tokens for Stooopid Space Shooter (clean racing HUD look). Dark theme only (from /app/design_guidelines.json).
 // Components import `useTheme()` / `makeStyles` from here; never write color literals.
 
 import { useMemo } from "react";
@@ -7,52 +7,52 @@ import { Appearance, StyleSheet } from "react-native";
 export type ColorScheme = "light" | "dark";
 
 const dark = {
-  // Retro arcade: black CRT, neon cyan / hot pink / yellow
-  surface: "#07060F",
-  onSurface: "#F4F1FF",
-  surfaceSecondary: "#120F24",
-  onSurfaceSecondary: "#D4CFF0",
-  surfaceTertiary: "#1E1838",
-  onSurfaceTertiary: "#F4F1FF",
-  surfaceInverse: "#F4F1FF",
-  onSurfaceInverse: "#07060F",
-  muted: "#8C84B8",
+  // Clean racing HUD: graphite panels, white type, one sharp lime accent
+  surface: "#0E1013",
+  onSurface: "#F5F7FA",
+  surfaceSecondary: "#171A1F",
+  onSurfaceSecondary: "#C9CED6",
+  surfaceTertiary: "#22262D",
+  onSurfaceTertiary: "#F5F7FA",
+  surfaceInverse: "#F5F7FA",
+  onSurfaceInverse: "#0E1013",
+  muted: "#7D8590",
 
-  brand: "#FF2A6D",
-  onBrand: "#07060F",
-  brandPrimary: "#FF2A6D",
-  onBrandPrimary: "#07060F",
-  brandSecondary: "#05D9E8",
-  onBrandSecondary: "#07060F",
-  brandTertiary: "#FFE600",
-  onBrandTertiary: "#07060F",
+  brand: "#C6FF00",
+  onBrand: "#0E1013",
+  brandPrimary: "#C6FF00",
+  onBrandPrimary: "#0E1013",
+  brandSecondary: "#C6FF00",
+  onBrandSecondary: "#0E1013",
+  brandTertiary: "#232B05",
+  onBrandTertiary: "#C6FF00",
 
-  success: "#39FF14",
-  onSuccess: "#07060F",
-  warning: "#FFE600",
-  onWarning: "#07060F",
-  error: "#FF2A6D",
-  onError: "#07060F",
-  info: "#05D9E8",
-  onInfo: "#07060F",
+  success: "#C6FF00",
+  onSuccess: "#0E1013",
+  warning: "#FFC400",
+  onWarning: "#0E1013",
+  error: "#FF3B3B",
+  onError: "#FFFFFF",
+  info: "#4FC3F7",
+  onInfo: "#0E1013",
 
-  border: "#05D9E8",
-  borderStrong: "#FF2A6D",
-  divider: "#2A2450",
+  border: "#2C3138",
+  borderStrong: "#C6FF00",
+  divider: "#22262D",
 
   // Text drawn over the dark arena / overlay scrim
   onArena: "#FFFFFF",
-  onArenaMuted: "#B8B3D9",
+  onArenaMuted: "#A9B0BA",
 
   // Game-specific
-  arena: "#05040B",
+  arena: "#0A0B0D",
   player: "#29C5F6",
   playerCore: "#E8FAFF",
   enemy: "#FF2E4D",
   enemyElite: "#FF6A00",
   bullet: "#FFF27A",
-  xp: "#39FF14",
-  hpTrack: "#3A0A1E",
+  xp: "#C6FF00",
+  hpTrack: "#3A1414",
   shipLight: "#FFFFFF",
   shipDark: "#1E6FD9",
   cockpit: "#7FF6FF",
@@ -63,11 +63,11 @@ const dark = {
   bossMid: "#D81E5B",
   bossLight: "#FFC27A",
   bossCore: "#FFE45C",
-  nebulaEmber: "#FF3D7F",
-  nebulaBlue: "#1B1458",
+  nebulaEmber: "#3A4A00",
+  nebulaBlue: "#1A2230",
   star: "#FFF7D6",
-  scrim: "rgba(5,4,11,0.88)",
-  scrimLight: "rgba(5,4,11,0.6)",
+  scrim: "rgba(10,11,13,0.9)",
+  scrimLight: "rgba(10,11,13,0.6)",
   transparent: "transparent",
 };
 
@@ -99,17 +99,15 @@ export function makeStyles<T extends StyleSheet.NamedStyles<T> | StyleSheet.Name
 }
 
 export const fonts = {
-  display: "PixelifySans",
-  text: "SpaceMono",
-  bold: "PixelifySans",
+  display: "BarlowCondensed-BoldItalic",
+  text: "Barlow-Medium",
+  bold: "Barlow-SemiBold",
 };
 
-// 8-bit block outline: neon border with a hard pink drop on the bottom/right edges
-export const pop = (c: ThemeColors) => ({
-  borderWidth: 3, borderBottomWidth: 6, borderRightWidth: 6, borderColor: c.border, borderBottomColor: c.borderStrong, borderRightColor: c.borderStrong,
-});
+// Racing panel: hairline graphite border with a lime accent strip on the left edge
+export const pop = (c: ThemeColors) => ({ borderWidth: 1, borderColor: c.border, borderLeftWidth: 4, borderLeftColor: c.borderStrong });
 // Flat outline (unselected chips, inputs)
-export const ink = (c: ThemeColors) => ({ borderWidth: 3, borderColor: c.border });
+export const ink = (c: ThemeColors) => ({ borderWidth: 1, borderColor: c.border });
 
 export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32, xxxl: 48 };
-export const radius = { sm: 0, md: 2, lg: 4, pill: 999 };
+export const radius = { sm: 4, md: 6, lg: 10, pill: 999 };

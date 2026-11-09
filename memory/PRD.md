@@ -106,3 +106,6 @@ User built "Hypershift" (in-game title EMBERDEEP) on Base44 and wants it rebuilt
 ## Update: Retro arcade restyle (replaced goofy cartoon)
 - theme.ts: black CRT palette with neon cyan borders, hot pink accents/drop edges, yellow selection; fonts PixelifySans (display/bold) + SpaceMono (text); square pixel corners (radius 0-4); pop() = cyan border with pink bottom/right hard drop.
 - Scanlines.tsx: static CRT scanline overlay over the whole app (in _layout.tsx).
+
+## Update: Clean racing HUD restyle (replaced retro arcade)
+- theme.ts: graphite panels (#0E1013/#171A1F), white type, single lime accent #C6FF00; fonts Barlow Condensed Bold Italic (display) + Barlow Medium/SemiBold; radius 4-10; pop() = hairline border + lime left accent strip; primary buttons lime and skewed. Scanlines removed.

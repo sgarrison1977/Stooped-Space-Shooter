@@ -274,5 +274,5 @@ const useStyles = makeStyles((c) => ({
     position: "absolute", width: 100, height: 100, borderRadius: 50, ...pop(c),
     backgroundColor: c.scrimLight, alignItems: "center", justifyContent: "center",
   },
-  knob: { width: 40, height: 40, borderRadius: 20, backgroundColor: c.brandTertiary, ...pop(c) },
+  knob: { width: 40, height: 40, borderRadius: 20, backgroundColor: c.brandPrimary },
 }));

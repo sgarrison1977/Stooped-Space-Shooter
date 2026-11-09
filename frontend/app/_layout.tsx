@@ -1,4 +1,3 @@
-import { Scanlines } from "@/src/components/Scanlines";
 import { useEffect } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
@@ -19,8 +18,9 @@ LogBox.ignoreAllLogs(true)
 
 export default function RootLayout() {
   const [loaded, err] = useFonts({
-    PixelifySans: require("../assets/fonts/PixelifySans.ttf"),
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    "BarlowCondensed-BoldItalic": require("../assets/fonts/BarlowCondensed-BoldItalic.ttf"),
+    "Barlow-Medium": require("../assets/fonts/Barlow-Medium.ttf"),
+    "Barlow-SemiBold": require("../assets/fonts/Barlow-SemiBold.ttf"),
   });
   useEffect(() => {
     initAudio();
@@ -41,7 +41,6 @@ export default function RootLayout() {
             ) : (
               <View style={styles.boot} />
             )}
-            <Scanlines />
           </KeyboardProvider>
         </QueryClientProvider>
       </ErrorBoundary>

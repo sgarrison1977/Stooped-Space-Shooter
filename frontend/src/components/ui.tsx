@@ -78,15 +78,15 @@ const useStyles = makeStyles((c) => ({
   },
   coinText: { fontFamily: fonts.display, fontSize: 16, color: c.onSurface, paddingTop: 3 },
   primary: {
-    height: 58, borderRadius: radius.md, backgroundColor: c.brandPrimary, alignItems: "center", justifyContent: "center", ...pop(c),
+    height: 58, borderRadius: radius.md, backgroundColor: c.brandPrimary, alignItems: "center", justifyContent: "center", transform: [{ skewX: "-10deg" }],
   },
-  primaryText: { fontFamily: fonts.display, fontSize: 20, letterSpacing: 1.5, color: c.onBrandPrimary, textTransform: "uppercase", paddingTop: 4 },
+  primaryText: { fontFamily: fonts.display, fontSize: 22, letterSpacing: 2, color: c.onBrandPrimary, textTransform: "uppercase", paddingTop: 4 },
   outline: {
     height: 50, borderRadius: radius.md, ...pop(c), flexDirection: "row",
     alignItems: "center", justifyContent: "center", gap: spacing.sm, backgroundColor: c.surface,
   },
   outlineText: { fontFamily: fonts.bold, fontSize: 14, letterSpacing: 0.8, color: c.onSurface, textTransform: "uppercase" },
-  pressed: { transform: [{ translateX: 3 }, { translateY: 3 }], borderBottomWidth: 3, borderRightWidth: 3 },
+  pressed: { opacity: 0.85, transform: [{ scale: 0.98 }] },
   iconBtn: {
     width: 40, height: 40, borderRadius: radius.sm, ...pop(c),
     alignItems: "center", justifyContent: "center", backgroundColor: c.surfaceSecondary,

@@ -100,7 +100,7 @@ const useStyles = makeStyles((c) => ({
   grav: { position: "absolute", width: 80, height: 80, borderRadius: 40, borderWidth: 3, borderColor: c.info, backgroundColor: c.scrimLight },
   bubble: { position: "absolute", width: 52, height: 52, borderRadius: 26, borderWidth: 2, borderColor: c.xp, backgroundColor: c.transparent },
   slow: { position: "absolute", left: 0, top: 0, right: 0, bottom: 0, backgroundColor: c.nebulaBlue, opacity: 0.18 },
-  temp: { position: "absolute", bottom: 26, alignSelf: "center", fontFamily: fonts.display, fontSize: 15, color: c.brandTertiary },
+  temp: { position: "absolute", bottom: 26, alignSelf: "center", fontFamily: fonts.display, fontSize: 15, color: c.brandPrimary },
   ability: {
     position: "absolute", right: spacing.lg, bottom: spacing.lg, width: 72, height: 72, borderRadius: 36, backgroundColor: c.brandPrimary,
     alignItems: "center", justifyContent: "center", ...pop(c),
